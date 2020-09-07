@@ -7,7 +7,13 @@ package mainapp;
 
 import controllers.SimpleController;
 import java.awt.Button;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Application;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -30,28 +36,6 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-//        loader = new FXMLLoader(getClass().getResource("/fxml/simple.fxml"));
-//        Parent root = (Parent) loader.load();
-//        Scene scene = new Scene(root);
-//        stage.setScene(scene);
-//        stage.setTitle("Dynamic NBA Shot Charts");
-//        stage.setMinHeight(650);
-//        stage.setMinWidth(800);
-//        stage.show();
-//        sc = loader.getController();
-//        BorderPane bp = sc.getBP();
-//        System.out.println(bp + ": " + bp.getWidth() + ", " + bp.getHeight());
-//        ImageView iv = sc.getIV();
-//        System.out.println(iv + ": " + iv.getFitWidth() + ", " + iv.getFitHeight());
-//        iv.setFitHeight(1776);
-//        iv.setFitWidth(1890);
-//        iv.fitHeightProperty().bind(bp.heightProperty().divide(1.6));
-//        iv.setPreserveRatio(true);
-//        ImageView ivspace = sc.getIVSpace();
-//        ivspace.setFitWidth(600);
-//        ivspace.fitWidthProperty().bind(bp.widthProperty().multiply(2));
-//        ivspace.setPreserveRatio(true);
-
         loader = new FXMLLoader(getClass().getResource("/fxml/simplegrid.fxml"));
         Parent root = (Parent) loader.load();
         Scene scene = new Scene(root);
@@ -59,20 +43,42 @@ public class Main extends Application {
         stage.setTitle("Dynamic NBA Shot Charts");
         stage.setMinHeight(650);
         stage.setMinWidth(900);
-        
+
         stage.show();
         sc = loader.getController();
         GridPane gp = sc.getGridPane();
         VBox vbox = sc.getVBox();
-        System.out.println(vbox);
-        vbox.prefWidthProperty().bind(scene.widthProperty());
-        vbox.prefHeightProperty().bind(scene.heightProperty());
+        vbox.maxWidthProperty().bind(scene.widthProperty());
+        vbox.maxHeightProperty().bind(scene.heightProperty());
+        gp.maxHeightProperty().bind(vbox.maxHeightProperty());
+        gp.maxWidthProperty().bind(vbox.maxWidthProperty());
         ImageView iv = sc.getIV();
         iv.setFitHeight(1776);
         iv.setFitWidth(1890);
-        iv.fitWidthProperty().bind(gp.widthProperty().divide(1.75));
-        iv.fitHeightProperty().bind(gp.heightProperty().divide(1.2));
+        iv.fitWidthProperty().bind(scene.widthProperty().divide(1.7));
+        iv.fitHeightProperty().bind(scene.heightProperty().divide(1.7));
         iv.setPreserveRatio(true);
+
+        vbox.maxWidthProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
+                System.out.println("VBOX Width: " + vbox.getWidth());
+                System.out.println("VBOX MAX Width: " + vbox.getMaxWidth());
+                System.out.println("Scene Width: " + scene.getWidth());
+                System.out.println("GP Width: " + gp.getWidth());
+                System.out.println("");
+            }
+        });
+        vbox.maxHeightProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneHeight, Number newSceneHeight) {
+                System.out.println("VBOX Height: " + vbox.getHeight());
+                System.out.println("VBOX MAX Height: " + vbox.getMaxHeight());
+                System.out.println("Scene Height: " + scene.getHeight());
+                System.out.println("GP Height: " + gp.getHeight());
+                System.out.println("");
+            }
+        });
     }
 
     public static void main(String[] args) {

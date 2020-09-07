@@ -23,7 +23,7 @@
                 </Text>
             </children>
         </HBox>
-        <GridPane fx:id="gridpane" alignment="CENTER" maxHeight="Infinity" VBox.vgrow="ALWAYS">
+        <GridPane fx:id="gridpane" alignment="CENTER" gridLinesVisible="true" maxHeight="Infinity" VBox.vgrow="ALWAYS">
             <columnConstraints>
                 <ColumnConstraints hgrow="ALWAYS" percentWidth="36.0" />
                 <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" percentWidth="58.5" />
@@ -40,14 +40,14 @@
                         <Image url="@../images/halfcourt.png" />
                     </image>
                 </ImageView>
-                <Label fx:id="label" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: red;" text="Text" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS" />
-                <Label fx:id="label1" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: yellow;" text="Text" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS" />
-                <Label fx:id="label2" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: cyan;" text="Text" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS" />
-                <Label fx:id="label11" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: lime;" text="Text" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS" />
-                <Label fx:id="label12" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: orange;" text="Text" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS" />
-                <Label fx:id="label13" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: green;" text="Text" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS" />
-                <Label fx:id="label131" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: navy;" text="Text" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS" />
-                <Label fx:id="label132" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: pink;" text="Text" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS" />
+                <Label fx:id="label01" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: red;" text="Text" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS" />
+                <Label fx:id="label00" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: yellow;" text="Text" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS" />
+                <Label fx:id="label02" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: cyan;" text="Text" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS" />
+                <Label fx:id="label20" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: lime;" text="Text" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS" />
+                <Label fx:id="label21" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: orange;" text="Text" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS" />
+                <Label fx:id="label22" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: green;" text="Text" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS" />
+                <Label fx:id="label10" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: gray;" text="Text" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS" />
+                <Label fx:id="label12" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: pink;" text="Text" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS" />
             <Ellipse fx:id="shape" fill="DODGERBLUE" radiusX="100.0" radiusY="80.0" stroke="BLACK" strokeType="INSIDE" GridPane.columnIndex="1" GridPane.rowIndex="1" />
             </children>
         </GridPane>

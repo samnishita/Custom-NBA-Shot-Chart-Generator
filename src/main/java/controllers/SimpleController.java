@@ -6,6 +6,7 @@
 package controllers;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -36,8 +37,25 @@ public class SimpleController implements Initializable {
 //    ImageView ivspace;
     @FXML
     GridPane gridpane;
+//    @FXML
+//    Label label;
     @FXML
-    Label label;
+    Label label00;
+    @FXML
+    Label label01;
+    @FXML
+    Label label02;
+    @FXML
+    Label label10;
+    @FXML
+    Label label12;
+    @FXML
+    Label label20;
+    @FXML
+    Label label21;
+    @FXML
+    Label label22;
+
     @FXML
     VBox vbox;
 
@@ -50,10 +68,10 @@ public class SimpleController implements Initializable {
         return this.borderpane;
     }
 
-    public ImageView getIV(){
+    public ImageView getIV() {
         return this.imageview;
     }
-    
+
 //    public Pane getPane(){
 //        return this.pane;
 //    }
@@ -63,13 +81,27 @@ public class SimpleController implements Initializable {
 //    public ImageView getIVSpace(){
 //        return this.ivspace;
 //    }
-    public GridPane getGridPane(){
+    public GridPane getGridPane() {
         return this.gridpane;
     }
-    public Label getLabel(){
-        return this.label;
-    }
-    public VBox getVBox(){
+//    public Label getLabel(){
+//        return this.label;
+//    }
+
+    public VBox getVBox() {
         return this.vbox;
+    }
+
+    public ArrayList getLabels() {
+        ArrayList<Label> labels = new ArrayList();
+        labels.add(label00);
+        labels.add(label01);
+        labels.add(label02);
+        labels.add(label10);
+        labels.add(label12);
+        labels.add(label20);
+        labels.add(label21);
+        labels.add(label22);
+        return labels;
     }
 }
