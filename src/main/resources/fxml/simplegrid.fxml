@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.geometry.Point3D?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
@@ -60,13 +61,21 @@
                   <Button fx:id="searchbutton" mnemonicParsing="false" text="Run It" />
                </children>
             </VBox>
-            <Circle fx:id="shotmade" fill="DODGERBLUE" radius="3.0" stroke="#04fc00" strokeType="OUTSIDE" strokeWidth="1.25" style="-fx-fill: rgba(0,255,0,0)rgba(0,255,0,0);" translateY="-180.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <Circle fx:id="shotmade" fill="DODGERBLUE" radius="3.0" stroke="#00f5fa" strokeType="OUTSIDE" strokeWidth="1.5" style="-fx-fill: rgba(0,255,0,0)rgba(0,255,0,0);" translateY="-180.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <GridPane.margin>
                   <Insets />
                </GridPane.margin>
             </Circle>
-            <Line fx:id="shotmissedline1" endX="3.0" endY="3.0" fill="#ff0900" startX="-3.0" startY="-3.0" stroke="RED" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <Line fx:id="shotmissedline2" endX="-3.0" endY="3.0" fill="#ff0900" startX="3.0" startY="-3.0" stroke="RED" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Line fx:id="shotmissedline1" endX="-3.0" endY="3.0" fill="#ff0900" startX="3.0" startY="-3.0" stroke="#ff00af" strokeWidth="1.5" translateX="50.0" translateY="50.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+               <rotationAxis>
+                  <Point3D y="1.0" />
+               </rotationAxis>
+            </Line>
+            <Line fx:id="shotmissedline2" endX="-3.0" endY="3.0" fill="#ff0900" rotate="180.0" startX="3.0" startY="-3.0" stroke="#e700ff" strokeWidth="1.5" translateX="50.0" translateY="50.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+               <rotationAxis>
+                  <Point3D y="1.0" />
+               </rotationAxis>
+            </Line>
             </children>
         </GridPane>
     </children>

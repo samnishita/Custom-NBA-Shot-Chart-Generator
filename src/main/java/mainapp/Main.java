@@ -6,6 +6,7 @@
 package mainapp;
 
 import controllers.SimpleController;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,12 +30,13 @@ import javafx.stage.Stage;
  * @author samnishita
  */
 public class Main extends Application {
-    
+
     private FXMLLoader loader;
     private SimpleController sc;
-    
+
     @Override
     public void start(Stage stage) throws Exception {
+
         loader = new FXMLLoader(getClass().getResource("/fxml/simplegrid.fxml"));
         Parent root = (Parent) loader.load();
         Scene scene = new Scene(root);
@@ -42,7 +44,7 @@ public class Main extends Application {
         stage.setTitle("Dynamic NBA Shot Charts");
         stage.setMinHeight(650);
         stage.setMinWidth(900);
-        
+
         stage.show();
         sc = loader.getController();
         GridPane gp = sc.getGridPane();
@@ -59,8 +61,7 @@ public class Main extends Application {
 //        iv.fitWidthProperty().bind(gp.maxWidthProperty().divide(1.7));
 //        iv.fitHeightProperty().bind(gp.maxHeightProperty().divide(1.15));
         iv.setPreserveRatio(true);
-        
-       
+
 //        vbox.maxWidthProperty().addListener(new ChangeListener<Number>() {
 //            @Override
 //            public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
@@ -82,9 +83,9 @@ public class Main extends Application {
 //            }
 //        });
     }
-    
+
     public static void main(String[] args) {
         launch(args);
     }
-    
+
 }
