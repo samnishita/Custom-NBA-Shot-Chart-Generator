@@ -11,11 +11,14 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,7 +54,7 @@ public class SimpleController implements Initializable {
     private String jdbc2 = "jdbc:mysql://localhost:3306/nbashots?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
     private String firstname;
     private String lastname;
-    private HashMap<String, String[]> nameHash;
+    private LinkedHashMap<String, String[]> nameHash;
     private ResultSet rs;
 //    private ArrayList<Shot> shotsList = new ArrayList();
     private ArrayList<Circle> makes;
@@ -60,9 +63,10 @@ public class SimpleController implements Initializable {
     private BigDecimal origHeight = new BigDecimal("470");
     private BigDecimal shotmadeRadius = new BigDecimal("5");
     private BigDecimal shotmissStartEnd = new BigDecimal("3");
-    private BigDecimal shotLineThickness = new BigDecimal("1.5");
+    private BigDecimal shotLineThickness = new BigDecimal("2");
     private BigDecimal transY = new BigDecimal("-180");
-    private HashMap<Shot, Object> allShots = new HashMap();
+    private LinkedHashMap<Shot, Object> allShots = new LinkedHashMap();
+    private HashMap<Integer, String> activePlayers;
 
     @FXML
     ImageView imageview;
@@ -90,12 +94,12 @@ public class SimpleController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 //        ArrayList<String> players = new ArrayList();
-        nameHash = new HashMap();
+        nameHash = new LinkedHashMap();
         try {
             conn3 = DriverManager.getConnection(jdbc3, username, password);
             conn2 = DriverManager.getConnection(jdbc2, username, password);
             String[] nameArray = new String[3];
-            ResultSet rs = conn3.prepareStatement("SELECT lastname,firstname, id FROM player_all_data").executeQuery();
+            ResultSet rs = conn3.prepareStatement("SELECT lastname,firstname, id FROM player_relevant_data").executeQuery();
             while (rs.next()) {
 //                players.add((rs.getString("firstname") + " " + rs.getString("lastname")).trim());
                 nameArray = new String[3];
@@ -110,7 +114,14 @@ public class SimpleController implements Initializable {
 
         yearcombo.setItems(FXCollections.observableArrayList(makeYears()));
 //        playercombo.setItems(FXCollections.observableArrayList(players));
-        playercombo.setItems(FXCollections.observableArrayList(nameHash.keySet()));
+        ArrayList<String> fullNames = new ArrayList();
+        for (String each : nameHash.keySet()) {
+            fullNames.add(each);
+        }
+        Collections.sort(fullNames);
+//        playercombo.setItems(FXCollections.observableArrayList(nameHash.keySet()));
+        playercombo.setItems(FXCollections.observableArrayList(fullNames));
+
         ArrayList<String> seasons = new ArrayList();
         seasons.add("Preseason");
         seasons.add("Regular Season");
@@ -148,6 +159,69 @@ public class SimpleController implements Initializable {
                 resizeShots();
 //                System.out.println(shotmade.getRadius());
             }
+        });
+        this.yearcombo.setOnAction((Event t) -> {
+            this.activePlayers = new HashMap();
+            String year = yearcombo.getValue().toString();
+            ResultSet rsSpecific;
+            for (String each : seasons) {
+                try {
+                    rsSpecific = conn3.prepareStatement("SELECT * FROM " + year.substring(0, 4) + "_" + year.substring(5, 7) + "_" + each.replace(" ", "") + "_active_players").executeQuery();
+                    while (rsSpecific.next()) {
+                        this.activePlayers.put(rsSpecific.getInt("id"), rsSpecific.getString("firstname") + " " + rsSpecific.getString("lastname"));
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    continue;
+                }
+            }
+            ArrayList<String> activeList = new ArrayList();
+            for (int each : this.activePlayers.keySet()) {
+                activeList.add(activePlayers.get(each).trim());
+            }
+            Collections.sort(activeList);
+            this.playercombo.setItems(FXCollections.observableArrayList(activeList));
+        });
+        this.playercombo.setOnAction((Event t) -> {
+            int id = 0;
+            for (int each : this.activePlayers.keySet()) {
+                if (this.activePlayers.get(each).trim().equals(this.playercombo.getValue().toString())) {
+                    id = each;
+                }
+            }
+            String sqlSelect = "SELECT id,firstname,lastname FROM player_relevant_data WHERE id=" + id;
+            ResultSet rsID;
+            String firstname = "";
+            String lastname = "";
+            try {
+                rsID = conn3.prepareStatement(sqlSelect).executeQuery();
+                while (rsID.next()) {
+                    firstname = rsID.getString("firstname").replaceAll("[^A-Za-z0-9]", "");
+                    lastname = rsID.getString("lastname").replaceAll("[^A-Za-z0-9]", "");
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            String sqlSeason = "SELECT * FROM " + lastname + "_" + firstname + "_" + id + "_individual_data WHERE year=\"" + this.yearcombo.getValue().toString()+"\"";
+            ArrayList<String> actives = new ArrayList();
+            try {
+                ResultSet rsActive = conn3.prepareStatement(sqlSeason).executeQuery();
+                while (rsActive.next()) {
+                    if (rsActive.getInt("preseason") == 1) {
+                        actives.add("Preseason");
+                    }
+                    if (rsActive.getInt("reg") == 1) {
+                        actives.add("Regular Season");
+                    }
+                    if (rsActive.getInt("playoffs") == 1) {
+                        actives.add("Playoffs");
+                    }
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            this.seasoncombo.setItems(FXCollections.observableArrayList(actives));
+
         });
 
     }
@@ -211,12 +285,15 @@ public class SimpleController implements Initializable {
 
     private void plotResults() throws SQLException {
 
-        allShots = new HashMap();
+        allShots = new LinkedHashMap();
         Circle circle;
         MissedShotIcon msi;
         BigDecimal xBig = new BigDecimal("0");
         BigDecimal yBig = new BigDecimal("0");
         while (rs.next()) {
+            if (rs.getInt("y") > 415) {
+                continue;
+            }
             Shot shot = new Shot(rs.getInt("x"), rs.getInt("y"), rs.getInt("distance"), rs.getInt("make"), rs.getString("shottype"), rs.getString("playtype"));
             xBig = BigDecimal.valueOf(rs.getInt("x"));
             yBig = BigDecimal.valueOf(rs.getInt("y") - 180);
