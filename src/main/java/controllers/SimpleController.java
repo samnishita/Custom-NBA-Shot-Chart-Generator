@@ -119,28 +119,26 @@ public class SimpleController implements Initializable {
             fullNames.add(each);
         }
         Collections.sort(fullNames);
-//        playercombo.setItems(FXCollections.observableArrayList(nameHash.keySet()));
-        playercombo.setItems(FXCollections.observableArrayList(fullNames));
+        this.yearcombo.setValue("2019-20");
+        this.playercombo.setValue("Aaron Gordon");
+        this.seasoncombo.setValue("Regular Season");
+        this.activePlayers = new HashMap();
 
+        setPlayerComboBox();
+
+//        playercombo.setItems(FXCollections.observableArrayList());
         ArrayList<String> seasons = new ArrayList();
         seasons.add("Preseason");
         seasons.add("Regular Season");
         seasons.add("Playoffs");
         seasoncombo.setItems(FXCollections.observableArrayList(seasons));
+
+        setSeasonsComboBox();
+
         this.searchbutton.setOnMouseClicked((Event t) -> {
             try {
-//            System.out.println(this.yearcombo.getValue().toString());
-//            System.out.println(this.playercombo.getValue().toString());
-//            System.out.println(nameHash.get(this.playercombo.getValue().toString())[2]);
-//            System.out.println(this.seasoncombo.getValue().toString());
-
                 rs = doSimpleSearch(this.yearcombo.getValue().toString(), nameHash.get(this.playercombo.getValue().toString()), this.seasoncombo.getValue().toString().replaceAll(" ", ""));
                 plotResults();
-//                int count = 0;
-//                while (rs.next()) {
-//                    count++;
-//                }
-//                System.out.println("count: "+count);
             } catch (SQLException ex) {
                 Logger.getLogger(SimpleController.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -161,67 +159,10 @@ public class SimpleController implements Initializable {
             }
         });
         this.yearcombo.setOnAction((Event t) -> {
-            this.activePlayers = new HashMap();
-            String year = yearcombo.getValue().toString();
-            ResultSet rsSpecific;
-            for (String each : seasons) {
-                try {
-                    rsSpecific = conn3.prepareStatement("SELECT * FROM " + year.substring(0, 4) + "_" + year.substring(5, 7) + "_" + each.replace(" ", "") + "_active_players").executeQuery();
-                    while (rsSpecific.next()) {
-                        this.activePlayers.put(rsSpecific.getInt("id"), rsSpecific.getString("firstname") + " " + rsSpecific.getString("lastname"));
-                    }
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                    continue;
-                }
-            }
-            ArrayList<String> activeList = new ArrayList();
-            for (int each : this.activePlayers.keySet()) {
-                activeList.add(activePlayers.get(each).trim());
-            }
-            Collections.sort(activeList);
-            this.playercombo.setItems(FXCollections.observableArrayList(activeList));
+            setPlayerComboBox();
         });
         this.playercombo.setOnAction((Event t) -> {
-            int id = 0;
-            for (int each : this.activePlayers.keySet()) {
-                if (this.activePlayers.get(each).trim().equals(this.playercombo.getValue().toString())) {
-                    id = each;
-                }
-            }
-            String sqlSelect = "SELECT id,firstname,lastname FROM player_relevant_data WHERE id=" + id;
-            ResultSet rsID;
-            String firstname = "";
-            String lastname = "";
-            try {
-                rsID = conn3.prepareStatement(sqlSelect).executeQuery();
-                while (rsID.next()) {
-                    firstname = rsID.getString("firstname").replaceAll("[^A-Za-z0-9]", "");
-                    lastname = rsID.getString("lastname").replaceAll("[^A-Za-z0-9]", "");
-                }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-            String sqlSeason = "SELECT * FROM " + lastname + "_" + firstname + "_" + id + "_individual_data WHERE year=\"" + this.yearcombo.getValue().toString()+"\"";
-            ArrayList<String> actives = new ArrayList();
-            try {
-                ResultSet rsActive = conn3.prepareStatement(sqlSeason).executeQuery();
-                while (rsActive.next()) {
-                    if (rsActive.getInt("preseason") == 1) {
-                        actives.add("Preseason");
-                    }
-                    if (rsActive.getInt("reg") == 1) {
-                        actives.add("Regular Season");
-                    }
-                    if (rsActive.getInt("playoffs") == 1) {
-                        actives.add("Playoffs");
-                    }
-                }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-            this.seasoncombo.setItems(FXCollections.observableArrayList(actives));
-
+            setSeasonsComboBox();
         });
 
     }
@@ -384,6 +325,83 @@ public class SimpleController implements Initializable {
 
                 }
             }
+        }
+    }
+
+    private void setPlayerComboBox() {
+        this.activePlayers = new HashMap();
+        String year = yearcombo.getValue().toString();
+        ResultSet rsSpecific;
+        ArrayList<String> seasons = new ArrayList();
+        seasons.add("Preseason");
+        seasons.add("Regular Season");
+        seasons.add("Playoffs");
+        for (String each : seasons) {
+            try {
+                rsSpecific = conn3.prepareStatement("SELECT * FROM " + year.substring(0, 4) + "_" + year.substring(5, 7) + "_" + each.replace(" ", "") + "_active_players").executeQuery();
+                while (rsSpecific.next()) {
+                    this.activePlayers.put(rsSpecific.getInt("id"), rsSpecific.getString("firstname") + " " + rsSpecific.getString("lastname"));
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                continue;
+            }
+        }
+        ArrayList<String> activeList = new ArrayList();
+        for (int each : this.activePlayers.keySet()) {
+            activeList.add(activePlayers.get(each).trim());
+        }
+        Collections.sort(activeList);
+        this.playercombo.setItems(FXCollections.observableArrayList(activeList));
+    }
+
+    private void setSeasonsComboBox() {
+        int id = 0;
+        ArrayList<String> seasons = new ArrayList();
+        seasons.add("Preseason");
+        seasons.add("Regular Season");
+        seasons.add("Playoffs");
+        if (this.playercombo.getValue() == null) {
+            this.seasoncombo.setItems(FXCollections.observableArrayList(seasons));
+            this.seasoncombo.getSelectionModel().clearSelection();
+        } else {
+            for (int each : this.activePlayers.keySet()) {
+                if (this.activePlayers.get(each).trim().equals(this.playercombo.getValue().toString())) {
+                    id = each;
+                }
+            }
+            String sqlSelect = "SELECT id,firstname,lastname FROM player_relevant_data WHERE id=" + id;
+            ResultSet rsID;
+            String firstname = "";
+            String lastname = "";
+            try {
+                rsID = conn3.prepareStatement(sqlSelect).executeQuery();
+                while (rsID.next()) {
+                    firstname = rsID.getString("firstname").replaceAll("[^A-Za-z0-9]", "");
+                    lastname = rsID.getString("lastname").replaceAll("[^A-Za-z0-9]", "");
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            String sqlSeason = "SELECT * FROM " + lastname + "_" + firstname + "_" + id + "_individual_data WHERE year=\"" + this.yearcombo.getValue().toString() + "\"";
+            ArrayList<String> actives = new ArrayList();
+            try {
+                ResultSet rsActive = conn3.prepareStatement(sqlSeason).executeQuery();
+                while (rsActive.next()) {
+                    if (rsActive.getInt("preseason") == 1) {
+                        actives.add("Preseason");
+                    }
+                    if (rsActive.getInt("reg") == 1) {
+                        actives.add("Regular Season");
+                    }
+                    if (rsActive.getInt("playoffs") == 1) {
+                        actives.add("Playoffs");
+                    }
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            this.seasoncombo.setItems(FXCollections.observableArrayList(actives));
         }
     }
 }
