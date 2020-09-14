@@ -7,11 +7,9 @@ package controllers;
 
 import javafx.scene.paint.Color;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.net.URL;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -31,6 +29,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -67,6 +66,7 @@ public class SimpleController implements Initializable {
     private BigDecimal transY = new BigDecimal("-180");
     private LinkedHashMap<Shot, Object> allShots = new LinkedHashMap();
     private HashMap<Integer, String> activePlayers;
+    private int comboFontSize = 15;
 
     @FXML
     ImageView imageview;
@@ -90,11 +90,22 @@ public class SimpleController implements Initializable {
     Line shotmissedline1;
     @FXML
     Line shotmissedline2;
+    @FXML
+    Label errorlabel;
+    @FXML
+    VBox searchvbox;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 //        ArrayList<String> players = new ArrayList();
         nameHash = new LinkedHashMap();
+        this.errorlabel.setVisible(false);
+        this.yearcombo.prefWidthProperty().bind(this.gridpane.widthProperty().divide(5));
+        this.yearcombo.setStyle("-fx-font: " + this.comboFontSize + "px \"Serif\";");
+        this.playercombo.prefWidthProperty().bind(this.gridpane.widthProperty().divide(5));
+        this.playercombo.setStyle("-fx-font: " + this.comboFontSize + "px \"Serif\";");
+        this.seasoncombo.prefWidthProperty().bind(this.gridpane.widthProperty().divide(5));
+        this.seasoncombo.setStyle("-fx-font: " + this.comboFontSize + "px \"Serif\";");
         try {
             conn3 = DriverManager.getConnection(jdbc3, username, password);
             conn2 = DriverManager.getConnection(jdbc2, username, password);
@@ -136,25 +147,35 @@ public class SimpleController implements Initializable {
         setSeasonsComboBox();
 
         this.searchbutton.setOnMouseClicked((Event t) -> {
+            this.errorlabel.setVisible(false);
             try {
                 rs = doSimpleSearch(this.yearcombo.getValue().toString(), nameHash.get(this.playercombo.getValue().toString()), this.seasoncombo.getValue().toString().replaceAll(" ", ""));
                 plotResults();
             } catch (SQLException ex) {
-                Logger.getLogger(SimpleController.class.getName()).log(Level.SEVERE, null, ex);
+                ex.printStackTrace();
+            } catch (NullPointerException ex) {
+                this.errorlabel.setText("Please try again");
+                this.errorlabel.setVisible(true);
             }
         });
         imageview.fitHeightProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
                 resizeShots();
-
-//                System.out.println(shotmade.getRadius());
+                double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+                yearcombo.setStyle("-fx-font: " + font + "px \"Serif\";");
+                playercombo.setStyle("-fx-font: " + font + "px \"Serif\";");
+                seasoncombo.setStyle("-fx-font: " + font + "px \"Serif\";");
             }
         });
         imageview.fitWidthProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
                 resizeShots();
+                double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+                yearcombo.setStyle("-fx-font: " + font + "px \"Serif\";");
+                playercombo.setStyle("-fx-font: " + font + "px \"Serif\";");
+                seasoncombo.setStyle("-fx-font: " + font + "px \"Serif\";");
 //                System.out.println(shotmade.getRadius());
             }
         });
@@ -330,6 +351,8 @@ public class SimpleController implements Initializable {
 
     private void setPlayerComboBox() {
         this.activePlayers = new HashMap();
+        String previousPlayer = this.playercombo.getValue().toString();
+        String previousSeason = this.seasoncombo.getValue().toString();
         String year = yearcombo.getValue().toString();
         ResultSet rsSpecific;
         ArrayList<String> seasons = new ArrayList();
@@ -348,14 +371,31 @@ public class SimpleController implements Initializable {
             }
         }
         ArrayList<String> activeList = new ArrayList();
+        System.out.println("1 " + this.seasoncombo.getValue().toString());
+
         for (int each : this.activePlayers.keySet()) {
             activeList.add(activePlayers.get(each).trim());
         }
+        System.out.println("2 " + this.seasoncombo.getValue().toString());
+
         Collections.sort(activeList);
+        System.out.println("3 " + this.seasoncombo.getValue().toString());
+
         this.playercombo.setItems(FXCollections.observableArrayList(activeList));
+        this.seasoncombo.getSelectionModel().select(previousSeason);
+        
+        System.out.println("4 " + this.seasoncombo.getValue().toString());
+
+        if (activeList.contains(previousPlayer)) {
+            this.playercombo.getSelectionModel().select(previousPlayer);
+        }
+        System.out.println("5 " + this.seasoncombo.getValue().toString());
+        setSeasonsComboBox();
+
     }
 
     private void setSeasonsComboBox() {
+        String previous = this.seasoncombo.getValue().toString();
         int id = 0;
         ArrayList<String> seasons = new ArrayList();
         seasons.add("Preseason");
@@ -402,6 +442,9 @@ public class SimpleController implements Initializable {
                 ex.printStackTrace();
             }
             this.seasoncombo.setItems(FXCollections.observableArrayList(actives));
+            if (actives.contains(previous)) {
+                this.seasoncombo.getSelectionModel().select(previous);
+            }
         }
     }
 }

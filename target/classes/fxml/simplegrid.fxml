@@ -53,12 +53,17 @@
                 <Label fx:id="label22" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: green;" text="Text" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS" />
                 <Label fx:id="label10" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: lightpink;" text="Text" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS" />
                 <Label fx:id="label12" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: pink;" text="Text" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS" />
-            <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="1">
+            <VBox fx:id="searchvbox" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
                <children>
-                  <ComboBox fx:id="yearcombo" prefWidth="200.0" promptText="Choose A Year" />
-                  <ComboBox fx:id="playercombo" prefWidth="200.0" promptText="Choose A Player" />
-                  <ComboBox fx:id="seasoncombo" prefWidth="200.0" promptText="Choose A Season Type" />
-                  <Button fx:id="searchbutton" mnemonicParsing="false" text="Run It" />
+                  <ComboBox fx:id="yearcombo" prefWidth="200.0" promptText="Choose A Year" VBox.vgrow="ALWAYS" />
+                  <ComboBox fx:id="playercombo" prefWidth="200.0" promptText="Choose A Player" VBox.vgrow="ALWAYS" />
+                  <ComboBox fx:id="seasoncombo" prefWidth="200.0" promptText="Choose A Season Type" VBox.vgrow="ALWAYS" />
+                  <Button fx:id="searchbutton" mnemonicParsing="false" text="Run It" VBox.vgrow="ALWAYS" />
+                  <Label fx:id="errorlabel" text="Error Messages Go Here" textFill="#f20909" VBox.vgrow="ALWAYS">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
                </children>
             </VBox>
             <Circle fx:id="shotmade" fill="DODGERBLUE" radius="3.0" stroke="#00f5fa" strokeType="OUTSIDE" strokeWidth="1.5" style="-fx-fill: rgba(0,255,0,0)rgba(0,255,0,0);" translateY="-180.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
