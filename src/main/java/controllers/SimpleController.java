@@ -239,7 +239,7 @@ public class SimpleController implements Initializable {
                 threepoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
                 threepointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
                 threepointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                
+
                 VBox.setMargin(introlabel, new Insets(new BigDecimal(imageview.getLayoutBounds().getHeight()).multiply(new BigDecimal("20")).divide(new BigDecimal("475"), 6, RoundingMode.HALF_UP).doubleValue(), 0, 0, 0));
                 VBox.setMargin(yearcombo, new Insets(30, 0, 0, 0));
                 VBox.setMargin(playercombo, new Insets(30, 0, 0, 0));
@@ -385,11 +385,23 @@ public class SimpleController implements Initializable {
         }
 
         this.fgfrac.setText(countMade + "/" + countTotal);
-        this.fgperc.setText(new BigDecimal((double)countMade / countTotal * 100).setScale(2, RoundingMode.HALF_UP) + "%");
+        if (countTotal == 0) {
+            this.fgperc.setText("--");
+        } else {
+            this.fgperc.setText(new BigDecimal((double) countMade / countTotal * 100).setScale(2, RoundingMode.HALF_UP) + "%");
+        }
         this.twopointfrac.setText(count2pMade + "/" + count2pTotal);
-        this.twopointperc.setText(new BigDecimal((double)count2pMade / count2pTotal * 100).setScale(2, RoundingMode.HALF_UP)  + "%");
+        if (count2pTotal == 0) {
+            this.twopointperc.setText("--");
+        } else {
+            this.twopointperc.setText(new BigDecimal((double) count2pMade / count2pTotal * 100).setScale(2, RoundingMode.HALF_UP) + "%");
+        }
         this.threepointfrac.setText(count3pMade + "/" + count3pTotal);
-        this.threepointperc.setText(new BigDecimal((double)count3pMade / count3pTotal * 100).setScale(2, RoundingMode.HALF_UP)  + "%");
+        if (count3pTotal == 0) {
+            this.threepointperc.setText("--");
+        } else {
+            this.threepointperc.setText(new BigDecimal((double) count3pMade / count3pTotal * 100).setScale(2, RoundingMode.HALF_UP) + "%");
+        }
     }
 
     private void resizeShots() {
