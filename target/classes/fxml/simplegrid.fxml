@@ -51,19 +51,140 @@
                 <Label fx:id="label20" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: lime;" text="Text" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS" />
                 <Label fx:id="label21" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: orange;" text="Text" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS" />
                 <Label fx:id="label22" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: green;" text="Text" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS" />
-                <Label fx:id="label10" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: lightpink;" text="Text" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS" />
+                <Label fx:id="label10" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: lightpink;" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS" />
                 <Label fx:id="label12" alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: pink;" text="Text" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS" />
-            <VBox fx:id="searchvbox" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
+            <VBox fx:id="searchvbox" alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
                <children>
-                  <ComboBox fx:id="yearcombo" prefWidth="200.0" promptText="Choose A Year" VBox.vgrow="ALWAYS" />
-                  <ComboBox fx:id="playercombo" prefWidth="200.0" promptText="Choose A Player" VBox.vgrow="ALWAYS" />
-                  <ComboBox fx:id="seasoncombo" prefWidth="200.0" promptText="Choose A Season Type" VBox.vgrow="ALWAYS" />
-                  <Button fx:id="searchbutton" mnemonicParsing="false" text="Run It" VBox.vgrow="ALWAYS" />
+                  <Label fx:id="introlabel" text="I Just Want To See A Simple Shot Chart" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                     <font>
+                        <Font name="Tahoma" size="30.0" />
+                     </font>
+                  </Label>
+                  <ComboBox fx:id="yearcombo" prefWidth="200.0" promptText="Choose A Year" VBox.vgrow="ALWAYS">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin></ComboBox>
+                  <ComboBox fx:id="playercombo" prefWidth="200.0" promptText="Choose A Player" VBox.vgrow="ALWAYS">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin></ComboBox>
+                  <ComboBox fx:id="seasoncombo" prefWidth="200.0" promptText="Choose A Season Type" VBox.vgrow="ALWAYS">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin></ComboBox>
+                  <Button fx:id="searchbutton" mnemonicParsing="false" text="Run It" VBox.vgrow="ALWAYS">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin></Button>
                   <Label fx:id="errorlabel" text="Error Messages Go Here" textFill="#f20909" VBox.vgrow="ALWAYS">
                      <font>
                         <Font name="System Bold" size="14.0" />
                      </font>
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
                   </Label>
+                  <GridPane fx:id="shotgrid" alignment="CENTER" prefWidth="300.0" VBox.vgrow="ALWAYS">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" percentHeight="30.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" percentHeight="30.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                           <children>
+                              <Label fx:id="fg" alignment="CENTER" contentDisplay="CENTER" text="FG" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="30.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1">
+                           <children>
+                              <Label fx:id="twopoint" alignment="CENTER" contentDisplay="CENTER" text="2P" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="30.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2">
+                           <children>
+                              <Label fx:id="threepoint" alignment="CENTER" contentDisplay="CENTER" text="3P" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="30.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="1">
+                           <children>
+                              <Label fx:id="fgfrac" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="20.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                           <children>
+                              <Label fx:id="twopointfrac" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="20.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                           <children>
+                              <Label fx:id="threepointfrac" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="20.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                        <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="2">
+                           <children>
+                              <Label fx:id="fgperc" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="20.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                        <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                           <children>
+                              <Label fx:id="twopointperc" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="20.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                        <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                           <children>
+                              <Label fx:id="threepointperc" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="20.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                     </children>
+                     <VBox.margin>
+                        <Insets bottom="25.0" />
+                     </VBox.margin>
+                  </GridPane>
                </children>
             </VBox>
             <Circle fx:id="shotmade" fill="DODGERBLUE" radius="3.0" stroke="#00f5fa" strokeType="OUTSIDE" strokeWidth="1.5" style="-fx-fill: rgba(0,255,0,0)rgba(0,255,0,0);" translateY="-180.0" GridPane.columnIndex="1" GridPane.rowIndex="1">

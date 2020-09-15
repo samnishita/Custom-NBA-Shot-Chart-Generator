@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import javafx.collections.FXCollections;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -67,6 +69,7 @@ public class SimpleController implements Initializable {
     private LinkedHashMap<Shot, Object> allShots = new LinkedHashMap();
     private HashMap<Integer, String> activePlayers;
     private int comboFontSize = 15;
+    private int statGridFontSize = 20;
 
     @FXML
     ImageView imageview;
@@ -94,18 +97,49 @@ public class SimpleController implements Initializable {
     Label errorlabel;
     @FXML
     VBox searchvbox;
+    @FXML
+    Label introlabel;
+    @FXML
+    Label fg;
+    @FXML
+    Label fgfrac;
+    @FXML
+    Label fgperc;
+    @FXML
+    Label twopoint;
+    @FXML
+    Label twopointfrac;
+    @FXML
+    Label twopointperc;
+    @FXML
+    Label threepoint;
+    @FXML
+    Label threepointfrac;
+    @FXML
+    Label threepointperc;
+    @FXML
+    GridPane shotgrid;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 //        ArrayList<String> players = new ArrayList();
         nameHash = new LinkedHashMap();
         this.errorlabel.setVisible(false);
+        this.introlabel.prefWidthProperty().bind(this.gridpane.widthProperty().divide(4));
+        this.introlabel.setStyle("-fx-font: " + this.comboFontSize + "px \"Serif\";");
         this.yearcombo.prefWidthProperty().bind(this.gridpane.widthProperty().divide(5));
         this.yearcombo.setStyle("-fx-font: " + this.comboFontSize + "px \"Serif\";");
         this.playercombo.prefWidthProperty().bind(this.gridpane.widthProperty().divide(5));
         this.playercombo.setStyle("-fx-font: " + this.comboFontSize + "px \"Serif\";");
         this.seasoncombo.prefWidthProperty().bind(this.gridpane.widthProperty().divide(5));
         this.seasoncombo.setStyle("-fx-font: " + this.comboFontSize + "px \"Serif\";");
+        VBox.setMargin(this.introlabel, new Insets(20, 0, 0, 0));
+        VBox.setMargin(this.yearcombo, new Insets(20, 0, 0, 0));
+        VBox.setMargin(this.playercombo, new Insets(20, 0, 0, 0));
+        VBox.setMargin(this.seasoncombo, new Insets(20, 0, 0, 0));
+        VBox.setMargin(this.searchbutton, new Insets(20, 0, 0, 0));
+        this.shotgrid.maxWidthProperty().bind(this.gridpane.widthProperty().divide(3));
+        this.shotgrid.maxHeightProperty().bind(this.gridpane.heightProperty().divide(5.25));
         try {
             conn3 = DriverManager.getConnection(jdbc3, username, password);
             conn2 = DriverManager.getConnection(jdbc2, username, password);
@@ -163,9 +197,27 @@ public class SimpleController implements Initializable {
             public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
                 resizeShots();
                 double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+                double fontGrid = new BigDecimal(statGridFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+
+                introlabel.setStyle("-fx-font: " + font * 2 + "px \"Serif\";");
                 yearcombo.setStyle("-fx-font: " + font + "px \"Serif\";");
                 playercombo.setStyle("-fx-font: " + font + "px \"Serif\";");
                 seasoncombo.setStyle("-fx-font: " + font + "px \"Serif\";");
+                fg.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
+                fgfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                fgperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                twopoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
+                twopointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                twopointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                threepoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
+                threepointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                threepointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+
+                VBox.setMargin(introlabel, new Insets(new BigDecimal(imageview.getLayoutBounds().getHeight()).multiply(new BigDecimal("20")).divide(new BigDecimal("475"), 6, RoundingMode.HALF_UP).doubleValue(), 0, 0, 0));
+                VBox.setMargin(yearcombo, new Insets(20, 0, 0, 0));
+                VBox.setMargin(playercombo, new Insets(20, 0, 0, 0));
+                VBox.setMargin(seasoncombo, new Insets(20, 0, 0, 0));
+                VBox.setMargin(searchbutton, new Insets(20, 0, 0, 0));
             }
         });
         imageview.fitWidthProperty().addListener(new ChangeListener<Number>() {
@@ -173,9 +225,26 @@ public class SimpleController implements Initializable {
             public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
                 resizeShots();
                 double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+                double fontGrid = new BigDecimal(statGridFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+                introlabel.setStyle("-fx-font: " + font * 2 + "px \"Serif\";");
                 yearcombo.setStyle("-fx-font: " + font + "px \"Serif\";");
                 playercombo.setStyle("-fx-font: " + font + "px \"Serif\";");
                 seasoncombo.setStyle("-fx-font: " + font + "px \"Serif\";");
+                fg.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
+                fgfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                fgperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                twopoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
+                twopointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                twopointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                threepoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
+                threepointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                threepointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                
+                VBox.setMargin(introlabel, new Insets(new BigDecimal(imageview.getLayoutBounds().getHeight()).multiply(new BigDecimal("20")).divide(new BigDecimal("475"), 6, RoundingMode.HALF_UP).doubleValue(), 0, 0, 0));
+                VBox.setMargin(yearcombo, new Insets(30, 0, 0, 0));
+                VBox.setMargin(playercombo, new Insets(30, 0, 0, 0));
+                VBox.setMargin(seasoncombo, new Insets(30, 0, 0, 0));
+                VBox.setMargin(searchbutton, new Insets(20, 0, 0, 0));
 //                System.out.println(shotmade.getRadius());
             }
         });
@@ -246,16 +315,42 @@ public class SimpleController implements Initializable {
     }
 
     private void plotResults() throws SQLException {
-
+        this.fgfrac.setText("--");
+        this.fgperc.setText("--");
+        this.twopointfrac.setText("--");
+        this.twopointperc.setText("--");
+        this.threepointfrac.setText("--");
+        this.threepointperc.setText("--");
+        int countMade = 0;
+        int countTotal = 0;
+        int count2pMade = 0;
+        int count2pTotal = 0;
+        int count3pMade = 0;
+        int count3pTotal = 0;
         allShots = new LinkedHashMap();
         Circle circle;
         MissedShotIcon msi;
         BigDecimal xBig = new BigDecimal("0");
         BigDecimal yBig = new BigDecimal("0");
         while (rs.next()) {
-            if (rs.getInt("y") > 415) {
+            if (rs.getInt("y") > 410) {
                 continue;
             }
+            if (rs.getString("shottype").equals("3PT Field Goal")) {
+                count3pTotal++;
+                if (rs.getInt("make") == 1) {
+                    count3pMade++;
+                    countMade++;
+                }
+            } else if (rs.getString("shottype").equals("2PT Field Goal")) {
+                count2pTotal++;
+                if (rs.getInt("make") == 1) {
+                    count2pMade++;
+                    countMade++;
+                }
+            }
+            countTotal++;
+
             Shot shot = new Shot(rs.getInt("x"), rs.getInt("y"), rs.getInt("distance"), rs.getInt("make"), rs.getString("shottype"), rs.getString("playtype"));
             xBig = BigDecimal.valueOf(rs.getInt("x"));
             yBig = BigDecimal.valueOf(rs.getInt("y") - 180);
@@ -289,6 +384,12 @@ public class SimpleController implements Initializable {
             }
         }
 
+        this.fgfrac.setText(countMade + "/" + countTotal);
+        this.fgperc.setText(new BigDecimal((double)countMade / countTotal * 100).setScale(2, RoundingMode.HALF_UP) + "%");
+        this.twopointfrac.setText(count2pMade + "/" + count2pTotal);
+        this.twopointperc.setText(new BigDecimal((double)count2pMade / count2pTotal * 100).setScale(2, RoundingMode.HALF_UP)  + "%");
+        this.threepointfrac.setText(count3pMade + "/" + count3pTotal);
+        this.threepointperc.setText(new BigDecimal((double)count3pMade / count3pTotal * 100).setScale(2, RoundingMode.HALF_UP)  + "%");
     }
 
     private void resizeShots() {
@@ -383,19 +484,19 @@ public class SimpleController implements Initializable {
 
         this.playercombo.setItems(FXCollections.observableArrayList(activeList));
         this.seasoncombo.getSelectionModel().select(previousSeason);
-        
+
         System.out.println("4 " + this.seasoncombo.getValue().toString());
 
         if (activeList.contains(previousPlayer)) {
             this.playercombo.getSelectionModel().select(previousPlayer);
         }
         System.out.println("5 " + this.seasoncombo.getValue().toString());
-        setSeasonsComboBox();
+//        setSeasonsComboBox();
 
     }
 
     private void setSeasonsComboBox() {
-        String previous = this.seasoncombo.getValue().toString();
+        String previousSeason = this.seasoncombo.getValue().toString();
         int id = 0;
         ArrayList<String> seasons = new ArrayList();
         seasons.add("Preseason");
@@ -442,8 +543,8 @@ public class SimpleController implements Initializable {
                 ex.printStackTrace();
             }
             this.seasoncombo.setItems(FXCollections.observableArrayList(actives));
-            if (actives.contains(previous)) {
-                this.seasoncombo.getSelectionModel().select(previous);
+            if (actives.contains(previousSeason)) {
+                this.seasoncombo.getSelectionModel().select(previousSeason);
             }
         }
     }
