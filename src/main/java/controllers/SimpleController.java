@@ -35,6 +35,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import mainapp.MissedShotIcon;
@@ -46,12 +49,8 @@ import mainapp.Shot;
  */
 public class SimpleController implements Initializable {
 
-    private String username = "root";
-    private String password = "BoneAppleTea2020";
-    private String jdbc3 = "jdbc:mysql://localhost:3306/nbaplayerinfo?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
     private Connection conn3;
     private Connection conn2;
-    private String jdbc2 = "jdbc:mysql://localhost:3306/nbashots?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
     private String firstname;
     private String lastname;
     private LinkedHashMap<String, String[]> nameHash;
@@ -72,6 +71,7 @@ public class SimpleController implements Initializable {
     private String previousYear;
     private String previousPlayer;
     private String previousSeason;
+    private ResourceBundle reader = null;
 
     @FXML
     ImageView imageview;
@@ -121,10 +121,14 @@ public class SimpleController implements Initializable {
     Label threepointperc;
     @FXML
     GridPane shotgrid;
+    @FXML
+    Label titlelabel;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 //        ArrayList<String> players = new ArrayList();
+        Stop[] stops = new Stop[]{new Stop(0, Color.GREEN), new Stop(1, Color.BLUE)};
+        LinearGradient linear = new LinearGradient(0, 0, 1, 0, true, CycleMethod.NO_CYCLE, stops);
         nameHash = new LinkedHashMap();
         this.errorlabel.setVisible(false);
         this.introlabel.prefWidthProperty().bind(this.gridpane.widthProperty().divide(4));
@@ -135,6 +139,8 @@ public class SimpleController implements Initializable {
         this.playercombo.setStyle("-fx-font: " + this.comboFontSize + "px \"Serif\";");
         this.seasoncombo.prefWidthProperty().bind(this.gridpane.widthProperty().divide(5));
         this.seasoncombo.setStyle("-fx-font: " + this.comboFontSize + "px \"Serif\";");
+//        this.searchbutton.prefWidthProperty().bind(this.gridpane.widthProperty().divide(6));
+        this.searchbutton.setStyle("-fx-font: " + this.comboFontSize + "px \"Serif\";");
         VBox.setMargin(this.introlabel, new Insets(10, 0, 0, 0));
         VBox.setMargin(this.yearcombo, new Insets(20, 0, 0, 0));
         VBox.setMargin(this.playercombo, new Insets(20, 0, 0, 0));
@@ -143,8 +149,12 @@ public class SimpleController implements Initializable {
         this.shotgrid.maxWidthProperty().bind(this.gridpane.widthProperty().divide(3));
         this.shotgrid.maxHeightProperty().bind(this.gridpane.heightProperty().divide(5.25));
         try {
-            conn3 = DriverManager.getConnection(jdbc3, username, password);
-            conn2 = DriverManager.getConnection(jdbc2, username, password);
+            reader = ResourceBundle.getBundle("dbconfig");
+            conn3 = DriverManager.getConnection(reader.getString("db.urlplayer"), reader.getString("db.username"), reader.getString("db.password"));
+            conn2 = DriverManager.getConnection(reader.getString("db.urlshot"), reader.getString("db.username"), reader.getString("db.password"));
+//            
+//            conn3 = DriverManager.getConnection(jdbc3, username, password);
+//            conn2 = DriverManager.getConnection(jdbc2, username, password);
             String[] nameArray = new String[3];
             ResultSet rs = conn3.prepareStatement("SELECT lastname,firstname, id FROM player_relevant_data").executeQuery();
             while (rs.next()) {
@@ -208,6 +218,7 @@ public class SimpleController implements Initializable {
                 yearcombo.setStyle("-fx-font: " + font + "px \"Serif\";");
                 playercombo.setStyle("-fx-font: " + font + "px \"Serif\";");
                 seasoncombo.setStyle("-fx-font: " + font + "px \"Serif\";");
+                searchbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
                 fg.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
                 fgfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
                 fgperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
@@ -235,6 +246,7 @@ public class SimpleController implements Initializable {
                 yearcombo.setStyle("-fx-font: " + font + "px \"Serif\";");
                 playercombo.setStyle("-fx-font: " + font + "px \"Serif\";");
                 seasoncombo.setStyle("-fx-font: " + font + "px \"Serif\";");
+                searchbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
                 fg.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
                 fgfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
                 fgperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
@@ -508,12 +520,12 @@ public class SimpleController implements Initializable {
 
         Collections.sort(activeList);
 //        System.out.println("3 " + this.seasoncombo.getValue().toString());
-        System.out.println(previousYear + " " + previousPlayer + " " + previousSeason);
+//        System.out.println(previousYear + " " + previousPlayer + " " + previousSeason);
         if (seasoncombo.getValue() != null) {
             this.previousSeason = seasoncombo.getValue().toString();
         }
         this.playercombo.setItems(FXCollections.observableArrayList(activeList));
-        System.out.println(previousYear + " " + previousPlayer + " " + previousSeason);
+//        System.out.println(previousYear + " " + previousPlayer + " " + previousSeason);
 
         if (previousSeason != null && playercombo.getValue() != null && seasoncombo.getItems().contains(previousSeason)) {
             this.seasoncombo.getSelectionModel().select(previousSeason);
@@ -549,7 +561,6 @@ public class SimpleController implements Initializable {
         seasons.add("Preseason");
         seasons.add("Regular Season");
         seasons.add("Playoffs");
-        System.out.println(this.playercombo.getValue());
         if (this.playercombo.getValue() == null) {
             this.seasoncombo.setItems(FXCollections.observableArrayList(seasons));
             this.seasoncombo.getSelectionModel().clearSelection();

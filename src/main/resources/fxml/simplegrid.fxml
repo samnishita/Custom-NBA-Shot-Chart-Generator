@@ -26,14 +26,14 @@
             <Insets left="20.0" />
          </padding>
          <children>
-            <Label text="TITLE" textFill="WHITE">
+            <Label fx:id="titlelabel" text="TIMES NEW ROMAN" textFill="WHITE">
                <font>
                   <Font name="Kohinoor Bangla" size="50.0" />
                </font>
             </Label>
          </children>
         </HBox>
-        <GridPane fx:id="gridpane" alignment="CENTER" gridLinesVisible="true" maxHeight="Infinity" style="-fx-background-color: slategray;" VBox.vgrow="ALWAYS">
+        <GridPane fx:id="gridpane" alignment="CENTER" maxHeight="Infinity" style="-fx-background-color: slategray;" VBox.vgrow="ALWAYS">
             <columnConstraints>
                 <ColumnConstraints hgrow="ALWAYS" percentWidth="36.0" />
                 <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" percentWidth="58.5" />
@@ -52,29 +52,29 @@
                 </ImageView>
             <VBox fx:id="searchvbox" alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
                <children>
-                  <Label fx:id="introlabel" text="&quot;I Just Want To See A Simple Shot Chart&quot; - Whoever is using this, probably" textAlignment="CENTER" textFill="WHITE" wrapText="true" VBox.vgrow="ALWAYS">
+                  <Label fx:id="introlabel" text="&quot;I Just Want To See A Shot Chart&quot; - Whoever is using this, probably" textAlignment="CENTER" textFill="WHITE" wrapText="true" VBox.vgrow="ALWAYS">
                      <VBox.margin>
-                        <Insets />
+                        <Insets top="10.0" />
                      </VBox.margin>
                      <font>
-                        <Font name="Tahoma" size="30.0" />
+                        <Font name="Tahoma" size="15.0" />
                      </font>
                   </Label>
                   <ComboBox fx:id="yearcombo" prefWidth="200.0" promptText="Choose A Year" VBox.vgrow="ALWAYS">
                      <VBox.margin>
-                        <Insets />
+                        <Insets top="20.0" />
                      </VBox.margin></ComboBox>
                   <ComboBox fx:id="playercombo" prefWidth="200.0" promptText="Choose A Player" VBox.vgrow="ALWAYS">
                      <VBox.margin>
-                        <Insets />
+                        <Insets top="20.0" />
                      </VBox.margin></ComboBox>
                   <ComboBox fx:id="seasoncombo" prefWidth="200.0" promptText="Choose A Season Type" VBox.vgrow="ALWAYS">
                      <VBox.margin>
-                        <Insets />
+                        <Insets top="20.0" />
                      </VBox.margin></ComboBox>
                   <Button fx:id="searchbutton" mnemonicParsing="false" text="Run It" VBox.vgrow="ALWAYS">
                      <VBox.margin>
-                        <Insets />
+                        <Insets top="20.0" />
                      </VBox.margin></Button>
                   <Label fx:id="errorlabel" text="Error Messages Go Here" textFill="#f20909" VBox.vgrow="ALWAYS">
                      <font>
