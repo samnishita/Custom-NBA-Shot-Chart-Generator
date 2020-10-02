@@ -5,6 +5,7 @@
  */
 package controllers;
 
+import java.io.IOException;
 import javafx.scene.paint.Color;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -40,8 +41,11 @@ import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import mainapp.Main;
 import mainapp.MissedShotIcon;
 import mainapp.Shot;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  *
@@ -155,7 +159,6 @@ public class SimpleController implements Initializable {
             String[] nameArray = new String[3];
             ResultSet rs = conn3.prepareStatement("SELECT lastname,firstname, id FROM player_relevant_data").executeQuery();
             while (rs.next()) {
-//                players.add((rs.getString("firstname") + " " + rs.getString("lastname")).trim());
                 nameArray = new String[3];
                 nameArray[0] = rs.getInt("id") + "";
                 nameArray[1] = rs.getString("firstname");
@@ -202,6 +205,8 @@ public class SimpleController implements Initializable {
             } catch (NullPointerException ex) {
                 this.errorlabel.setText("Please try again");
                 this.errorlabel.setVisible(true);
+            } catch (IOException ex) {
+                Logger.getLogger(SimpleController.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
         imageview.fitHeightProperty().addListener(new ChangeListener<Number>() {
@@ -306,16 +311,7 @@ public class SimpleController implements Initializable {
         return years;
     }
 
-    protected static Connection getConnection(String url) throws SQLException {
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            return DriverManager.getConnection(url);
-        } catch (ClassNotFoundException ex) {
-        }
-        return null;
-    }
-
-    private ResultSet doSimpleSearch(String year, String[] playerName, String season) throws SQLException {
+    private ResultSet doSimpleSearch(String year, String[] playerName, String season) throws SQLException, IOException {
         ArrayList<Node> toRemove = new ArrayList();
         for (Node each : gridpane.getChildren()) {
             if (each.getClass().equals(Circle.class) || each.getClass().equals(Line.class)) {
@@ -324,6 +320,14 @@ public class SimpleController implements Initializable {
         }
         for (Node each : toRemove) {
             gridpane.getChildren().remove(each);
+        }
+        System.out.println("call get jsonarray method");
+        JSONArray jsonArray = getDataAsJSON();
+        JSONObject jsonObj=null;
+        for (int i=0;i<jsonArray.length();i++){
+             jsonObj = jsonArray.getJSONObject(i);
+             System.out.println("counter: "+ jsonObj.getInt("counter"));
+             System.out.println("last name: "+ jsonObj.getString("playerlast"));
         }
         return conn2.prepareStatement("SELECT * FROM " + playerName[2].replaceAll("[^A-Za-z0-9]", "") + "_" + playerName[1].replaceAll("[^A-Za-z0-9]", "") + "_" + playerName[0] + "_" + year.substring(0, 4) + "_" + year.substring(5, 7) + "_" + season).executeQuery();
     }
@@ -347,9 +351,7 @@ public class SimpleController implements Initializable {
         BigDecimal xBig = new BigDecimal("0");
         BigDecimal yBig = new BigDecimal("0");
         while (rs.next()) {
-            if (rs.getInt("y") > 410) {
-                continue;
-            }
+            
             if (rs.getString("shottype").equals("3PT Field Goal")) {
                 count3pTotal++;
                 if (rs.getInt("make") == 1) {
@@ -388,6 +390,9 @@ public class SimpleController implements Initializable {
         }
         System.out.println("allShots Size: " + allShots.size());
         for (Shot each : allShots.keySet()) {
+            if (each.getY() > 410) {
+                continue;
+            }
             if (each.getMake() == 0) {
                 MissedShotIcon msiTemp = (MissedShotIcon) allShots.get(each);
                 gridpane.add(msiTemp.getLine1(), 1, 1);
@@ -603,5 +608,17 @@ public class SimpleController implements Initializable {
                 this.seasoncombo.getSelectionModel().select(previousSeason);
             }
         }
+    }
+    
+    private JSONArray getDataAsJSON() throws IOException{
+        JSONObject jsonObjOut = new JSONObject();
+        jsonObjOut.put("selector", "simplesearch");
+        jsonObjOut.put("year", this.yearcombo.getValue().toString());
+        jsonObjOut.put("playername", nameHash.get(this.playercombo.getValue().toString()));
+        jsonObjOut.put("seasontype",this.seasoncombo.getValue().toString());
+        System.out.println("sending jsonString to server");
+        Main.getPrintWriterOut().println(jsonObjOut.toString());
+        System.out.println("retrieved server response");
+        return new JSONArray(Main.getServerResponse().readLine());
     }
 }
