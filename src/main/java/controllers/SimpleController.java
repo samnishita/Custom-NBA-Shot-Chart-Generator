@@ -152,9 +152,6 @@ public class SimpleController implements Initializable {
             reader = ResourceBundle.getBundle("dbconfig");
             conn3 = DriverManager.getConnection(reader.getString("db.urlplayer"), reader.getString("db.username"), reader.getString("db.password"));
             conn2 = DriverManager.getConnection(reader.getString("db.urlshot"), reader.getString("db.username"), reader.getString("db.password"));
-//            
-//            conn3 = DriverManager.getConnection(jdbc3, username, password);
-//            conn2 = DriverManager.getConnection(jdbc2, username, password);
             String[] nameArray = new String[3];
             ResultSet rs = conn3.prepareStatement("SELECT lastname,firstname, id FROM player_relevant_data").executeQuery();
             while (rs.next()) {
