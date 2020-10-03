@@ -58,7 +58,7 @@ public class SimpleController implements Initializable {
     private String firstname;
     private String lastname;
     private LinkedHashMap<String, String[]> nameHash;
-    private ResultSet rs;
+//    private ResultSet rs;
 //    private ArrayList<Shot> shotsList = new ArrayList();
     private ArrayList<Circle> makes;
     private ArrayList<Line> misses;
@@ -130,9 +130,6 @@ public class SimpleController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-//        ArrayList<String> players = new ArrayList();
-        Stop[] stops = new Stop[]{new Stop(0, Color.GREEN), new Stop(1, Color.BLUE)};
-        LinearGradient linear = new LinearGradient(0, 0, 1, 0, true, CycleMethod.NO_CYCLE, stops);
         nameHash = new LinkedHashMap();
         this.errorlabel.setVisible(false);
         this.introlabel.prefWidthProperty().bind(this.gridpane.widthProperty().divide(4));
@@ -195,11 +192,12 @@ public class SimpleController implements Initializable {
         this.searchbutton.setOnMouseClicked((Event t) -> {
             this.errorlabel.setVisible(false);
             try {
-                rs = doSimpleSearch(this.yearcombo.getValue().toString(), nameHash.get(this.playercombo.getValue().toString()), this.seasoncombo.getValue().toString().replaceAll(" ", ""));
+//                rs = doSimpleSearch(this.yearcombo.getValue().toString(), nameHash.get(this.playercombo.getValue().toString()), this.seasoncombo.getValue().toString().replaceAll(" ", ""));
                 this.previousYear = this.yearcombo.getValue().toString();
                 this.previousPlayer = this.playercombo.getValue().toString();
                 this.previousSeason = this.seasoncombo.getValue().toString();
-                plotResults();
+                JSONArray jsonArray = doSimpleSearch();
+                plotResults(jsonArray);
             } catch (SQLException ex) {
                 ex.printStackTrace();
             } catch (NullPointerException ex) {
@@ -311,7 +309,27 @@ public class SimpleController implements Initializable {
         return years;
     }
 
-    private ResultSet doSimpleSearch(String year, String[] playerName, String season) throws SQLException, IOException {
+//    private ResultSet doSimpleSearch(String year, String[] playerName, String season) throws SQLException, IOException {
+//        ArrayList<Node> toRemove = new ArrayList();
+//        for (Node each : gridpane.getChildren()) {
+//            if (each.getClass().equals(Circle.class) || each.getClass().equals(Line.class)) {
+//                toRemove.add(each);
+//            }
+//        }
+//        for (Node each : toRemove) {
+//            gridpane.getChildren().remove(each);
+//        }
+//        System.out.println("call get jsonarray method");
+//        JSONArray jsonArray = getDataAsJSON();
+//        JSONObject jsonObj=null;
+//        for (int i=0;i<jsonArray.length();i++){
+//             jsonObj = jsonArray.getJSONObject(i);
+//             System.out.println("counter: "+ jsonObj.getInt("counter"));
+//             System.out.println("last name: "+ jsonObj.getString("playerlast"));
+//        }
+//        return conn2.prepareStatement("SELECT * FROM " + playerName[2].replaceAll("[^A-Za-z0-9]", "") + "_" + playerName[1].replaceAll("[^A-Za-z0-9]", "") + "_" + playerName[0] + "_" + year.substring(0, 4) + "_" + year.substring(5, 7) + "_" + season).executeQuery();
+//    }
+    private JSONArray doSimpleSearch() throws SQLException, IOException {
         ArrayList<Node> toRemove = new ArrayList();
         for (Node each : gridpane.getChildren()) {
             if (each.getClass().equals(Circle.class) || each.getClass().equals(Line.class)) {
@@ -323,16 +341,100 @@ public class SimpleController implements Initializable {
         }
         System.out.println("call get jsonarray method");
         JSONArray jsonArray = getDataAsJSON();
-        JSONObject jsonObj=null;
-        for (int i=0;i<jsonArray.length();i++){
-             jsonObj = jsonArray.getJSONObject(i);
-             System.out.println("counter: "+ jsonObj.getInt("counter"));
-             System.out.println("last name: "+ jsonObj.getString("playerlast"));
-        }
-        return conn2.prepareStatement("SELECT * FROM " + playerName[2].replaceAll("[^A-Za-z0-9]", "") + "_" + playerName[1].replaceAll("[^A-Za-z0-9]", "") + "_" + playerName[0] + "_" + year.substring(0, 4) + "_" + year.substring(5, 7) + "_" + season).executeQuery();
+        return jsonArray;
     }
 
-    private void plotResults() throws SQLException {
+//    private void plotResults() throws SQLException {
+//        this.fgfrac.setText("--");
+//        this.fgperc.setText("--");
+//        this.twopointfrac.setText("--");
+//        this.twopointperc.setText("--");
+//        this.threepointfrac.setText("--");
+//        this.threepointperc.setText("--");
+//        int countMade = 0;
+//        int countTotal = 0;
+//        int count2pMade = 0;
+//        int count2pTotal = 0;
+//        int count3pMade = 0;
+//        int count3pTotal = 0;
+//        allShots = new LinkedHashMap();
+//        Circle circle;
+//        MissedShotIcon msi;
+//        BigDecimal xBig = new BigDecimal("0");
+//        BigDecimal yBig = new BigDecimal("0");
+//        while (rs.next()) {
+//
+//            if (rs.getString("shottype").equals("3PT Field Goal")) {
+//                count3pTotal++;
+//                if (rs.getInt("make") == 1) {
+//                    count3pMade++;
+//                    countMade++;
+//                }
+//            } else if (rs.getString("shottype").equals("2PT Field Goal")) {
+//                count2pTotal++;
+//                if (rs.getInt("make") == 1) {
+//                    count2pMade++;
+//                    countMade++;
+//                }
+//            }
+//            countTotal++;
+//
+//            Shot shot = new Shot(rs.getInt("x"), rs.getInt("y"), rs.getInt("distance"), rs.getInt("make"), rs.getString("shottype"), rs.getString("playtype"));
+//            xBig = BigDecimal.valueOf(rs.getInt("x"));
+//            yBig = BigDecimal.valueOf(rs.getInt("y") - 180);
+//            if (rs.getInt("make") == 1) {
+//                circle = new Circle(imageview.getLayoutBounds().getHeight() * shotmadeRadius.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue());
+//                circle.setFill(Color.TRANSPARENT);
+//                circle.setTranslateX(imageview.getLayoutBounds().getHeight() * xBig.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue());
+//                circle.setTranslateY(imageview.getLayoutBounds().getHeight() * yBig.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue());
+//                circle.setStrokeWidth(imageview.getLayoutBounds().getHeight() * shotLineThickness.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue());
+//                circle.setStroke(Color.LIMEGREEN);
+//                allShots.put(shot, circle);
+//            } else {
+//                msi = new MissedShotIcon(xBig.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue(),
+//                        yBig.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue(),
+//                        imageview.getLayoutBounds().getHeight(),
+//                        shotmissStartEnd.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue(),
+//                        shotLineThickness.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue());
+//                allShots.put(shot, msi);
+//            }
+//
+//        }
+//        System.out.println("allShots Size: " + allShots.size());
+//        for (Shot each : allShots.keySet()) {
+//            if (each.getY() > 410) {
+//                continue;
+//            }
+//            if (each.getMake() == 0) {
+//                MissedShotIcon msiTemp = (MissedShotIcon) allShots.get(each);
+//                gridpane.add(msiTemp.getLine1(), 1, 1);
+//                gridpane.add(msiTemp.getLine2(), 1, 1);
+//
+//            } else {
+//                gridpane.add((Circle) allShots.get(each), 1, 1);
+//            }
+//        }
+//
+//        this.fgfrac.setText(countMade + "/" + countTotal);
+//        if (countTotal == 0) {
+//            this.fgperc.setText("--");
+//        } else {
+//            this.fgperc.setText(new BigDecimal((double) countMade / countTotal * 100).setScale(2, RoundingMode.HALF_UP) + "%");
+//        }
+//        this.twopointfrac.setText(count2pMade + "/" + count2pTotal);
+//        if (count2pTotal == 0) {
+//            this.twopointperc.setText("--");
+//        } else {
+//            this.twopointperc.setText(new BigDecimal((double) count2pMade / count2pTotal * 100).setScale(2, RoundingMode.HALF_UP) + "%");
+//        }
+//        this.threepointfrac.setText(count3pMade + "/" + count3pTotal);
+//        if (count3pTotal == 0) {
+//            this.threepointperc.setText("--");
+//        } else {
+//            this.threepointperc.setText(new BigDecimal((double) count3pMade / count3pTotal * 100).setScale(2, RoundingMode.HALF_UP) + "%");
+//        }
+//    }
+    private void plotResults(JSONArray jsonArray) throws SQLException {
         this.fgfrac.setText("--");
         this.fgperc.setText("--");
         this.twopointfrac.setText("--");
@@ -350,27 +452,27 @@ public class SimpleController implements Initializable {
         MissedShotIcon msi;
         BigDecimal xBig = new BigDecimal("0");
         BigDecimal yBig = new BigDecimal("0");
-        while (rs.next()) {
-            
-            if (rs.getString("shottype").equals("3PT Field Goal")) {
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject eachShot = jsonArray.getJSONObject(i);
+            if (eachShot.getString("shottype").equals("3PT Field Goal")) {
                 count3pTotal++;
-                if (rs.getInt("make") == 1) {
+                if (eachShot.getInt("make") == 1) {
                     count3pMade++;
                     countMade++;
                 }
-            } else if (rs.getString("shottype").equals("2PT Field Goal")) {
+            } else if (eachShot.getString("shottype").equals("2PT Field Goal")) {
                 count2pTotal++;
-                if (rs.getInt("make") == 1) {
+                if (eachShot.getInt("make") == 1) {
                     count2pMade++;
                     countMade++;
                 }
             }
             countTotal++;
-
-            Shot shot = new Shot(rs.getInt("x"), rs.getInt("y"), rs.getInt("distance"), rs.getInt("make"), rs.getString("shottype"), rs.getString("playtype"));
-            xBig = BigDecimal.valueOf(rs.getInt("x"));
-            yBig = BigDecimal.valueOf(rs.getInt("y") - 180);
-            if (rs.getInt("make") == 1) {
+            
+            Shot shot = new Shot(eachShot.getInt("x"), eachShot.getInt("y"), eachShot.getInt("distance"), eachShot.getInt("make"), eachShot.getString("shottype"), eachShot.getString("playtype"));
+            xBig = BigDecimal.valueOf(eachShot.getInt("x"));
+            yBig = BigDecimal.valueOf(eachShot.getInt("y") - 180);
+            if (eachShot.getInt("make") == 1) {
                 circle = new Circle(imageview.getLayoutBounds().getHeight() * shotmadeRadius.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue());
                 circle.setFill(Color.TRANSPARENT);
                 circle.setTranslateX(imageview.getLayoutBounds().getHeight() * xBig.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue());
@@ -609,13 +711,13 @@ public class SimpleController implements Initializable {
             }
         }
     }
-    
-    private JSONArray getDataAsJSON() throws IOException{
+
+    private JSONArray getDataAsJSON() throws IOException {
         JSONObject jsonObjOut = new JSONObject();
         jsonObjOut.put("selector", "simplesearch");
         jsonObjOut.put("year", this.yearcombo.getValue().toString());
         jsonObjOut.put("playername", nameHash.get(this.playercombo.getValue().toString()));
-        jsonObjOut.put("seasontype",this.seasoncombo.getValue().toString());
+        jsonObjOut.put("seasontype", this.seasoncombo.getValue().toString());
         System.out.println("sending jsonString to server");
         Main.getPrintWriterOut().println(jsonObjOut.toString());
         System.out.println("retrieved server response");
