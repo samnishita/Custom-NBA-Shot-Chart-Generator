@@ -49,7 +49,7 @@ public class Main extends Application {
     private static Socket socket = null;
     private static PrintWriter out = null;
     private static BufferedReader in = null;
-    private static BufferedReader stdIn = null;
+    private static Scene scene;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -59,7 +59,7 @@ public class Main extends Application {
 
         loader = new FXMLLoader(getClass().getResource("/fxml/simplegrid.fxml"));
         Parent root = (Parent) loader.load();
-        Scene scene = new Scene(root);
+        scene = new Scene(root);
         stage.setScene(scene);
         stage.setTitle("Dynamic NBA Shot Charts");
         stage.setMinHeight(650);
@@ -109,11 +109,11 @@ public class Main extends Application {
 //            stdIn = new BufferedReader(new InputStreamReader(System.in));
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host " + hostName);
-            System.exit(1);
+//            System.exit(1);
         } catch (IOException e) {
             System.err.println("Couldn't get I/O for the connection to "
                     + hostName);
-            System.exit(1);
+//            System.exit(1);
         }
     }
 
@@ -125,13 +125,14 @@ public class Main extends Application {
         return out;
     }
 
-    public static BufferedReader getInitialBufferedReader() {
-        return stdIn;
-    }
-
     public static BufferedReader getServerResponse() throws IOException {
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         return in;
+    }
+
+    public static void setRoot(String fxml) throws IOException {
+        FXMLLoader newLoader = new FXMLLoader(Main.class.getResource("/fxml/" + fxml));
+        scene.setRoot(newLoader.load());
     }
 
 }

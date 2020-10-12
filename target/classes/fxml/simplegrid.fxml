@@ -11,29 +11,58 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
 <VBox fx:id="vbox" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="650.0" minWidth="900.0" prefHeight="650.0" prefWidth="900.0" style="-fx-background-color: slategray;" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.SimpleController">
     <children>
-        <HBox alignment="CENTER_LEFT" maxHeight="110" prefHeight="85.0" prefWidth="800.0" VBox.vgrow="ALWAYS">
-         <opaqueInsets>
-            <Insets />
-         </opaqueInsets>
-         <VBox.margin>
-            <Insets />
-         </VBox.margin>
-         <padding>
-            <Insets left="20.0" />
-         </padding>
+      <GridPane alignment="CENTER" minHeight="43.0" prefHeight="73.0" prefWidth="900.0">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="723.0" minWidth="10.0" prefWidth="693.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="259.0" minWidth="10.0" prefWidth="149.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
          <children>
-            <Label fx:id="titlelabel" text="TIMES NEW ROMAN" textFill="WHITE">
-               <font>
-                  <Font name="Kohinoor Bangla" size="50.0" />
-               </font>
-            </Label>
+            <VBox alignment="TOP_RIGHT" prefHeight="80.0" prefWidth="268.0" GridPane.columnIndex="1">
+               <children>
+                  <Label fx:id="lastupdatedlabel" alignment="TOP_RIGHT" prefHeight="30.0" prefWidth="133.0" style="-fx-background-color: red;" text="Accurate As Of " textFill="WHITE" underline="true">
+                     <font>
+                        <Font name="Arial" size="15.0" />
+                     </font>
+                     <padding>
+                        <Insets right="10.0" top="10.0" />
+                     </padding>
+                  </Label>
+                  <Label alignment="CENTER" prefHeight="17.0" prefWidth="135.0" text="DATE" textAlignment="CENTER" textFill="WHITE">
+                     <font>
+                        <Font name="Arial Bold" size="26.0" />
+                     </font>
+                  </Label>
+               </children>
+            </VBox>
+            <HBox prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <Label fx:id="titlelabel" graphicTextGap="0.0" prefHeight="80.0" prefWidth="598.0" text="Dynamic NBA Shot Charts" textFill="WHITE">
+                     <font>
+                        <Font name="Kohinoor Bangla" size="50.0" />
+                     </font>
+                  </Label>
+                  <Label alignment="BOTTOM_LEFT" prefHeight="71.0" prefWidth="116.0" text="By Sam Nishita" textFill="WHITE">
+                     <padding>
+                        <Insets bottom="15.0" left="10.0" />
+                     </padding>
+                     <font>
+                        <Font name="Arial Bold" size="14.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
          </children>
-        </HBox>
-        <GridPane fx:id="gridpane" alignment="CENTER" maxHeight="Infinity" style="-fx-background-color: slategray;" VBox.vgrow="ALWAYS">
+      </GridPane>
+      <Line endX="890.0" stroke="WHITE" strokeWidth="10.0" />
+        <GridPane fx:id="gridpane" alignment="CENTER" maxHeight="Infinity" prefHeight="568.0" prefWidth="900.0" style="-fx-background-color: slategray;" VBox.vgrow="ALWAYS">
             <columnConstraints>
                 <ColumnConstraints hgrow="ALWAYS" percentWidth="36.0" />
                 <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" percentWidth="58.5" />
@@ -50,9 +79,9 @@
                         <Image url="@../images/halfcourt.png" />
                     </image>
                 </ImageView>
-            <VBox fx:id="searchvbox" alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
+            <VBox fx:id="searchvbox" alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.rowSpan="2" GridPane.vgrow="ALWAYS">
                <children>
-                  <Label fx:id="introlabel" text="&quot;I Just Want To See A Shot Chart&quot; - Whoever is using this, probably" textAlignment="CENTER" textFill="WHITE" wrapText="true" VBox.vgrow="ALWAYS">
+                  <Label fx:id="introlabel" prefWidth="200.0" text="It may be a little sluggish. (The server is the cheapest I could find.)" textAlignment="CENTER" textFill="WHITE" wrapText="true" VBox.vgrow="ALWAYS">
                      <VBox.margin>
                         <Insets top="10.0" />
                      </VBox.margin>
@@ -84,7 +113,7 @@
                         <Insets />
                      </VBox.margin>
                   </Label>
-                  <GridPane fx:id="shotgrid" alignment="CENTER" prefWidth="300.0" VBox.vgrow="ALWAYS">
+                  <GridPane fx:id="shotgrid" alignment="CENTER" maxHeight="110.0" prefHeight="110.0" prefWidth="300.0" VBox.vgrow="ALWAYS">
                     <columnConstraints>
                       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -182,8 +211,39 @@
                         <Insets bottom="25.0" />
                      </VBox.margin>
                   </GridPane>
+                  <Label alignment="BOTTOM_LEFT" prefWidth="198.0" text="Important Updates" textFill="WHITE">
+                     <font>
+                        <Font name="Arial Italic" size="24.0" />
+                     </font>
+                  </Label>
+                  <Label alignment="CENTER" prefHeight="49.0" prefWidth="289.0" text="Error Connecting to Server." textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                     <font>
+                        <Font name="Arial" size="18.0" />
+                     </font>
+                  </Label>
                </children>
             </VBox>
+            <Button fx:id="buttonswitch" mnemonicParsing="false" text="Switch" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1">
+               <children>
+                  <Button fx:id="traditionalbutton" mnemonicParsing="false" text="Traditional">
+                     <HBox.margin>
+                        <Insets right="30.0" />
+                     </HBox.margin>
+                  </Button>
+                  <Button fx:id="heatmapbutton" mnemonicParsing="false" text="Heat Map">
+                     <HBox.margin>
+                        <Insets right="30.0" />
+                     </HBox.margin>
+                  </Button>
+                  <Button fx:id="gridbutton" mnemonicParsing="false" text="Grid">
+                     <HBox.margin>
+                        <Insets right="30.0" />
+                     </HBox.margin>
+                  </Button>
+                  <Button fx:id="zonebutton" mnemonicParsing="false" text="Zoned" />
+               </children>
+            </HBox>
             </children>
         </GridPane>
     </children>

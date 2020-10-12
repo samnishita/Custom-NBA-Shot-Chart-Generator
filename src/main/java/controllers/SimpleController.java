@@ -5,7 +5,9 @@
  */
 package controllers;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import javafx.scene.paint.Color;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -28,6 +30,7 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
+import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -35,6 +38,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
@@ -127,6 +131,18 @@ public class SimpleController implements Initializable {
     GridPane shotgrid;
     @FXML
     Label titlelabel;
+    @FXML
+    Button buttonswitch;
+    @FXML
+    Button traditionalbutton;
+    @FXML
+    Button heatmapbutton;
+    @FXML
+    Button gridbutton;
+    @FXML
+    Button zonebutton;
+    @FXML
+    Label lastupdatedlabel;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -142,6 +158,7 @@ public class SimpleController implements Initializable {
         this.seasoncombo.setStyle("-fx-font: " + this.comboFontSize + "px \"Serif\";");
 //        this.searchbutton.prefWidthProperty().bind(this.gridpane.widthProperty().divide(6));
         this.searchbutton.setStyle("-fx-font: " + this.comboFontSize + "px \"Serif\";");
+
         VBox.setMargin(this.introlabel, new Insets(10, 0, 0, 0));
         VBox.setMargin(this.yearcombo, new Insets(20, 0, 0, 0));
         VBox.setMargin(this.playercombo, new Insets(20, 0, 0, 0));
@@ -189,6 +206,14 @@ public class SimpleController implements Initializable {
 
         setSeasonsComboBox();
 
+        this.buttonswitch.setOnMouseClicked((Event t) -> {
+            try {
+                Main.setRoot("advanced.fxml");
+            } catch (IOException ex) {
+                Logger.getLogger(SimpleController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+
         this.searchbutton.setOnMouseClicked((Event t) -> {
             this.errorlabel.setVisible(false);
             try {
@@ -228,6 +253,11 @@ public class SimpleController implements Initializable {
                 threepoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
                 threepointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
                 threepointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                traditionalbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
+                heatmapbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
+                gridbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
+                zonebutton.setStyle("-fx-font: " + font + "px \"Serif\";");
+                titlelabel.setStyle("-fx-font: " + fontGrid * 2.5 + "px \"Serif\";");
 
                 VBox.setMargin(introlabel, new Insets(new BigDecimal(imageview.getLayoutBounds().getHeight()).multiply(new BigDecimal("20")).divide(new BigDecimal("475"), 6, RoundingMode.HALF_UP).doubleValue(), 0, 0, 0));
                 VBox.setMargin(yearcombo, new Insets(20, 0, 0, 0));
@@ -256,13 +286,17 @@ public class SimpleController implements Initializable {
                 threepoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
                 threepointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
                 threepointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                traditionalbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
+                heatmapbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
+                gridbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
+                zonebutton.setStyle("-fx-font: " + font + "px \"Serif\";");
+                titlelabel.setStyle("-fx-font: " + fontGrid * 2 + "px \"Serif\";");
 
                 VBox.setMargin(introlabel, new Insets(new BigDecimal(imageview.getLayoutBounds().getHeight()).multiply(new BigDecimal("20")).divide(new BigDecimal("475"), 6, RoundingMode.HALF_UP).doubleValue(), 0, 0, 0));
                 VBox.setMargin(yearcombo, new Insets(30, 0, 0, 0));
                 VBox.setMargin(playercombo, new Insets(30, 0, 0, 0));
                 VBox.setMargin(seasoncombo, new Insets(30, 0, 0, 0));
                 VBox.setMargin(searchbutton, new Insets(20, 0, 0, 0));
-//                System.out.println(shotmade.getRadius());
             }
         });
         this.yearcombo.setOnAction((Event t) -> {
@@ -339,7 +373,6 @@ public class SimpleController implements Initializable {
         for (Node each : toRemove) {
             gridpane.getChildren().remove(each);
         }
-        System.out.println("call get jsonarray method");
         JSONArray jsonArray = getDataAsJSON();
         return jsonArray;
     }
@@ -468,7 +501,7 @@ public class SimpleController implements Initializable {
                 }
             }
             countTotal++;
-            
+
             Shot shot = new Shot(eachShot.getInt("x"), eachShot.getInt("y"), eachShot.getInt("distance"), eachShot.getInt("make"), eachShot.getString("shottype"), eachShot.getString("playtype"));
             xBig = BigDecimal.valueOf(eachShot.getInt("x"));
             yBig = BigDecimal.valueOf(eachShot.getInt("y") - 180);
@@ -718,9 +751,7 @@ public class SimpleController implements Initializable {
         jsonObjOut.put("year", this.yearcombo.getValue().toString());
         jsonObjOut.put("playername", nameHash.get(this.playercombo.getValue().toString()));
         jsonObjOut.put("seasontype", this.seasoncombo.getValue().toString());
-        System.out.println("sending jsonString to server");
         Main.getPrintWriterOut().println(jsonObjOut.toString());
-        System.out.println("retrieved server response");
         return new JSONArray(Main.getServerResponse().readLine());
     }
 }
