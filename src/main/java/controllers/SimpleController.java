@@ -5,15 +5,11 @@
  */
 package controllers;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import javafx.scene.paint.Color;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -31,10 +27,7 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Bounds;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
-import javafx.geometry.VPos;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -43,16 +36,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.RowConstraints;
-import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.CycleMethod;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.Stop;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
@@ -89,15 +76,17 @@ public class SimpleController implements Initializable {
     private String previousSeason;
     private ResourceBundle reader = null;
     private double squareSize = 10.0;
+    private final double SQUARESIZEORIG = 10.0;
     private LinkedHashMap<Coordinate, LinkedList<Double>> coordAverages;
     private int maxShotsPerMaxSquare = 0;
     private LinkedHashMap<Coordinate, Double> coordValue;
     private final int offset = 10;
-    private final int maxDistanceBetweenNodes = 30;
+    private final int maxDistanceBetweenNodes = 20;
     private LinkedList<Rectangle> allTiles;
     private String activeDisplay = "";
     private double min;
     private ArrayList<Thread> threads = new ArrayList();
+    private String currentSearchModeSelection = "";
 
     @FXML
     ImageView imageview;
@@ -177,6 +166,26 @@ public class SimpleController implements Initializable {
     HBox buttonbox;
     @FXML
     GridPane imagegrid;
+    @FXML
+    VBox gridlegendsize;
+    @FXML
+    VBox gridlegendcolor;
+    @FXML
+    Label gridcolorlegendtoplabel;
+    @FXML
+    Label gridcolorlegendlowerlabel;
+    @FXML
+    Label gridcolorlegendupperlabel;
+    @FXML
+    Label gridsizelegendtoplabel;
+    @FXML
+    Label gridsizelegendlowerlabel;
+    @FXML
+    Label gridsizelegendupperlabel;
+    @FXML
+    Rectangle gridcolorlegendgradient;
+    @FXML
+    HBox gridsizelegendgradient;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -218,6 +227,8 @@ public class SimpleController implements Initializable {
         imagegrid.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
         imagegrid.setPrefHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
         gridbackground.setVisible(false);
+        gridlegendcolor.setVisible(false);
+        gridlegendsize.setVisible(false);
 
         VBox.setMargin(this.introlabel, new Insets(10, 0, 0, 0));
         VBox.setMargin(this.yearcombo, new Insets(20, 0, 0, 0));
@@ -284,56 +295,64 @@ public class SimpleController implements Initializable {
         });
 
         this.searchbutton.setOnMouseClicked((Event t) -> {
-            createTraditionalThreadAndRun();
-            this.errorlabel.setVisible(false);
-            try {
-                this.previousYear = this.yearcombo.getValue().toString();
-                this.previousPlayer = this.playercombo.getValue().toString();
-                this.previousSeason = this.seasoncombo.getValue().toString();
-                JSONArray jsonArray = doSimpleSearch();
-                plotTraditionalShots(jsonArray);
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            } catch (NullPointerException ex) {
-                this.errorlabel.setText("Please try again");
-                this.errorlabel.setVisible(true);
-            } catch (IOException ex) {
-                Logger.getLogger(SimpleController.class.getName()).log(Level.SEVERE, null, ex);
+            switch (currentSearchModeSelection) {
+                case "traditional":
+                    traditional();
+                    break;
+                case "grid":
+                    grid();
+                    break;
+                default:
+                    traditional();
+                    break;
             }
-            activeDisplay = "simpletraditional";
-            plotCircles();
+        });
 
+        this.traditionalbutton.setOnMouseClicked((Event t) -> {
+            if (this.currentSearchModeSelection.equals("")) {
+                this.currentSearchModeSelection = "traditional";
+            } else {
+                traditional();
+            }
         });
         this.gridbutton.setOnMouseClicked((Event t) -> {
-            createGridThreadAndRun();
-            this.errorlabel.setVisible(false);
-            try {
-                this.previousYear = this.yearcombo.getValue().toString();
-                this.previousPlayer = this.playercombo.getValue().toString();
-                this.previousSeason = this.seasoncombo.getValue().toString();
-                JSONArray jsonArray = doSimpleGridSearch();
-                plotGrid(jsonArray);
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            } catch (NullPointerException ex) {
-                this.errorlabel.setText("Please try again");
-                this.errorlabel.setVisible(true);
-            } catch (IOException ex) {
-                Logger.getLogger(SimpleController.class.getName()).log(Level.SEVERE, null, ex);
+            if (this.currentSearchModeSelection.equals("")) {
+                this.currentSearchModeSelection = "grid";
+            } else {
+                grid();
             }
-            gridbackground.setVisible(true);
-            activeDisplay = "simplegrid";
-
-            gridbackground.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
-            gridbackground.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
-            gridbackground.setVisible(true);
-            imageview.setImage(new Image("/images/transparent.png"));
-            imageview.setVisible(true);
-
-//            imageview.toFront();
-//            gridgrid.toFront();
-//            buttonbox.toFront();
         });
+//        this.heatmapbutton.setOnMouseClicked((Event t) -> {
+//            if (this.currentSearchModeSelection.equals("")) {
+//                this.currentSearchModeSelection = "heat";
+//            } else {
+//                this.currentSearchModeSelection = "heat";
+//                createHeatThreadAndRun();
+//                this.errorlabel.setVisible(false);
+//                try {
+//                    this.previousYear = this.yearcombo.getValue().toString();
+//                    this.previousPlayer = this.playercombo.getValue().toString();
+//                    this.previousSeason = this.seasoncombo.getValue().toString();
+//                    JSONArray jsonArray = doSimpleHeatSearch();
+//                    plotHeat(jsonArray);
+//                } catch (SQLException ex) {
+//                    ex.printStackTrace();
+//                } catch (NullPointerException ex) {
+//                    this.errorlabel.setText("Please try again");
+//                    this.errorlabel.setVisible(true);
+//                } catch (IOException ex) {
+//                    Logger.getLogger(SimpleController.class.getName()).log(Level.SEVERE, null, ex);
+//                }
+//                gridbackground.setVisible(true);
+//                activeDisplay = "simpleheat";
+//
+//                gridbackground.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
+//                gridbackground.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
+//                gridbackground.setVisible(true);
+//                imageview.setImage(new Image("/images/transparent.png"));
+//                imageview.setVisible(true);
+//            }
+//        });
         imageview.fitHeightProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
@@ -416,109 +435,19 @@ public class SimpleController implements Initializable {
     }
 
     private JSONArray doSimpleSearch() throws SQLException, IOException {
-        removeTradShots();
+        removeAllShotsFromView();
         JSONArray jsonArray = getSimpleTraditionalShotData();
         return jsonArray;
     }
 
     private JSONArray doSimpleGridSearch() throws SQLException, IOException {
-        removeTradShots();
+        removeAllShotsFromView();
         System.out.println("Doing SimpleGridSearch");
         JSONArray jsonArray = getSimpleGridShotData();
         System.out.println("End Doing SimpleGridSearch");
         return jsonArray;
     }
 
-//    private void plotResults() throws SQLException {
-//        this.fgfrac.setText("--");
-//        this.fgperc.setText("--");
-//        this.twopointfrac.setText("--");
-//        this.twopointperc.setText("--");
-//        this.threepointfrac.setText("--");
-//        this.threepointperc.setText("--");
-//        int countMade = 0;
-//        int countTotal = 0;
-//        int count2pMade = 0;
-//        int count2pTotal = 0;
-//        int count3pMade = 0;
-//        int count3pTotal = 0;
-//        allShots = new LinkedHashMap();
-//        Circle circle;
-//        MissedShotIcon msi;
-//        BigDecimal xBig = new BigDecimal("0");
-//        BigDecimal yBig = new BigDecimal("0");
-//        while (rs.next()) {
-//
-//            if (rs.getString("shottype").equals("3PT Field Goal")) {
-//                count3pTotal++;
-//                if (rs.getInt("make") == 1) {
-//                    count3pMade++;
-//                    countMade++;
-//                }
-//            } else if (rs.getString("shottype").equals("2PT Field Goal")) {
-//                count2pTotal++;
-//                if (rs.getInt("make") == 1) {
-//                    count2pMade++;
-//                    countMade++;
-//                }
-//            }
-//            countTotal++;
-//
-//            Shot shot = new Shot(rs.getInt("x"), rs.getInt("y"), rs.getInt("distance"), rs.getInt("make"), rs.getString("shottype"), rs.getString("playtype"));
-//            xBig = BigDecimal.valueOf(rs.getInt("x"));
-//            yBig = BigDecimal.valueOf(rs.getInt("y") - 180);
-//            if (rs.getInt("make") == 1) {
-//                circle = new Circle(imageview.getLayoutBounds().getHeight() * shotmadeRadius.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue());
-//                circle.setFill(Color.TRANSPARENT);
-//                circle.setTranslateX(imageview.getLayoutBounds().getHeight() * xBig.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue());
-//                circle.setTranslateY(imageview.getLayoutBounds().getHeight() * yBig.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue());
-//                circle.setStrokeWidth(imageview.getLayoutBounds().getHeight() * shotLineThickness.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue());
-//                circle.setStroke(Color.LIMEGREEN);
-//                allShots.put(shot, circle);
-//            } else {
-//                msi = new MissedShotIcon(xBig.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue(),
-//                        yBig.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue(),
-//                        imageview.getLayoutBounds().getHeight(),
-//                        shotmissStartEnd.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue(),
-//                        shotLineThickness.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue());
-//                allShots.put(shot, msi);
-//            }
-//
-//        }
-//        System.out.println("allShots Size: " + allShots.size());
-//        for (Shot each : allShots.keySet()) {
-//            if (each.getY() > 410) {
-//                continue;
-//            }
-//            if (each.getMake() == 0) {
-//                MissedShotIcon msiTemp = (MissedShotIcon) allShots.get(each);
-//                gridpane.add(msiTemp.getLine1(), 1, 1);
-//                gridpane.add(msiTemp.getLine2(), 1, 1);
-//
-//            } else {
-//                gridpane.add((Circle) allShots.get(each), 1, 1);
-//            }
-//        }
-//
-//        this.fgfrac.setText(countMade + "/" + countTotal);
-//        if (countTotal == 0) {
-//            this.fgperc.setText("--");
-//        } else {
-//            this.fgperc.setText(new BigDecimal((double) countMade / countTotal * 100).setScale(2, RoundingMode.HALF_UP) + "%");
-//        }
-//        this.twopointfrac.setText(count2pMade + "/" + count2pTotal);
-//        if (count2pTotal == 0) {
-//            this.twopointperc.setText("--");
-//        } else {
-//            this.twopointperc.setText(new BigDecimal((double) count2pMade / count2pTotal * 100).setScale(2, RoundingMode.HALF_UP) + "%");
-//        }
-//        this.threepointfrac.setText(count3pMade + "/" + count3pTotal);
-//        if (count3pTotal == 0) {
-//            this.threepointperc.setText("--");
-//        } else {
-//            this.threepointperc.setText(new BigDecimal((double) count3pMade / count3pTotal * 100).setScale(2, RoundingMode.HALF_UP) + "%");
-//        }
-//    }
     private void plotTraditionalShots(JSONArray jsonArray) throws SQLException {
         this.fgfrac.setText("--");
         this.fgperc.setText("--");
@@ -830,6 +759,7 @@ public class SimpleController implements Initializable {
 
     private void plotGrid(JSONArray jsonArray) throws IOException {
         System.out.println("Plotting Grid");
+
         this.fgfrac.setText("--");
         this.fgperc.setText("--");
         this.twopointfrac.setText("--");
@@ -844,8 +774,8 @@ public class SimpleController implements Initializable {
         int count3pTotal = 0;
         Coordinate coord;
         coordAverages = new LinkedHashMap();
-        for (int j = -55; j < 400; j = j + (int) squareSize) {
-            for (int i = -250; i < 250; i = i + (int) squareSize) {
+        for (int j = -55; j < 400; j = j + (int) SQUARESIZEORIG) {
+            for (int i = -250; i < 250; i = i + (int) SQUARESIZEORIG) {
                 coord = new Coordinate(i, j);
                 LinkedList info = new LinkedList();
                 info.add(0.0);
@@ -890,7 +820,7 @@ public class SimpleController implements Initializable {
             x = eachShot.getInt("x");
             make = eachShot.getInt("make");
             for (Coordinate each : coordAverages.keySet()) {
-                if (x < each.getX() + 5 + squareSize * 1.5 && x >= each.getX() + 5 - squareSize * 1.5 && y < each.getY() + 5 + squareSize * 1.5 && y >= each.getY() + 5 - squareSize * 1.5) {
+                if (x < each.getX() + 5 + SQUARESIZEORIG * 1.5 && x >= each.getX() + 5 - SQUARESIZEORIG * 1.5 && y < each.getY() + 5 + SQUARESIZEORIG * 1.5 && y >= each.getY() + 5 - SQUARESIZEORIG * 1.5) {
                     coordAverages.get(each).set(1, coordAverages.get(each).get(1) + 1);
                     if (make == 1) {
                         coordAverages.get(each).set(0, coordAverages.get(each).get(0) + 1);
@@ -916,6 +846,7 @@ public class SimpleController implements Initializable {
         System.out.println("min = " + min);
         System.out.println("Factor: " + factor);
         maxShotsPerMaxSquare = (int) (factor * shotCounter);
+        squareSize = imageview.getLayoutBounds().getHeight() / 50;
         allTiles = new LinkedList();
         for (Coordinate each2 : coordValue.keySet()) {
             Rectangle square = new Rectangle();
@@ -945,9 +876,12 @@ public class SimpleController implements Initializable {
                 square.setFill(Color.web("#7babff"));
             }
             square.setOpacity(0.85);
-            square.setTranslateX((each2.getX()+5) * imageview.getLayoutBounds().getHeight() / 470);
+            square.setTranslateX((each2.getX() + 5) * imageview.getLayoutBounds().getHeight() / 470);
             //+ imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2
-            square.setTranslateY(each2.getY() * imageview.getLayoutBounds().getHeight() / 470 + -(180.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
+            square.setTranslateY(each2.getY() * imageview.getLayoutBounds().getHeight() / 470 - (175.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
+
+//square.setTranslateX((each2.getX() + 5) * height / 470);
+//            square.setTranslateY(each2.getY() * height / 470 - (175.0 * height / 470));
 //imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2
 //            square.setOnMouseEntered((MouseEvent t) -> {
 //                Label label = new Label();
@@ -1047,6 +981,40 @@ public class SimpleController implements Initializable {
         imagegrid.setMinHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
         imagegrid.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
         imagegrid.setPrefHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
+        gridlegendcolor.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (-155.0 / 470));
+        gridlegendcolor.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (190.0 / 470));
+        gridlegendsize.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (155.0 / 470));
+        gridlegendsize.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (190.0 / 470));
+        gridlegendcolor.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        gridlegendcolor.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        gridlegendcolor.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        gridlegendcolor.setMaxHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
+        gridlegendcolor.setMinHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
+        gridlegendcolor.setPrefHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
+        gridlegendsize.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        gridlegendsize.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        gridlegendsize.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        gridlegendsize.setMaxHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
+        gridlegendsize.setMinHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
+        gridlegendsize.setPrefHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
+
+        gridcolorlegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"Lucida Sans\"; ");
+        Rectangle tempRect;
+        double nodeCounter = 0;
+        for (Node each : gridsizelegendgradient.getChildren()) {
+            tempRect = (Rectangle) each;
+            tempRect.setWidth(((nodeCounter * 1.5) + 2) * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470);
+            tempRect.setHeight(((nodeCounter * 1.5) + 2) * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470);
+            nodeCounter++;
+        }
+        gridsizelegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"Lucida Sans\";");
+        gridcolorlegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
+        gridcolorlegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
+        gridsizelegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
+        gridsizelegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
+        gridcolorlegendgradient.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 153.0 / 470);
+        gridcolorlegendgradient.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 17.0 / 470);
+
         System.out.println("imageview: " + imageview.getLayoutBounds().getWidth() + "," + imageview.getLayoutBounds().getHeight());
         double height = imageview.getLayoutBounds().getHeight();
         double width = imageview.getLayoutBounds().getWidth();
@@ -1067,8 +1035,8 @@ public class SimpleController implements Initializable {
                 square.setHeight(squareSize * 0.9);
                 square.setWidth(squareSize * 0.9);
             }
-            square.setTranslateX((each2.getX()+5) * height / 470 );
-            square.setTranslateY(each2.getY() * height / 470 -(180.0 * height / 470));
+            square.setTranslateX((each2.getX() + 5) * height / 470);
+            square.setTranslateY(each2.getY() * height / 470 - (175.0 * height / 470));
 
             counter++;
         }
@@ -1117,14 +1085,13 @@ public class SimpleController implements Initializable {
         zonebutton.setStyle("-fx-font: " + font + "px \"Serif\";");
         titlelabel.setMinWidth(Region.USE_PREF_SIZE);
         titlelabel.setStyle("-fx-font: " + fontGrid * 3 + "px \"Serif\"; ");
-        charttitle.setStyle("-fx-font: " + fontGrid + "px \"Arial Italic\";");
+        charttitle.setStyle("-fx-font: " + fontGrid * 1.15 + "px \"Arial Italic\";");
         charttitle.setMinHeight(imageview.getLayoutBounds().getHeight() / 10);
         charttitle.setMinWidth(imageview.getLayoutBounds().getWidth());
         charttitle.setMaxHeight(imageview.getLayoutBounds().getHeight() / 10);
         charttitle.setMaxWidth(imageview.getLayoutBounds().getWidth());
         gridbackground.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
         gridbackground.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
-
         imagegrid.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
         imagegrid.setMaxHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
         imagegrid.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
@@ -1254,16 +1221,165 @@ public class SimpleController implements Initializable {
         tZone.start();
     }
 
-    private void removeTradShots() {
+    private void removeAllShotsFromView() {
         ArrayList<Node> toRemove = new ArrayList();
-        for (Node each : centralvbox.getChildren()) {
-            if (each.getClass().equals(Circle.class) || each.getClass().equals(Line.class)) {
+        for (Node each : imagegrid.getChildren()) {
+            if (!each.equals(gridbackground) && (each.getClass().equals(Rectangle.class) || each.getClass().equals(Circle.class) || each.getClass().equals(Line.class))) {
                 toRemove.add(each);
             }
         }
         for (Node each : toRemove) {
-            centralvbox.getChildren().remove(each);
+            imagegrid.getChildren().remove(each);
         }
     }
 
+    private void traditional() {
+        this.currentSearchModeSelection = "traditional";
+        createTraditionalThreadAndRun();
+        this.errorlabel.setVisible(false);
+        try {
+            this.previousYear = this.yearcombo.getValue().toString();
+            this.previousPlayer = this.playercombo.getValue().toString();
+            this.previousSeason = this.seasoncombo.getValue().toString();
+            JSONArray jsonArray = doSimpleSearch();
+            plotTraditionalShots(jsonArray);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } catch (NullPointerException ex) {
+            this.errorlabel.setText("Please try again");
+            this.errorlabel.setVisible(true);
+        } catch (IOException ex) {
+            Logger.getLogger(SimpleController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        activeDisplay = "simpletraditional";
+        gridbackground.setVisible(false);
+        gridlegendcolor.setVisible(false);
+        gridlegendsize.setVisible(false);
+        imageview.setImage(new Image("/images/halfcourt.png"));
+    }
+
+    private void grid() {
+        this.currentSearchModeSelection = "grid";
+        createGridThreadAndRun();
+        this.errorlabel.setVisible(false);
+        try {
+            this.previousYear = this.yearcombo.getValue().toString();
+            this.previousPlayer = this.playercombo.getValue().toString();
+            this.previousSeason = this.seasoncombo.getValue().toString();
+            JSONArray jsonArray = doSimpleGridSearch();
+            plotGrid(jsonArray);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } catch (NullPointerException ex) {
+            this.errorlabel.setText("Please try again");
+            this.errorlabel.setVisible(true);
+        } catch (IOException ex) {
+            Logger.getLogger(SimpleController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        activeDisplay = "simplegrid";
+        gridbackground.setVisible(true);
+
+        gridbackground.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
+        gridbackground.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
+        gridlegendcolor.setVisible(true);
+        gridlegendsize.setVisible(true);
+        gridlegendcolor.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (-155.0 / 470));
+        gridlegendcolor.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (190.0 / 470));
+        gridlegendsize.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (155.0 / 470));
+        gridlegendsize.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (190.0 / 470));
+        //        gridlegendcolor.maxWidthProperty().bind(imageview.fitHeightProperty().multiply(170.0).divide(470.0));
+        //        gridlegendsize.maxWidthProperty().bind(imageview.fitHeightProperty().multiply(170.0).divide(470.0));
+        //        gridlegendcolor.minWidthProperty().bind(imageview.fitHeightProperty().multiply(170.0).divide(470.0));
+        //        gridlegendsize.minWidthProperty().bind(imageview.fitHeightProperty().multiply(170.0).divide(470.0));
+        gridlegendcolor.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        gridlegendcolor.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        gridlegendcolor.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+//        gridlegendcolor.setMaxHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
+//        gridlegendcolor.setMinHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
+//        gridlegendcolor.setPrefHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
+        gridlegendsize.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        gridlegendsize.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        gridlegendsize.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        gridlegendsize.setMaxHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
+        gridlegendsize.setMinHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
+        gridlegendsize.setPrefHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
+        gridcolorlegendgradient.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 153.0 / 470);
+        gridcolorlegendgradient.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 17.0 / 470);
+        gridcolorlegendtoplabel.maxWidthProperty().bind(gridlegendcolor.maxWidthProperty());
+        gridcolorlegendlowerlabel.maxWidthProperty().bind(gridlegendcolor.maxWidthProperty().multiply(0.45));
+        gridcolorlegendupperlabel.maxWidthProperty().bind(gridlegendcolor.maxWidthProperty().multiply(0.45));
+        Rectangle tempRect;
+        double nodeCounter = 0;
+        for (Node each : gridsizelegendgradient.getChildren()) {
+            tempRect = (Rectangle) each;
+            tempRect.setWidth(((nodeCounter * 1.5) + 2) * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470);
+            tempRect.setHeight(((nodeCounter * 1.5) + 2) * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470);
+            nodeCounter++;
+        }
+        gridcolorlegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"Lucida Sans\";");
+        gridsizelegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"Lucida Sans\";");
+        gridcolorlegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
+        gridcolorlegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
+        gridsizelegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
+        gridsizelegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
+        imageview.setImage(new Image("/images/transparent.png"));
+    }
+
+//    private void heat(){
+//        this.coordAverages = new LinkedHashMap();
+//        Coordinate coord;
+//        for (int x = -250; x < 251; x++) {
+//            for (int y = -52; y < 400; y++) {
+//                coord = new Coordinate(x, y);
+//                LinkedList info = new LinkedList();
+//                info.add(0.0);
+//                info.add(0.0);
+//                info.add(0.0);
+//                coordAverages.put(coord, info);
+//            }
+//        }
+//        try {
+////            ResultSet rs = conn2.prepareStatement(sql).executeQuery();
+//            double x;
+//            int y;
+//            int make;
+//            int counter = 0;
+//            double totalShots;
+//            double makes;
+//            while (rs.next()) {
+//                counter++;
+//                if (rs.getInt("y") >= 400) {
+//                    continue;
+//                }
+//                x = rs.getInt("x");
+//                y = rs.getInt("y");
+//                make = rs.getInt("make");
+//                for (Coordinate each : coordAverages.keySet()) {
+//                    if (each.getX() == x && each.getY() == y) {
+//                        makes = coordAverages.get(each).get(0);
+//                        totalShots = coordAverages.get(each).get(1);
+//                        totalShots++;
+//                        coordAverages.get(each).set(1, totalShots);
+//                        if (make == 1) {
+//                            makes++;
+//                            coordAverages.get(each).set(0, makes);
+//                        }
+////                        System.out.println(makes);
+////                        System.out.println(totalShots);
+//                    }
+//                }
+//                System.out.println(counter);
+//            }
+//            for (Coordinate each : coordAverages.keySet()) {
+//                if (coordAverages.get(each).get(1) != 0) {
+//                    coordAverages.get(each).set(2, coordAverages.get(each).get(0) * 1.0 / coordAverages.get(each).get(1) * 1.0);
+////                    System.out.println(each.getX() + "," + each.getY() + ": " + df.format(coordAverages.get(each).get(2) * 1.0));
+//                }
+//
+//            }
+//        } catch (SQLException ex) {
+//            ex.printStackTrace();
+//        }
+//    }
 }

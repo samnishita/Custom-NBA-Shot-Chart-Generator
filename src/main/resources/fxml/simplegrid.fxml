@@ -11,6 +11,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.LinearGradient?>
+<?import javafx.scene.paint.Stop?>
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
@@ -66,7 +68,7 @@
             </children>
         </GridPane>
         <Line fx:id="line" endX="890.0" stroke="WHITE" strokeWidth="10.0" />
-        <GridPane fx:id="gridpane" alignment="CENTER" gridLinesVisible="true" maxHeight="Infinity" prefHeight="568.0" prefWidth="900.0" style="-fx-background-color: slategray;" VBox.vgrow="ALWAYS">
+        <GridPane fx:id="gridpane" alignment="CENTER" maxHeight="Infinity" prefHeight="568.0" prefWidth="900.0" style="-fx-background-color: slategray;" VBox.vgrow="ALWAYS">
             <columnConstraints>
                 <ColumnConstraints hgrow="ALWAYS" percentWidth="36.0" />
                 <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" percentWidth="58.5" />
@@ -88,7 +90,7 @@
                                 <Insets bottom="10.0" />
                             </padding>
                         </Label>
-                        <GridPane fx:id="imagegrid" alignment="CENTER" gridLinesVisible="true" prefHeight="470.0" prefWidth="500.0" style="-fx-background-color: orange;">
+                        <GridPane fx:id="imagegrid" alignment="CENTER" gridLinesVisible="true" prefHeight="470.0" prefWidth="500.0">
                             <columnConstraints>
                                 <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="5.0" prefWidth="5.0" />
                             </columnConstraints>
@@ -97,12 +99,114 @@
                       
                             </rowConstraints>
                      <children>
-                              <Rectangle fx:id="gridbackground" arcHeight="5.0" arcWidth="5.0" fill="#505050" height="200.0" stroke="BLACK" strokeType="INSIDE" width="200.0" />
+                              <Rectangle fx:id="gridbackground" fill="#505050" height="200.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="200.0" />
                               <ImageView fx:id="imageview" fitHeight="470.0" fitWidth="500.0" pickOnBounds="true" preserveRatio="true" rotate="180.0">
                                   <image>
                                       <Image url="@../images/halfcourt.png" />
                                   </image>
                               </ImageView>
+                        <VBox fx:id="gridlegendcolor" alignment="CENTER" maxHeight="80.0" maxWidth="170.0" prefHeight="80.0" prefWidth="170.0" translateX="-155.0" translateY="190.0">
+                           <children>
+                              <Label fx:id="gridcolorlegendtoplabel" alignment="CENTER" prefHeight="19.0" prefWidth="163.0" text="Shooting Percentage" textFill="WHITE">
+                                 <font>
+                                    <Font name="Lucida Sans Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                 <children>
+                                    <Label fx:id="gridcolorlegendlowerlabel" prefHeight="41.0" prefWidth="79.0" text="Below Avg." textFill="WHITE" HBox.hgrow="ALWAYS">
+                                       <font>
+                                          <Font name="Lucida Sans Demibold" size="11.0" />
+                                       </font>
+                                    </Label>
+                                    <Label fx:id="gridcolorlegendupperlabel" alignment="CENTER_RIGHT" prefHeight="42.0" prefWidth="73.0" text="Above Avg." textAlignment="RIGHT" textFill="WHITE" HBox.hgrow="ALWAYS">
+                                       <font>
+                                          <Font name="Lucida Sans Demibold" size="11.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                                 <VBox.margin>
+                                    <Insets bottom="5.0" />
+                                 </VBox.margin>
+                              </HBox>
+                              <Rectangle fx:id="gridcolorlegendgradient" arcHeight="5.0" arcWidth="5.0" height="17.0" stroke="BLACK" strokeType="INSIDE" width="153.0">
+                                 <fill>
+                                    <LinearGradient endX="1.0" endY="1.0">
+                                       <stops>
+                                          <Stop color="#fc2121" />
+                                          <Stop color="#7babff" offset="0.007518796992481203" />
+                                          <Stop color="#8bc9ff" offset="0.1839311115626905" />
+                                          <Stop color="#aed9ff" offset="0.360140215403373" />
+                                          <Stop color="WHITE" offset="0.5338345864661648" />
+                                          <Stop color="#ff9c9c" offset="0.6954887218045113" />
+                                          <Stop color="#ff6363" offset="0.8379140418614095" />
+                                          <Stop color="#fc2121" offset="1.0" />
+                                       </stops>
+                                    </LinearGradient>
+                                 </fill>
+                              </Rectangle>
+                           </children>
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </padding>
+                        </VBox>
+                        <VBox fx:id="gridlegendsize" alignment="CENTER" maxHeight="80.0" maxWidth="170.0" prefHeight="80.0" prefWidth="170.0" translateX="155.0" translateY="190.0">
+                           <children>
+                              <Label fx:id="gridsizelegendtoplabel" alignment="CENTER" prefHeight="16.0" prefWidth="172.0" text="Shot Frequency" textFill="WHITE">
+                                 <font>
+                                    <Font name="Lucida Sans Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                 <children>
+                                    <Label fx:id="gridsizelegendlowerlabel" alignment="CENTER" contentDisplay="CENTER" prefHeight="41.0" prefWidth="79.0" text="Low" textAlignment="CENTER" textFill="WHITE">
+                                       <font>
+                                          <Font name="Lucida Sans Demibold" size="11.0" />
+                                       </font>
+                                       <padding>
+                                          <Insets bottom="2.0" />
+                                       </padding>
+                                    </Label>
+                                    <Label fx:id="gridsizelegendupperlabel" alignment="CENTER" prefHeight="22.0" prefWidth="87.0" text="High" textAlignment="RIGHT" textFill="WHITE">
+                                       <font>
+                                          <Font name="Lucida Sans Demibold" size="11.0" />
+                                       </font>
+                                       <padding>
+                                          <Insets bottom="2.0" />
+                                       </padding>
+                                    </Label>
+                                 </children>
+                              </HBox>
+                              <HBox fx:id="gridsizelegendgradient" alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                 <children>
+                                    <Rectangle fill="WHITE" height="2.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="2.0">
+                                       <HBox.margin>
+                                          <Insets right="20.0" />
+                                       </HBox.margin>
+                                    </Rectangle>
+                                    <Rectangle fill="WHITE" height="3.5" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="3.5">
+                                       <HBox.margin>
+                                          <Insets right="20.0" />
+                                       </HBox.margin>
+                                    </Rectangle>
+                                    <Rectangle fill="WHITE" height="5.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="5.0">
+                                       <HBox.margin>
+                                          <Insets right="20.0" />
+                                       </HBox.margin>
+                                    </Rectangle>
+                                    <Rectangle fill="WHITE" height="6.5" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="6.5">
+                                       <HBox.margin>
+                                          <Insets right="20.0" />
+                                       </HBox.margin>
+                                    </Rectangle>
+                                    <Rectangle fill="WHITE" height="8.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="8.0" />
+                                 </children>
+                              </HBox>
+                           </children>
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </padding>
+                        </VBox>
                      </children>
                         </GridPane>
                         <HBox fx:id="buttonbox" alignment="TOP_CENTER" prefHeight="100.0" prefWidth="200.0">
