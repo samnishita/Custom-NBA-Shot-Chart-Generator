@@ -12,238 +12,277 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Line?>
+<?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<VBox fx:id="vbox" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="650.0" minWidth="900.0" prefHeight="650.0" prefWidth="900.0" style="-fx-background-color: slategray;" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.SimpleController">
+<VBox fx:id="vbox" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="750.0" minWidth="900.0" prefHeight="750.0" prefWidth="900.0" style="-fx-background-color: slategray;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.SimpleController">
     <children>
-      <GridPane alignment="CENTER" minHeight="43.0" prefHeight="73.0" prefWidth="900.0">
-        <columnConstraints>
-          <ColumnConstraints hgrow="SOMETIMES" maxWidth="723.0" minWidth="10.0" prefWidth="693.0" />
-            <ColumnConstraints hgrow="SOMETIMES" maxWidth="259.0" minWidth="10.0" prefWidth="149.0" />
-        </columnConstraints>
-        <rowConstraints>
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-        </rowConstraints>
-         <children>
-            <VBox alignment="TOP_RIGHT" prefHeight="80.0" prefWidth="268.0" GridPane.columnIndex="1">
-               <children>
-                  <Label fx:id="lastupdatedlabel" alignment="TOP_RIGHT" prefHeight="30.0" prefWidth="133.0" style="-fx-background-color: red;" text="Accurate As Of " textFill="WHITE" underline="true">
-                     <font>
-                        <Font name="Arial" size="15.0" />
-                     </font>
-                     <padding>
-                        <Insets right="10.0" top="10.0" />
-                     </padding>
-                  </Label>
-                  <Label alignment="CENTER" prefHeight="17.0" prefWidth="135.0" text="DATE" textAlignment="CENTER" textFill="WHITE">
-                     <font>
-                        <Font name="Arial Bold" size="26.0" />
-                     </font>
-                  </Label>
-               </children>
-            </VBox>
-            <HBox prefHeight="100.0" prefWidth="200.0">
-               <children>
-                  <Label fx:id="titlelabel" graphicTextGap="0.0" prefHeight="80.0" prefWidth="598.0" text="Dynamic NBA Shot Charts" textFill="WHITE">
-                     <font>
-                        <Font name="Kohinoor Bangla" size="50.0" />
-                     </font>
-                  </Label>
-                  <Label alignment="BOTTOM_LEFT" prefHeight="71.0" prefWidth="116.0" text="By Sam Nishita" textFill="WHITE">
-                     <padding>
-                        <Insets bottom="15.0" left="10.0" />
-                     </padding>
-                     <font>
-                        <Font name="Arial Bold" size="14.0" />
-                     </font>
-                  </Label>
-               </children>
-            </HBox>
-         </children>
-      </GridPane>
-      <Line endX="890.0" stroke="WHITE" strokeWidth="10.0" />
-        <GridPane fx:id="gridpane" alignment="CENTER" maxHeight="Infinity" prefHeight="568.0" prefWidth="900.0" style="-fx-background-color: slategray;" VBox.vgrow="ALWAYS">
+        <GridPane fx:id="topgridpane" alignment="CENTER" minHeight="43.0" prefHeight="73.0" prefWidth="900.0">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="80.0" prefWidth="693.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="20" prefWidth="149.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <children>
+                <VBox alignment="TOP_RIGHT" prefHeight="80.0" prefWidth="268.0" GridPane.columnIndex="1">
+                    <children>
+                        <Label fx:id="lastupdatedlabel" alignment="BOTTOM_CENTER" prefHeight="30.0" prefWidth="227.0" text="Accurate As Of " textAlignment="CENTER" textFill="WHITE" underline="true">
+                            <font>
+                                <Font name="Arial" size="15.0" />
+                            </font>
+                            <padding>
+                                <Insets top="10.0" />
+                            </padding>
+                        </Label>
+                        <Label fx:id="dateaccuracy" alignment="CENTER" prefHeight="31.0" prefWidth="219.0" text="DATE" textAlignment="CENTER" textFill="WHITE">
+                            <font>
+                                <Font name="Arial Bold" size="26.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </VBox>
+                <HBox fx:id="tophbox" alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0">
+                    <children>
+                        <Label fx:id="titlelabel" graphicTextGap="0.0" prefHeight="73.0" text="Dynamic NBA Shot Charts" textFill="WHITE">
+                            <font>
+                                <Font name="Kohinoor Bangla" size="50.0" />
+                            </font>
+                            <HBox.margin>
+                                <Insets left="20.0" />
+                            </HBox.margin>
+                        </Label>
+                        <Label fx:id="namelabel" alignment="BOTTOM_LEFT" prefHeight="71.0" prefWidth="137.0" text="Version" textFill="WHITE">
+                            <padding>
+                                <Insets bottom="15.0" left="10.0" />
+                            </padding>
+                            <font>
+                                <Font name="Arial Bold" size="15.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </HBox>
+            </children>
+        </GridPane>
+        <Line fx:id="line" endX="890.0" stroke="WHITE" strokeWidth="10.0" />
+        <GridPane fx:id="gridpane" alignment="CENTER" gridLinesVisible="true" maxHeight="Infinity" prefHeight="568.0" prefWidth="900.0" style="-fx-background-color: slategray;" VBox.vgrow="ALWAYS">
             <columnConstraints>
                 <ColumnConstraints hgrow="ALWAYS" percentWidth="36.0" />
                 <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" percentWidth="58.5" />
                 <ColumnConstraints hgrow="ALWAYS" percentWidth="5.5" />
             </columnConstraints>
             <rowConstraints>
-                <RowConstraints percentHeight="8" vgrow="ALWAYS" />
-                <RowConstraints percentHeight="84" vgrow="ALWAYS" />
-                <RowConstraints percentHeight="8" vgrow="ALWAYS" />
+                <RowConstraints percentHeight="5" vgrow="ALWAYS" />
+                <RowConstraints percentHeight="90" vgrow="ALWAYS" />
+                <RowConstraints percentHeight="5" vgrow="ALWAYS" />
             </rowConstraints>
             <children>
-                <ImageView fx:id="imageview" fitHeight="470.0" fitWidth="500.0" opacity="0.9" pickOnBounds="true" preserveRatio="true" rotate="180.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                    <image>
-                        <Image url="@../images/halfcourt.png" />
-                    </image>
-                </ImageView>
-            <VBox fx:id="searchvbox" alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.rowSpan="2" GridPane.vgrow="ALWAYS">
-               <children>
-                  <Label fx:id="introlabel" prefWidth="200.0" text="It may be a little sluggish. (The server is the cheapest I could find.)" textAlignment="CENTER" textFill="WHITE" wrapText="true" VBox.vgrow="ALWAYS">
-                     <VBox.margin>
-                        <Insets top="10.0" />
-                     </VBox.margin>
-                     <font>
-                        <Font name="Tahoma" size="15.0" />
-                     </font>
-                  </Label>
-                  <ComboBox fx:id="yearcombo" prefWidth="200.0" promptText="Choose A Year" VBox.vgrow="ALWAYS">
-                     <VBox.margin>
-                        <Insets top="20.0" />
-                     </VBox.margin></ComboBox>
-                  <ComboBox fx:id="playercombo" prefWidth="200.0" promptText="Choose A Player" VBox.vgrow="ALWAYS">
-                     <VBox.margin>
-                        <Insets top="20.0" />
-                     </VBox.margin></ComboBox>
-                  <ComboBox fx:id="seasoncombo" prefWidth="200.0" promptText="Choose A Season Type" VBox.vgrow="ALWAYS">
-                     <VBox.margin>
-                        <Insets top="20.0" />
-                     </VBox.margin></ComboBox>
-                  <Button fx:id="searchbutton" mnemonicParsing="false" text="Run It" VBox.vgrow="ALWAYS">
-                     <VBox.margin>
-                        <Insets top="20.0" />
-                     </VBox.margin></Button>
-                  <Label fx:id="errorlabel" text="Error Messages Go Here" textFill="#f20909" VBox.vgrow="ALWAYS">
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font>
-                     <VBox.margin>
-                        <Insets />
-                     </VBox.margin>
-                  </Label>
-                  <GridPane fx:id="shotgrid" alignment="CENTER" maxHeight="110.0" prefHeight="110.0" prefWidth="300.0" VBox.vgrow="ALWAYS">
-                    <columnConstraints>
-                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                    </columnConstraints>
-                    <rowConstraints>
-                      <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
-                      <RowConstraints minHeight="10.0" percentHeight="30.0" prefHeight="50.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" percentHeight="30.0" prefHeight="50.0" vgrow="SOMETIMES" />
-                    </rowConstraints>
+                <VBox fx:id="centralvbox" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="SOMETIMES">
+                    <children>
+                        <Label fx:id="charttitle" alignment="BOTTOM_CENTER" minHeight="45.0" prefHeight="45.0" prefWidth="516.0" style="-fx-background-color: red;" text="Chart Title" textFill="WHITE">
+                            <font>
+                                <Font name="Arial Italic" size="20.0" />
+                            </font>
+                            <padding>
+                                <Insets bottom="10.0" />
+                            </padding>
+                        </Label>
+                        <GridPane fx:id="imagegrid" alignment="CENTER" gridLinesVisible="true" prefHeight="470.0" prefWidth="500.0" style="-fx-background-color: orange;">
+                            <columnConstraints>
+                                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="5.0" prefWidth="5.0" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints minHeight="5.0" prefHeight="5.0" vgrow="SOMETIMES" />
+                      
+                            </rowConstraints>
                      <children>
-                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
-                           <children>
-                              <Label fx:id="fg" alignment="CENTER" contentDisplay="CENTER" text="FG" textAlignment="CENTER" textFill="WHITE">
-                                 <font>
-                                    <Font name="Tahoma Bold" size="30.0" />
-                                 </font>
-                              </Label>
-                           </children>
-                        </VBox>
-                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1">
-                           <children>
-                              <Label fx:id="twopoint" alignment="CENTER" contentDisplay="CENTER" text="2P" textAlignment="CENTER" textFill="WHITE">
-                                 <font>
-                                    <Font name="Tahoma Bold" size="30.0" />
-                                 </font>
-                              </Label>
-                           </children>
-                        </VBox>
-                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2">
-                           <children>
-                              <Label fx:id="threepoint" alignment="CENTER" contentDisplay="CENTER" text="3P" textAlignment="CENTER" textFill="WHITE">
-                                 <font>
-                                    <Font name="Tahoma Bold" size="30.0" />
-                                 </font>
-                              </Label>
-                           </children>
-                        </VBox>
-                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="1">
-                           <children>
-                              <Label fx:id="fgfrac" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
-                                 <font>
-                                    <Font name="Tahoma Bold" size="20.0" />
-                                 </font>
-                              </Label>
-                           </children>
-                        </VBox>
-                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                           <children>
-                              <Label fx:id="twopointfrac" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
-                                 <font>
-                                    <Font name="Tahoma Bold" size="20.0" />
-                                 </font>
-                              </Label>
-                           </children>
-                        </VBox>
-                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
-                           <children>
-                              <Label fx:id="threepointfrac" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
-                                 <font>
-                                    <Font name="Tahoma Bold" size="20.0" />
-                                 </font>
-                              </Label>
-                           </children>
-                        </VBox>
-                        <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="2">
-                           <children>
-                              <Label fx:id="fgperc" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
-                                 <font>
-                                    <Font name="Tahoma Bold" size="20.0" />
-                                 </font>
-                              </Label>
-                           </children>
-                        </VBox>
-                        <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                           <children>
-                              <Label fx:id="twopointperc" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
-                                 <font>
-                                    <Font name="Tahoma Bold" size="20.0" />
-                                 </font>
-                              </Label>
-                           </children>
-                        </VBox>
-                        <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
-                           <children>
-                              <Label fx:id="threepointperc" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
-                                 <font>
-                                    <Font name="Tahoma Bold" size="20.0" />
-                                 </font>
-                              </Label>
-                           </children>
-                        </VBox>
+                              <Rectangle fx:id="gridbackground" arcHeight="5.0" arcWidth="5.0" fill="#505050" height="200.0" stroke="BLACK" strokeType="INSIDE" width="200.0" />
+                              <ImageView fx:id="imageview" fitHeight="470.0" fitWidth="500.0" pickOnBounds="true" preserveRatio="true" rotate="180.0">
+                                  <image>
+                                      <Image url="@../images/halfcourt.png" />
+                                  </image>
+                              </ImageView>
                      </children>
-                     <VBox.margin>
-                        <Insets bottom="25.0" />
-                     </VBox.margin>
-                  </GridPane>
-                  <Label alignment="BOTTOM_LEFT" prefWidth="198.0" text="Important Updates" textFill="WHITE">
-                     <font>
-                        <Font name="Arial Italic" size="24.0" />
-                     </font>
-                  </Label>
-                  <Label alignment="CENTER" prefHeight="49.0" prefWidth="289.0" text="Error Connecting to Server." textAlignment="CENTER" textFill="WHITE" wrapText="true">
-                     <font>
-                        <Font name="Arial" size="18.0" />
-                     </font>
-                  </Label>
-               </children>
-            </VBox>
-            <Button fx:id="buttonswitch" mnemonicParsing="false" text="Switch" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1">
-               <children>
-                  <Button fx:id="traditionalbutton" mnemonicParsing="false" text="Traditional">
-                     <HBox.margin>
-                        <Insets right="30.0" />
-                     </HBox.margin>
-                  </Button>
-                  <Button fx:id="heatmapbutton" mnemonicParsing="false" text="Heat Map">
-                     <HBox.margin>
-                        <Insets right="30.0" />
-                     </HBox.margin>
-                  </Button>
-                  <Button fx:id="gridbutton" mnemonicParsing="false" text="Grid">
-                     <HBox.margin>
-                        <Insets right="30.0" />
-                     </HBox.margin>
-                  </Button>
-                  <Button fx:id="zonebutton" mnemonicParsing="false" text="Zoned" />
-               </children>
-            </HBox>
+                        </GridPane>
+                        <HBox fx:id="buttonbox" alignment="TOP_CENTER" prefHeight="100.0" prefWidth="200.0">
+                            <children>
+                                <Button fx:id="traditionalbutton" mnemonicParsing="false" text="Traditional">
+                                    <HBox.margin>
+                                        <Insets right="30.0" />
+                                    </HBox.margin>
+                                </Button>
+                                <Button fx:id="gridbutton" mnemonicParsing="false" text="Grid">
+                                    <HBox.margin>
+                                        <Insets right="30.0" />
+                                    </HBox.margin>
+                                </Button>
+                                <Button fx:id="zonebutton" disable="true" mnemonicParsing="false" opacity="0.35" text="Zones">
+                                    <HBox.margin>
+                                        <Insets right="30.0" />
+                                    </HBox.margin>
+                                </Button>
+                                <Button fx:id="heatmapbutton" disable="true" mnemonicParsing="false" opacity="0.35" text="Heat Map">
+                                    <HBox.margin>
+                                        <Insets />
+                                    </HBox.margin>
+                                </Button>
+                            </children>
+                            <padding>
+                                <Insets top="10.0" />
+                            </padding>
+                        </HBox>
+                    </children>
+                </VBox>
+                <VBox fx:id="searchvbox" alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.rowSpan="2" GridPane.vgrow="ALWAYS">
+                    <children>
+                        <Label fx:id="introlabel" prefWidth="200.0" text="It may be a little sluggish. (The server is cheap)" textAlignment="CENTER" textFill="WHITE" wrapText="true" VBox.vgrow="ALWAYS">
+                            <VBox.margin>
+                                <Insets top="10.0" />
+                            </VBox.margin>
+                            <font>
+                                <Font name="Tahoma" size="15.0" />
+                            </font>
+                        </Label>
+                        <ComboBox fx:id="yearcombo" prefWidth="200.0" promptText="Choose A Year" VBox.vgrow="ALWAYS">
+                            <VBox.margin>
+                                <Insets top="20.0" />
+                            </VBox.margin>
+                        </ComboBox>
+                        <ComboBox fx:id="playercombo" prefWidth="200.0" promptText="Choose A Player" VBox.vgrow="ALWAYS">
+                            <VBox.margin>
+                                <Insets top="20.0" />
+                            </VBox.margin>
+                        </ComboBox>
+                        <ComboBox fx:id="seasoncombo" prefWidth="200.0" promptText="Choose A Season Type" VBox.vgrow="ALWAYS">
+                            <VBox.margin>
+                                <Insets top="20.0" />
+                            </VBox.margin>
+                        </ComboBox>
+                        <Button fx:id="searchbutton" mnemonicParsing="false" text="Run It" VBox.vgrow="ALWAYS">
+                            <VBox.margin>
+                                <Insets top="20.0" />
+                            </VBox.margin>
+                        </Button>
+                        <Label fx:id="errorlabel" text="Error Messages Go Here" textFill="#f20909" VBox.vgrow="ALWAYS">
+                            <font>
+                                <Font name="System Bold" size="14.0" />
+                            </font>
+                            <VBox.margin>
+                                <Insets top="10.0" />
+                            </VBox.margin>
+                        </Label>
+                        <GridPane fx:id="shotgrid" alignment="CENTER" maxHeight="110.0" prefHeight="110.0" prefWidth="300.0" VBox.vgrow="ALWAYS">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" percentHeight="30.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" percentHeight="30.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                            </rowConstraints>
+                            <children>
+                                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                                    <children>
+                                        <Label fx:id="fg" alignment="CENTER" contentDisplay="CENTER" text="FG" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="30.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1">
+                                    <children>
+                                        <Label fx:id="twopoint" alignment="CENTER" contentDisplay="CENTER" text="2P" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="30.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2">
+                                    <children>
+                                        <Label fx:id="threepoint" alignment="CENTER" contentDisplay="CENTER" text="3P" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="30.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="1">
+                                    <children>
+                                        <Label fx:id="fgfrac" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="20.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                    <children>
+                                        <Label fx:id="twopointfrac" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="20.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                                    <children>
+                                        <Label fx:id="threepointfrac" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="20.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="2">
+                                    <children>
+                                        <Label fx:id="fgperc" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="20.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                    <children>
+                                        <Label fx:id="twopointperc" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="20.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                                    <children>
+                                        <Label fx:id="threepointperc" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="20.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                            </children>
+                            <VBox.margin>
+                                <Insets bottom="25.0" />
+                            </VBox.margin>
+                        </GridPane>
+                        <Label alignment="BOTTOM_LEFT" prefWidth="198.0" text="Important Updates" textFill="WHITE">
+                            <font>
+                                <Font name="Arial Italic" size="24.0" />
+                            </font>
+                        </Label>
+                        <Label fx:id="updatelabel" alignment="CENTER" prefHeight="49.0" prefWidth="289.0" text="Error Connecting to Server." textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                            <font>
+                                <Font name="Arial" size="18.0" />
+                            </font>
+                        </Label>
+                        <Button fx:id="buttonswitch" mnemonicParsing="false" text="Switch" visible="false" />
+                    </children>
+                </VBox>
             </children>
         </GridPane>
     </children>

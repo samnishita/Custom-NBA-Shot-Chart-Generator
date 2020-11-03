@@ -19,9 +19,11 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -32,6 +34,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -57,12 +60,25 @@ public class Main extends Application {
         hostName = reader.getString("server.host");
         portNumber = Integer.parseInt(reader.getString("server.port"));
 
+        try {
+            socket = new Socket(hostName, portNumber);
+            out = new PrintWriter(socket.getOutputStream(), true);
+//            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//            stdIn = new BufferedReader(new InputStreamReader(System.in));
+        } catch (UnknownHostException e) {
+            System.err.println("Don't know about host " + hostName);
+//            System.exit(1);
+        } catch (IOException e) {
+            System.err.println("Couldn't get I/O for the connection to "
+                    + hostName);
+//            System.exit(1);
+        }
         loader = new FXMLLoader(getClass().getResource("/fxml/simplegrid.fxml"));
         Parent root = (Parent) loader.load();
         scene = new Scene(root);
         stage.setScene(scene);
         stage.setTitle("Dynamic NBA Shot Charts");
-        stage.setMinHeight(650);
+        stage.setMinHeight(750);
         stage.setMinWidth(900);
 
         stage.show();
@@ -74,10 +90,10 @@ public class Main extends Application {
         gp.maxHeightProperty().bind(vbox.maxHeightProperty().multiply(0.9));
         gp.maxWidthProperty().bind(vbox.maxWidthProperty());
         ImageView iv = sc.getIV();
-        iv.setFitHeight(1776);
-        iv.setFitWidth(1890);
-        iv.fitWidthProperty().bind(scene.widthProperty().divide(1.7));
-        iv.fitHeightProperty().bind(scene.heightProperty().divide(1.4));
+//        iv.setFitHeight(1776);
+//        iv.setFitWidth(1890);
+        iv.fitWidthProperty().bind(scene.widthProperty().divide(900.0 / 500));
+        iv.fitHeightProperty().bind(scene.heightProperty().divide(750.0 / 470));
 //        iv.fitWidthProperty().bind(gp.maxWidthProperty().divide(1.7));
 //        iv.fitHeightProperty().bind(gp.maxHeightProperty().divide(1.15));
         iv.setPreserveRatio(true);
@@ -102,26 +118,14 @@ public class Main extends Application {
 //                System.out.println("");
 //            }
 //        });
-        try {
-            socket = new Socket(hostName, portNumber);
-            out = new PrintWriter(socket.getOutputStream(), true);
-//            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//            stdIn = new BufferedReader(new InputStreamReader(System.in));
-        } catch (UnknownHostException e) {
-            System.err.println("Don't know about host " + hostName);
-//            System.exit(1);
-        } catch (IOException e) {
-            System.err.println("Couldn't get I/O for the connection to "
-                    + hostName);
-//            System.exit(1);
-        }
     }
 
     public static void main(String[] args) {
         launch(args);
     }
 
-    public static PrintWriter getPrintWriterOut() {
+    public static PrintWriter getPrintWriterOut() throws IOException {
+        out = new PrintWriter(socket.getOutputStream(), true);
         return out;
     }
 
@@ -135,4 +139,8 @@ public class Main extends Application {
         scene.setRoot(newLoader.load());
     }
 
+    @Override
+    public void stop() {
+        System.exit(0);
+    }
 }

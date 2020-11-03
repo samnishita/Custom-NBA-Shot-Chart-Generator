@@ -19,13 +19,13 @@ public class MissedShotIcon {
     private Line line1;
     private Line line2;
 
-    public MissedShotIcon(double transX, double transY, double height, double lineLength, double lineThickness) {
+    public MissedShotIcon(double transX, double transY, double height, double lineLength, double lineThickness, double extraX,double extraY) {
         line1 = new Line(height * lineLength, height * lineLength * -1, height * lineLength * -1, height * lineLength);
         line2 = new Line(height * lineLength, height * lineLength * -1, height * lineLength * -1, height * lineLength);
-        line1.setTranslateX(height * transX);
-        line1.setTranslateY(height * transY);
-        line2.setTranslateX(height * transX);
-        line2.setTranslateY(height * transY);
+        line1.setTranslateX(height * transX+extraX);
+        line1.setTranslateY(height * transY+extraY);
+        line2.setTranslateX(height * transX+extraX);
+        line2.setTranslateY(height * transY+extraY);
         line1.setStrokeWidth(height * lineThickness);
         line2.setStrokeWidth(height * lineThickness);
         line1.setFill(Color.RED);
