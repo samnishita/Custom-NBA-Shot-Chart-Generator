@@ -78,8 +78,8 @@ public class Main extends Application {
         scene = new Scene(root);
         stage.setScene(scene);
         stage.setTitle("Dynamic NBA Shot Charts");
-        stage.setMinHeight(750);
-        stage.setMinWidth(900);
+        stage.setMinHeight(750.0/1.25);
+        stage.setMinWidth(900.0/1.25);
 
         stage.show();
         sc = loader.getController();
