@@ -839,22 +839,29 @@
                         <Button fx:id="buttonswitch" mnemonicParsing="false" text="Switch" visible="false" />
                     </children>
                 </VBox>
-            <VBox fx:id="advancedvbox" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="1">
+            <VBox fx:id="advancedvbox" alignment="TOP_CENTER" prefHeight="600.0" prefWidth="314.0" GridPane.rowIndex="1">
                <children>
-                  <TextArea editable="false" prefHeight="73.0" prefWidth="324.0" text="7,500 shot limit for traditional, 50,000 shot limit for others, can take up to 30 seconds depending on volume of shots, won't resize,  buttons don't show current selection&#10;" wrapText="true" />
-                  <ScrollPane fx:id="searchscrollpane" prefHeight="224.0" prefWidth="324.0">
+                  <TextArea fx:id="notestextarea" editable="false" prefHeight="111.0" prefWidth="324.0" text="Choosing no value for any parameter is equivalent to choosing all options of the given parameter, unless otherwise noted. (Ex: not selecting a season type will return shots from the Preseason, Regular Season, and Playoffs)&#10;7,500 shot limit for traditional searches, 50,000 shot limit for other searches&#10;Can take up to 30 seconds to complete, seconds depending on volume of shots." wrapText="true">
+                     <VBox.margin>
+                        <Insets bottom="15.0" top="30.0" />
+                     </VBox.margin>
+                     <font>
+                        <Font name="Arial" size="13.0" />
+                     </font>
+                  </TextArea>
+                  <Label fx:id="advancedintrolabel" alignment="CENTER" prefHeight="24.0" prefWidth="241.0" text="Choose your search parameters" textAlignment="CENTER" textFill="WHITE" wrapText="true" VBox.vgrow="ALWAYS">
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
+                     <font>
+                        <Font name="Tahoma Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <ScrollPane fx:id="searchscrollpane" hbarPolicy="NEVER" prefHeight="160.0" prefWidth="314.0">
                      <content>
                         <VBox fx:id="advancedvboxinner" alignment="CENTER" prefHeight="196.0" prefWidth="306.0" style="-fx-background-color: slategray;">
                            <children>
-                              <Label fx:id="advancedintrolabel" alignment="CENTER" prefHeight="24.0" prefWidth="241.0" text="Choose your search parameters" textAlignment="CENTER" textFill="WHITE" wrapText="true" VBox.vgrow="ALWAYS">
-                                 <VBox.margin>
-                                    <Insets top="10.0" />
-                                 </VBox.margin>
-                                 <font>
-                                    <Font name="Tahoma Bold" size="15.0" />
-                                 </font>
-                              </Label>
-                              <Label fx:id="seasonslabel" prefHeight="16.0" prefWidth="270.0" text="Seasons" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                              <Label fx:id="seasonslabel" prefHeight="16.0" prefWidth="270.0" text="Seasons (Default: 1996-97, 2019-20)" textAlignment="CENTER" textFill="WHITE" wrapText="true">
                                  <font>
                                     <Font name="Tahoma" size="13.0" />
                                  </font>
@@ -867,14 +874,17 @@
                               </Label>
                               <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                                  <children>
-                                    <ComboBox fx:id="seasonsbegincombo" prefHeight="27.0" prefWidth="130.0" promptText="Begin" />
-                                    <Label alignment="CENTER" text=" - " textFill="WHITE">
+                                    <ComboBox fx:id="seasonsbegincombo" maxWidth="175.0" prefHeight="27.0" prefWidth="115.0" promptText="Begin" />
+                                    <Label fx:id="seasondash" alignment="CENTER" text=" - " textFill="WHITE">
                                        <font>
                                           <Font name="Arial Bold" size="14.0" />
                                        </font>
                                     </Label>
-                                    <ComboBox fx:id="seasonsendcombo" prefHeight="27.0" prefWidth="130.0" promptText="End" />
+                                    <ComboBox fx:id="seasonsendcombo" maxWidth="175.0" prefHeight="27.0" prefWidth="115.0" promptText="End" />
                                  </children>
+                                 <VBox.margin>
+                                    <Insets right="10.0" />
+                                 </VBox.margin>
                               </HBox>
                               <Label fx:id="playerslabel" prefHeight="24.0" prefWidth="270.0" text="Players" textAlignment="CENTER" textFill="WHITE" wrapText="true">
                                  <font>
@@ -902,7 +912,7 @@
                                     <Insets />
                                  </VBox.margin>
                               </ComboBox>
-                              <Label fx:id="shotdistancelabel" prefHeight="24.0" prefWidth="270.0" text="Shot Distance (Ft.)" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                              <Label fx:id="shotdistancelabel" prefHeight="24.0" prefWidth="270.0" text="Shot Distance (ft.) (Default: 0, 89)" textAlignment="CENTER" textFill="WHITE" wrapText="true">
                                  <font>
                                     <Font name="Tahoma" size="13.0" />
                                  </font>
@@ -912,16 +922,19 @@
                               </Label>
                               <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                                  <children>
-                                    <ComboBox fx:id="distancebegincombo" prefHeight="27.0" prefWidth="130.0" promptText="Begin" />
-                                    <Label alignment="CENTER" text=" - " textFill="WHITE">
+                                    <ComboBox fx:id="distancebegincombo" maxWidth="175.0" prefHeight="27.0" prefWidth="115.0" promptText="Begin" />
+                                    <Label fx:id="distancedash" alignment="CENTER" text=" - " textFill="WHITE">
                                        <font>
                                           <Font name="Arial Bold" size="14.0" />
                                        </font>
                                     </Label>
-                                    <ComboBox fx:id="distanceendcombo" prefHeight="27.0" prefWidth="130.0" promptText="End" />
+                                    <ComboBox fx:id="distanceendcombo" maxWidth="175.0" prefHeight="27.0" prefWidth="115.0" promptText="End" />
                                  </children>
+                                 <VBox.margin>
+                                    <Insets right="10.0" />
+                                 </VBox.margin>
                               </HBox>
-                              <Label fx:id="shotsuccesslabel" prefHeight="24.0" prefWidth="270.0" text="Shot Success  (Default: Both)" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                              <Label fx:id="shotsuccesslabel" prefHeight="24.0" prefWidth="270.0" text="Shot Success  (Max: 1)" textAlignment="CENTER" textFill="WHITE" wrapText="true">
                                  <font>
                                     <Font name="Tahoma" size="13.0" />
                                  </font>
@@ -930,7 +943,7 @@
                                  </padding>
                               </Label>
                               <ComboBox fx:id="shotsuccesscombo" prefWidth="200.0" promptText="Choose Makes or Misses" />
-                              <Label fx:id="shotvaluelabel" prefHeight="24.0" prefWidth="270.0" text="Shot Value (Default: Both)" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                              <Label fx:id="shotvaluelabel" prefHeight="24.0" prefWidth="270.0" text="Shot Value (Max: 1)" textAlignment="CENTER" textFill="WHITE" wrapText="true">
                                  <font>
                                     <Font name="Tahoma" size="13.0" />
                                  </font>
@@ -948,7 +961,7 @@
                                  </padding>
                               </Label>
                               <ComboBox fx:id="shottypescombo" prefWidth="200.0" promptText="Choose Shot Types" />
-                              <Label fx:id="teamslabel" prefHeight="24.0" prefWidth="270.0" text="Teams" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                              <Label fx:id="teamslabel" prefHeight="24.0" prefWidth="270.0" text="Shooting Teams" textAlignment="CENTER" textFill="WHITE" wrapText="true">
                                  <font>
                                     <Font name="Tahoma" size="13.0" />
                                  </font>
@@ -1010,14 +1023,17 @@
                         <Insets top="10.0" />
                      </VBox.margin>
                   </Label>
-                  <ScrollPane fx:id="selectionscrollpane" prefHeight="129.0" prefWidth="324.0">
+                  <ScrollPane fx:id="selectionscrollpane" hbarPolicy="NEVER" prefHeight="124.0" prefWidth="314.0">
                      <content>
-                        <AnchorPane prefHeight="115.0" prefWidth="305.0">
+                        <AnchorPane prefHeight="94.0" prefWidth="198.0">
                            <children>
-                              <VBox fx:id="selectionvbox" prefHeight="120.0" prefWidth="304.0" />
+                              <VBox fx:id="selectionvbox" minWidth="200.0" prefHeight="49.0" prefWidth="210.0" />
                            </children>
                         </AnchorPane>
                      </content>
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
                   </ScrollPane>
                   <GridPane fx:id="shotgridadv" alignment="CENTER" maxHeight="110.0" prefHeight="110.0" prefWidth="300.0" VBox.vgrow="ALWAYS">
                      <columnConstraints>
@@ -1118,6 +1134,9 @@
                      </VBox.margin>
                   </GridPane>
                </children>
+               <GridPane.margin>
+                  <Insets left="10.0" />
+               </GridPane.margin>
             </VBox>
             </children>
         </GridPane>

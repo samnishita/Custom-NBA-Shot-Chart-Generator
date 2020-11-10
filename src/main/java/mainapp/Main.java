@@ -76,10 +76,11 @@ public class Main extends Application {
         loader = new FXMLLoader(getClass().getResource("/fxml/simplegrid.fxml"));
         Parent root = (Parent) loader.load();
         scene = new Scene(root);
+        scene.getStylesheets().add("/css/transparent-text-area.css");
         stage.setScene(scene);
         stage.setTitle("Dynamic NBA Shot Charts");
-        stage.setMinHeight(750.0/1.25);
-        stage.setMinWidth(900.0/1.25);
+        stage.setMinHeight(750.0 / 1.1);
+        stage.setMinWidth(900.0 / 1.1);
 
         stage.show();
         sc = loader.getController();
