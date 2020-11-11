@@ -44,6 +44,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -66,6 +67,7 @@ import mainapp.Coordinate;
 import mainapp.Main;
 import mainapp.MissedShotIcon;
 import mainapp.Shot;
+import mainapp.UserInputComboBox;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -491,6 +493,10 @@ public class SimpleController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        Scene scene = imageview.getScene();
+//        scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
+//            
+//        });
         for (Node each : advancedvboxinner.getChildren()) {
             if (each.getClass().equals(ComboBox.class)) {
                 final ComboBox cb = (ComboBox) each;
@@ -579,8 +585,7 @@ public class SimpleController implements Initializable {
             JSONObject jsonObjMisc1 = jsonArrayInit.getJSONObject(1);
             dateaccuracy.setText(jsonObjMisc1.getString("value"));
             JSONObject jsonObjMisc0 = jsonArrayInit.getJSONObject(0);
-            updatelabel.setText("Version " + jsonObjMisc2.getString("value") + ": "
-                    + jsonObjMisc0.getString("value")
+            updatelabel.setText(jsonObjMisc0.getString("value")
             );
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -1209,6 +1214,7 @@ public class SimpleController implements Initializable {
     }
 
     private void setPlayerComboBox() throws IOException {
+        UserInputComboBox playerComboUser = new UserInputComboBox(playercombo);
         this.activePlayers = new HashMap();
         String year = yearcombo.getValue().toString();
         JSONArray jsonArray = getActivePlayersData();
@@ -1216,52 +1222,60 @@ public class SimpleController implements Initializable {
             JSONObject eachPlayer = jsonArray.getJSONObject(i);
             this.activePlayers.put(eachPlayer.getInt("id"), eachPlayer.getString("firstname") + " " + eachPlayer.getString("lastname"));
         }
-        ArrayList<String> activeList = new ArrayList();
-
+//        ArrayList<String> activeList = new ArrayList();
+//
+//        for (int each : this.activePlayers.keySet()) {
+//            activeList.add(activePlayers.get(each).trim());
+//        }
+//        Collections.sort(activeList);
+        HashMap<String, String> names = new HashMap();
+        ArrayList<String> fixedNames = new ArrayList();
         for (int each : this.activePlayers.keySet()) {
-            activeList.add(activePlayers.get(each).trim());
+            names.put(activePlayers.get(each).replaceAll("[^A-Za-z0-9]", "").toLowerCase(), activePlayers.get(each));
+            fixedNames.add(activePlayers.get(each).replaceAll("[^A-Za-z0-9]", "").toLowerCase());
         }
-        Collections.sort(activeList);
+        Collections.sort(fixedNames);
+        LinkedList<String> realNames = new LinkedList();
+        for (String each : fixedNames) {
+            realNames.add(names.get(each));
+        }
         if (seasoncombo.getValue() != null) {
             this.previousSeason = seasoncombo.getValue().toString();
         }
-        this.playercombo.setItems(FXCollections.observableArrayList(activeList));
+//        this.playercombo.setItems(FXCollections.observableArrayList(activeList));
+        playerComboUser.getComboBox().setItems(FXCollections.observableArrayList(realNames));
         if (previousSeason != null && playercombo.getValue() != null && seasoncombo.getItems().contains(previousSeason)) {
             this.seasoncombo.getSelectionModel().select(previousSeason);
         } else {
             this.seasoncombo.getSelectionModel().clearSelection();
         }
-        if (activeList.contains(previousPlayer)) {
+        if (realNames.contains(previousPlayer)) {
             this.playercombo.getSelectionModel().select(previousPlayer);
         }
     }
 
     private void setAdvancedPlayerComboBox() throws IOException {
+        UserInputComboBox playerComboUserAdvanced = new UserInputComboBox(playercomboadvanced);
         this.activePlayers = new HashMap();
         JSONArray jsonArray = getInitAllPlayersData();
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject eachPlayer = jsonArray.getJSONObject(i);
             this.activePlayers.put(eachPlayer.getInt("id"), eachPlayer.getString("firstname") + " " + eachPlayer.getString("lastname"));
         }
-        ArrayList<String> activeList = new ArrayList();
+        HashMap<String, String> names = new HashMap();
+        ArrayList<String> fixedNames = new ArrayList();
         for (int each : this.activePlayers.keySet()) {
-            activeList.add(activePlayers.get(each).trim());
+            names.put(activePlayers.get(each).replaceAll("[^A-Za-z0-9]", "").toLowerCase(), activePlayers.get(each));
+            fixedNames.add(activePlayers.get(each).replaceAll("[^A-Za-z0-9]", "").toLowerCase());
         }
-        Collections.sort(activeList);
-        this.playercomboadvanced.setItems(FXCollections.observableArrayList(activeList));
+        Collections.sort(fixedNames);
+        LinkedList<String> realNames = new LinkedList();
+        for (String each : fixedNames) {
+            realNames.add(names.get(each));
+        }
+//        this.playercomboadvanced.setItems(FXCollections.observableArrayList(realNames));
+        playerComboUserAdvanced.getComboBox().setItems(FXCollections.observableArrayList(realNames));
 
-//        if (seasoncombo.getValue() != null) {
-//            this.previousSeason = seasoncombo.getValue().toString();
-//        }
-//        this.playercombo.setItems(FXCollections.observableArrayList(activeList));
-//        if (previousSeason != null && playercombo.getValue() != null && seasoncombo.getItems().contains(previousSeason)) {
-//            this.seasoncombo.getSelectionModel().select(previousSeason);
-//        } else {
-//            this.seasoncombo.getSelectionModel().clearSelection();
-//        }
-//        if (activeList.contains(previousPlayer)) {
-//            this.playercombo.getSelectionModel().select(previousPlayer);
-//        }
     }
 
     private void setSeasonsComboBox() throws IOException {
@@ -3857,7 +3871,9 @@ public class SimpleController implements Initializable {
         shotvaluecombo.setItems(FXCollections.observableArrayList(tempList));
         tempList = new ArrayList();
         tempList = getShotTypesList();
-        shottypescombo.setItems(FXCollections.observableArrayList(tempList));
+        UserInputComboBox shotTypeComboUser = new UserInputComboBox(shottypescombo);
+        shotTypeComboUser.getComboBox().setItems(FXCollections.observableArrayList(tempList));
+//        shottypescombo.setItems(FXCollections.observableArrayList(tempList));
         tempList = new ArrayList();
         relevantTeamNameIDHashMap.put("Atlanta Hawks", 1610612737);
         relevantTeamNameIDHashMap.put("Boston Celtics", 1610612738);
@@ -3961,9 +3977,15 @@ public class SimpleController implements Initializable {
 //        teamscombo.setItems(FXCollections.observableArrayList(tempList));
 //        hometeamscombo.setItems(FXCollections.observableArrayList(tempList));
 //        awayteamscombo.setItems(FXCollections.observableArrayList(tempList));
-        teamscombo.setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
-        hometeamscombo.setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
-        awayteamscombo.setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
+        UserInputComboBox teamComboUser = new UserInputComboBox(teamscombo);
+        UserInputComboBox homeTeamComboUser = new UserInputComboBox(hometeamscombo);
+        UserInputComboBox awayTeamComboUser = new UserInputComboBox(awayteamscombo);
+        teamComboUser.getComboBox().setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
+        homeTeamComboUser.getComboBox().setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
+        awayTeamComboUser.getComboBox().setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
+//        teamscombo.setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
+//        hometeamscombo.setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
+//        awayteamscombo.setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
         tempList = new ArrayList();
         tempList.add("Restricted Area");
         tempList.add("In The Paint (Non-RA)");
@@ -4102,5 +4124,4 @@ public class SimpleController implements Initializable {
         this.charttitle.setText("Custom Search");
         this.charttitle.setVisible(true);
     }
-
 }
