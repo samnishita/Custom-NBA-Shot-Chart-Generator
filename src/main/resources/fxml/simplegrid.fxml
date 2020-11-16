@@ -1,0 +1,1144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.geometry.Rectangle2D?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.LinearGradient?>
+<?import javafx.scene.paint.Stop?>
+<?import javafx.scene.shape.Arc?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+
+<VBox fx:id="vbox" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="750.0" minWidth="900.0" prefHeight="750.0" prefWidth="900.0" style="-fx-background-color: slategray;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.SimpleController">
+    <children>
+        <GridPane fx:id="topgridpane" alignment="CENTER" minHeight="43.0" prefHeight="73.0" prefWidth="900.0">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="80.0" prefWidth="693.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="20" prefWidth="149.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <children>
+                <VBox alignment="TOP_RIGHT" prefHeight="80.0" prefWidth="268.0" GridPane.columnIndex="1">
+                    <children>
+                        <Label fx:id="lastupdatedlabel" alignment="BOTTOM_CENTER" prefHeight="30.0" prefWidth="227.0" text="Accurate As Of " textAlignment="CENTER" textFill="WHITE" underline="true">
+                            <font>
+                                <Font name="Arial" size="15.0" />
+                            </font>
+                            <padding>
+                                <Insets top="10.0" />
+                            </padding>
+                        </Label>
+                        <Label fx:id="dateaccuracy" alignment="CENTER" prefHeight="31.0" prefWidth="219.0" text="DATE" textAlignment="CENTER" textFill="WHITE">
+                            <font>
+                                <Font name="Arial Bold" size="26.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </VBox>
+                <HBox fx:id="tophbox" alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0">
+                    <children>
+                        <Label fx:id="titlelabel" graphicTextGap="0.0" prefHeight="73.0" text="Dynamic NBA Shot Charts" textFill="WHITE">
+                            <font>
+                                <Font name="Kohinoor Bangla" size="50.0" />
+                            </font>
+                            <HBox.margin>
+                                <Insets left="20.0" />
+                            </HBox.margin>
+                        </Label>
+                        <Label fx:id="namelabel" alignment="BOTTOM_LEFT" prefHeight="71.0" prefWidth="137.0" text="Version" textFill="WHITE">
+                            <padding>
+                                <Insets bottom="15.0" left="10.0" />
+                            </padding>
+                            <font>
+                                <Font name="Arial Bold" size="15.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </HBox>
+            </children>
+        </GridPane>
+        <Line fx:id="line" endX="890.0" stroke="WHITE" strokeWidth="10.0" />
+        <GridPane fx:id="gridpane" alignment="CENTER" maxHeight="Infinity" prefHeight="568.0" prefWidth="900.0" style="-fx-background-color: slategray;" VBox.vgrow="ALWAYS">
+            <columnConstraints>
+                <ColumnConstraints hgrow="ALWAYS" percentWidth="36.0" />
+                <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" percentWidth="58.5" />
+                <ColumnConstraints hgrow="ALWAYS" percentWidth="5.5" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="5" vgrow="ALWAYS" />
+                <RowConstraints percentHeight="90" vgrow="ALWAYS" />
+                <RowConstraints percentHeight="5" vgrow="ALWAYS" />
+            </rowConstraints>
+            <children>
+            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
+               <children>
+                  <Button fx:id="simplelayoutbutton" mnemonicParsing="false" prefWidth="80.0" text="Simple" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets left="10.0" right="10.0" />
+                     </HBox.margin>
+                  </Button>
+                  <Button fx:id="advancedlayoutbutton" mnemonicParsing="false" prefWidth="80.0" text="Advanced" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets left="10.0" right="10.0" />
+                     </HBox.margin>
+                  </Button>
+                  <Button fx:id="comparelayoutbutton" disable="true" mnemonicParsing="false" opacity="0.49" prefWidth="80.0" text="Ignore" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets left="10.0" right="10.0" />
+                     </HBox.margin>
+                  </Button>
+               </children>
+            </HBox>
+                <VBox fx:id="centralvbox" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="SOMETIMES">
+                    <children>
+                        <Label fx:id="charttitle" alignment="BOTTOM_CENTER" minHeight="45.0" prefHeight="45.0" prefWidth="516.0" text="Chart Title" textFill="WHITE">
+                            <font>
+                                <Font name="Arial Italic" size="20.0" />
+                            </font>
+                            <padding>
+                                <Insets bottom="10.0" />
+                            </padding>
+                        </Label>
+                        <GridPane fx:id="imagegrid" alignment="CENTER" prefHeight="470.0" prefWidth="500.0">
+                            <columnConstraints>
+                                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="5.0" prefWidth="5.0" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints minHeight="5.0" prefHeight="5.0" vgrow="SOMETIMES" />
+                      
+                            </rowConstraints>
+                     <children>
+                        <Group fx:id="group12">
+                           <children>
+                              <Rectangle fx:id="rect12" fill="WHITE" height="30.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="30.0" x="-250.0" y="85.0" />
+                              <Arc fx:id="arc12" fill="WHITE" length="50.0" radiusX="500.0" radiusY="500.0" startAngle="201.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" type="ROUND" />
+                           </children>
+                        </Group>
+                        <Group fx:id="group14">
+                           <children>
+                              <Rectangle fx:id="rect14" fill="WHITE" height="30.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="30.0" x="220.0" y="85.0" />
+                              <Arc fx:id="arc14" fill="WHITE" length="50.0" radiusX="500.0" radiusY="500.0" startAngle="289.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" type="ROUND" />
+                           </children>
+                        </Group>
+                        <Arc fx:id="arc13" fill="WHITE" length="40.0" radiusX="500.0" radiusY="500.0" startAngle="250.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" type="ROUND" />
+                        <Arc fx:id="arc9" fill="WHITE" length="35.0" radiusX="233.0" radiusY="235.0" startAngle="290.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" type="ROUND" />
+                        <Arc fx:id="arc8" fill="WHITE" length="40.0" radiusX="233.0" radiusY="235.0" startAngle="250.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" type="ROUND" />
+                        <Arc fx:id="arc7" fill="WHITE" length="35.0" radiusX="233.0" radiusY="235.0" startAngle="215.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" type="ROUND" />
+                        <Group fx:id="group10">
+                           <children>
+                              <Rectangle fx:id="rect10" fill="WHITE" height="137.0" layoutX="121.0" layoutY="-55.0" stroke="BLACK" strokeType="OUTSIDE" strokeWidth="0.0" width="97.0" />
+                              <Arc fx:id="arc10" fill="WHITE" length="14.75" radiusX="233.0" radiusY="235.0" startAngle="324.7" stroke="BLACK" strokeType="OUTSIDE" strokeWidth="0.0" type="ROUND" />
+                           </children>
+                        </Group>
+                        <Group fx:id="group6">
+                           <children>
+                              <Rectangle fx:id="rect6" fill="WHITE" height="137.0" layoutX="32.0" layoutY="-55.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="97.0" />
+                              <Arc fx:id="arc6" fill="WHITE" layoutX="250.0" length="14.65" radiusX="233.0" radiusY="235.0" startAngle="200.5" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" type="ROUND" />
+                           </children>
+                        </Group>
+                        <Group fx:id="group3">
+                           <children>
+                              <Rectangle fx:id="rect3" fill="WHITE" height="55.0" layoutX="-159.95" layoutY="-55.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="160.0" />
+                              <Arc fx:id="arc3" fill="WHITE" length="60.0" radiusX="160.0" radiusY="160.0" startAngle="180.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" type="ROUND" />
+                           </children>
+                        </Group>
+                        <Arc fx:id="arc4" fill="WHITE" length="60.0" radiusX="160.0" radiusY="160.0" startAngle="240.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" type="ROUND" />
+                        <Group fx:id="group5">
+                           <children>
+                              <Rectangle fx:id="rect5" fill="WHITE" height="55.0" layoutY="-55.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="160.0" />
+                              <Arc fx:id="arc5" fill="WHITE" length="60.0" radiusX="160.0" radiusY="160.0" startAngle="300.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" type="ROUND" />
+                           </children>
+                        </Group>
+                        <Group fx:id="group2">
+                           <children>
+                              <Rectangle fx:id="rect2" fill="WHITE" height="55.0" layoutX="-80.0" layoutY="-55.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="160.0" />
+                              <Arc fx:id="arc2" fill="WHITE" length="180.0" radiusX="80.0" radiusY="80.0" startAngle="180.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" type="ROUND" />
+                           </children>
+                        </Group>
+                        <Group fx:id="group1">
+                           <children>
+                              <Rectangle fx:id="rect1" fill="WHITE" height="56.0" layoutX="-40.0" layoutY="-55.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="80.0" />
+                              <Arc fx:id="arc1" fill="WHITE" length="180.0" radiusX="40.0" radiusY="40.0" startAngle="180.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" type="ROUND" />
+                           </children>
+                        </Group>
+                        <Rectangle fx:id="rect11" fill="WHITE" height="140.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="30.0" />
+                        <Rectangle fx:id="rect15" fill="WHITE" height="140.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="30.0" />
+                        <Label fx:id="label1" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="120.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="18.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="label2" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="18.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="label3" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="18.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="label4" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="18.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="label5" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="18.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="label6" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="18.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="label7" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="18.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="label8" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="18.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="label9" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="18.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="label10" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="18.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="label11" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="18.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="label12" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="18.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="label13" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="18.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="label14" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="18.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="label15" alignment="CENTER_RIGHT" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="RIGHT" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="18.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="labelpercent1" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="120.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="16.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="labelpercent2" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="16.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="labelpercent3" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="16.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="labelpercent4" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="16.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="labelpercent5" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="16.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="labelpercent6" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="16.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="labelpercent7" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="16.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="labelpercent8" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="16.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="labelpercent9" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="16.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="labelpercent10" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="16.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="labelpercent11" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="16.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="labelpercent12" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="16.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="labelpercent13" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="16.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="labelpercent14" alignment="CENTER" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="16.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="labelpercent15" alignment="CENTER_RIGHT" contentDisplay="CENTER" prefHeight="35.0" prefWidth="90.0" text="Label" textAlignment="RIGHT" textFill="WHITE">
+                           <font>
+                              <Font name="PT Sans Narrow Bold" size="16.0" />
+                           </font>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </Label>
+                              <Rectangle fx:id="gridbackground" fill="#505050" height="200.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="200.0" />
+                              <ImageView fx:id="imageview" fitHeight="470.0" fitWidth="500.0" pickOnBounds="true" preserveRatio="true" rotate="180.0">
+                                  <image>
+                                      <Image url="@../images/newbackcourt.png" />
+                                  </image>
+                           <viewport>
+                              <Rectangle2D />
+                           </viewport>
+                              </ImageView>
+                        <VBox fx:id="zonelegend" alignment="CENTER" maxHeight="80.0" maxWidth="180.0" prefHeight="80.0" prefWidth="180.0" style="-fx-background-color: slategray;" translateX="-155.0" translateY="190.0">
+                           <children>
+                              <Label fx:id="zonelegendtoplabel" alignment="CENTER" prefHeight="29.0" prefWidth="146.0" text="Shooting Percentage" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Lucida Sans Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                 <children>
+                                    <Label fx:id="zonelegendlowerlabel" alignment="BOTTOM_LEFT" prefHeight="41.0" prefWidth="79.0" text="Below Avg." textFill="WHITE">
+                                       <font>
+                                          <Font name="Lucida Sans Demibold" size="11.0" />
+                                       </font>
+                                       <HBox.margin>
+                                          <Insets bottom="2.0" top="2.0" />
+                                       </HBox.margin>
+                                    </Label>
+                                    <Label fx:id="zonelegendupperlabel" alignment="BOTTOM_RIGHT" prefHeight="42.0" prefWidth="73.0" text="Above Avg." textAlignment="RIGHT" textFill="WHITE">
+                                       <font>
+                                          <Font name="Lucida Sans Demibold" size="11.0" />
+                                       </font>
+                                       <HBox.margin>
+                                          <Insets bottom="2.0" top="2.0" />
+                                       </HBox.margin>
+                                    </Label>
+                                 </children>
+                                 <VBox.margin>
+                                    <Insets bottom="5.0" />
+                                 </VBox.margin>
+                              </HBox>
+                              <Rectangle fx:id="zonelegendgradient" arcHeight="5.0" arcWidth="5.0" height="17.0" stroke="BLACK" strokeType="INSIDE" width="153.0">
+                                 <fill>
+                                    <LinearGradient endX="1.0" endY="1.0">
+                                       <stops>
+                                          <Stop color="#fc2121" />
+                                          <Stop color="#2f75ee" offset="0.007518796992481203" />
+                                          <Stop color="#56b0ff" offset="0.1839311115626905" />
+                                          <Stop color="#aed9ff" offset="0.3638996138996136" />
+                                          <Stop color="#d0cfcf" offset="0.5338345864661648" />
+                                          <Stop color="#ff9c9c" offset="0.6954887218045113" />
+                                          <Stop color="#ff6363" offset="0.8379140418614095" />
+                                          <Stop color="#fc2121" offset="1.0" />
+                                       </stops>
+                                    </LinearGradient>
+                                 </fill>
+                              </Rectangle>
+                           </children>
+                           <padding>
+                              <Insets bottom="15.0" left="15.0" right="15.0" top="10.0" />
+                           </padding>
+                        </VBox>
+                        <VBox fx:id="gridlegendcolor" alignment="CENTER" maxHeight="80.0" maxWidth="180.0" prefHeight="80.0" prefWidth="180.0" translateX="-155.0" translateY="190.0">
+                           <children>
+                              <Label fx:id="gridcolorlegendtoplabel" alignment="CENTER" prefHeight="29.0" prefWidth="146.0" text="Shooting Percentage" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Lucida Sans Demibold" size="13.0" />
+                                 </font>
+                                 <VBox.margin>
+                                    <Insets />
+                                 </VBox.margin>
+                              </Label>
+                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                 <children>
+                                    <Label fx:id="gridcolorlegendlowerlabel" alignment="BOTTOM_LEFT" prefHeight="41.0" prefWidth="79.0" text="Below Avg." textFill="WHITE">
+                                       <font>
+                                          <Font name="Lucida Sans Demibold" size="11.0" />
+                                       </font>
+                                       <HBox.margin>
+                                          <Insets bottom="2.0" top="2.0" />
+                                       </HBox.margin>
+                                    </Label>
+                                    <Label fx:id="gridcolorlegendupperlabel" alignment="BOTTOM_RIGHT" prefHeight="42.0" prefWidth="73.0" text="Above Avg." textAlignment="RIGHT" textFill="WHITE">
+                                       <font>
+                                          <Font name="Lucida Sans Demibold" size="11.0" />
+                                       </font>
+                                       <HBox.margin>
+                                          <Insets bottom="2.0" top="2.0" />
+                                       </HBox.margin>
+                                    </Label>
+                                 </children>
+                                 <VBox.margin>
+                                    <Insets bottom="5.0" />
+                                 </VBox.margin>
+                              </HBox>
+                              <Rectangle fx:id="gridcolorlegendgradient" arcHeight="5.0" arcWidth="5.0" height="17.0" stroke="BLACK" strokeType="INSIDE" width="153.0">
+                                 <fill>
+                                    <LinearGradient endX="1.0" endY="1.0">
+                                       <stops>
+                                          <Stop color="#fc2121" />
+                                          <Stop color="#7babff" offset="0.007518796992481203" />
+                                          <Stop color="#8bc9ff" offset="0.1839311115626905" />
+                                          <Stop color="#aed9ff" offset="0.360140215403373" />
+                                          <Stop color="WHITE" offset="0.5338345864661648" />
+                                          <Stop color="#ff9c9c" offset="0.6954887218045113" />
+                                          <Stop color="#ff6363" offset="0.8379140418614095" />
+                                          <Stop color="#fc2121" offset="1.0" />
+                                       </stops>
+                                    </LinearGradient>
+                                 </fill>
+                              </Rectangle>
+                           </children>
+                           <padding>
+                              <Insets bottom="15.0" left="15.0" right="15.0" top="10.0" />
+                           </padding>
+                        </VBox>
+                        <VBox fx:id="gridlegendsize" alignment="CENTER" maxHeight="80.0" maxWidth="180.0" prefHeight="80.0" prefWidth="180.0" translateX="155.0" translateY="190.0">
+                           <children>
+                              <Label fx:id="gridsizelegendtoplabel" alignment="CENTER" prefHeight="16.0" prefWidth="172.0" text="Shot Frequency" textFill="WHITE">
+                                 <font>
+                                    <Font name="Lucida Sans Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                 <children>
+                                    <Label fx:id="gridsizelegendlowerlabel" alignment="CENTER" contentDisplay="CENTER" prefHeight="41.0" prefWidth="79.0" text="Low" textAlignment="CENTER" textFill="WHITE">
+                                       <font>
+                                          <Font name="Lucida Sans Demibold" size="11.0" />
+                                       </font>
+                                       <padding>
+                                          <Insets bottom="2.0" />
+                                       </padding>
+                                       <HBox.margin>
+                                          <Insets bottom="2.0" top="2.0" />
+                                       </HBox.margin>
+                                    </Label>
+                                    <Label fx:id="gridsizelegendupperlabel" alignment="CENTER" prefHeight="22.0" prefWidth="87.0" text="High" textAlignment="RIGHT" textFill="WHITE">
+                                       <font>
+                                          <Font name="Lucida Sans Demibold" size="11.0" />
+                                       </font>
+                                       <padding>
+                                          <Insets bottom="2.0" />
+                                       </padding>
+                                       <HBox.margin>
+                                          <Insets bottom="2.0" top="2.0" />
+                                       </HBox.margin>
+                                    </Label>
+                                 </children>
+                              </HBox>
+                              <HBox fx:id="gridsizelegendgradient" alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                 <children>
+                                    <Rectangle fill="WHITE" height="2.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="2.0">
+                                       <HBox.margin>
+                                          <Insets right="20.0" />
+                                       </HBox.margin>
+                                    </Rectangle>
+                                    <Rectangle fill="WHITE" height="3.5" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="3.5">
+                                       <HBox.margin>
+                                          <Insets right="20.0" />
+                                       </HBox.margin>
+                                    </Rectangle>
+                                    <Rectangle fill="WHITE" height="5.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="5.0">
+                                       <HBox.margin>
+                                          <Insets right="20.0" />
+                                       </HBox.margin>
+                                    </Rectangle>
+                                    <Rectangle fill="WHITE" height="6.5" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="6.5">
+                                       <HBox.margin>
+                                          <Insets right="20.0" />
+                                       </HBox.margin>
+                                    </Rectangle>
+                                    <Rectangle fill="WHITE" height="8.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="8.0" />
+                                 </children>
+                              </HBox>
+                           </children>
+                           <padding>
+                              <Insets bottom="15.0" left="15.0" right="15.0" top="10.0" />
+                           </padding>
+                        </VBox>
+                        <VBox fx:id="heatlegend" alignment="CENTER" maxHeight="80.0" maxWidth="170.0" prefHeight="80.0" prefWidth="170.0" translateX="-155.0" translateY="190.0">
+                           <children>
+                              <Label fx:id="heatlegendtoplabel" alignment="CENTER" prefHeight="37.0" prefWidth="170.0" text="Shot Frequency" textFill="WHITE">
+                                 <font>
+                                    <Font name="Lucida Sans Demibold" size="13.0" />
+                                 </font>
+                                 <VBox.margin>
+                                    <Insets bottom="2.0" top="2.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                 <children>
+                                    <Label fx:id="heatlegendlowerlabel" prefHeight="24.0" prefWidth="72.0" text="Low Freq." textFill="WHITE">
+                                       <font>
+                                          <Font name="Lucida Sans Demibold" size="11.0" />
+                                       </font>
+                                       <HBox.margin>
+                                          <Insets bottom="2.0" top="2.0" />
+                                       </HBox.margin>
+                                    </Label>
+                                    <Label fx:id="heatlegendupperlabel" alignment="CENTER_RIGHT" prefHeight="24.0" prefWidth="87.0" text="High Freq." textAlignment="RIGHT" textFill="WHITE">
+                                       <font>
+                                          <Font name="Lucida Sans Demibold" size="11.0" />
+                                       </font>
+                                       <HBox.margin>
+                                          <Insets bottom="2.0" top="2.0" />
+                                       </HBox.margin>
+                                    </Label>
+                                 </children>
+                              </HBox>
+                              <Rectangle fx:id="heatlegendgradient" arcHeight="5.0" arcWidth="5.0" height="17.0" stroke="BLACK" strokeType="INSIDE" width="164.0">
+                                 <fill>
+                                    <LinearGradient endX="1.0" endY="1.0">
+                                       <stops>
+                                          <Stop color="#bc53f8" />
+                                          <Stop color="#bc53f8" offset="0.007518796992481203" />
+                                          <Stop color="#dd76ff" offset="0.1839311115626905" />
+                                          <Stop color="#e696fa" offset="0.3601402154033731" />
+                                          <Stop color="#c4b8ff" offset="0.5375939849624055" />
+                                          <Stop color="#6bb2f8" offset="0.6992481203007519" />
+                                          <Stop color="#62c8ff" offset="0.8379140418614095" />
+                                          <Stop color="#90ebff" offset="1.0" />
+                                       </stops>
+                                    </LinearGradient>
+                                 </fill>
+                              </Rectangle>
+                           </children>
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </padding>
+                        </VBox>
+                     </children>
+                        </GridPane>
+                        <HBox fx:id="buttonbox" alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                            <children>
+                                <Button fx:id="traditionalbutton" mnemonicParsing="false" prefHeight="40.0" prefWidth="175.0" style="-fx-background-color: transparent;" text="Traditional" textFill="WHITE">
+                                    <HBox.margin>
+                                        <Insets />
+                                    </HBox.margin>
+                           <font>
+                              <Font name="Arial Black" size="18.0" />
+                           </font>
+                                </Button>
+                                <Button fx:id="gridbutton" mnemonicParsing="false" prefHeight="40.0" style="-fx-background-color: transparent;" text="Grid" textFill="WHITE">
+                                    <HBox.margin>
+                                        <Insets right="20.0" />
+                                    </HBox.margin>
+                           <font>
+                              <Font name="Arial" size="18.0" />
+                           </font>
+                                </Button>
+                                <Button fx:id="zonebutton" mnemonicParsing="false" prefHeight="40.0" style="-fx-background-color: transparent;" text="Zone" textFill="WHITE">
+                                    <HBox.margin>
+                                        <Insets />
+                                    </HBox.margin>
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                                </Button>
+                                <Button fx:id="heatmapbutton" mnemonicParsing="false" prefHeight="40.0" style="-fx-background-color: transparent;" text="Heat Map" textFill="WHITE">
+                                    <HBox.margin>
+                                        <Insets right="20.0" />
+                                    </HBox.margin>
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                                </Button>
+                            </children>
+                            <padding>
+                                <Insets top="20.0" />
+                            </padding>
+                        </HBox>
+                    </children>
+                </VBox>
+                <VBox fx:id="searchvbox" alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" visible="false" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.rowSpan="2" GridPane.vgrow="ALWAYS">
+                    <children>
+                        <Label fx:id="introlabel" prefWidth="200.0" text="It may be a little sluggish. (The server is cheap)" textAlignment="CENTER" textFill="WHITE" wrapText="true" VBox.vgrow="ALWAYS">
+                            <VBox.margin>
+                                <Insets top="10.0" />
+                            </VBox.margin>
+                            <font>
+                                <Font name="Tahoma" size="15.0" />
+                            </font>
+                        </Label>
+                        <ComboBox fx:id="yearcombo" prefWidth="200.0" promptText="Choose A Year" VBox.vgrow="ALWAYS">
+                            <VBox.margin>
+                                <Insets top="20.0" />
+                            </VBox.margin>
+                        </ComboBox>
+                        <ComboBox fx:id="playercombo" prefWidth="200.0" promptText="Choose A Player" VBox.vgrow="ALWAYS">
+                            <VBox.margin>
+                                <Insets top="20.0" />
+                            </VBox.margin>
+                        </ComboBox>
+                        <ComboBox fx:id="seasoncombo" prefWidth="200.0" promptText="Choose A Season Type" VBox.vgrow="ALWAYS">
+                            <VBox.margin>
+                                <Insets top="20.0" />
+                            </VBox.margin>
+                        </ComboBox>
+                        <Button fx:id="searchbutton" mnemonicParsing="false" text="Run It" VBox.vgrow="ALWAYS">
+                            <VBox.margin>
+                                <Insets top="20.0" />
+                            </VBox.margin>
+                        </Button>
+                        <Label fx:id="errorlabel" text="Error Messages Go Here" textFill="#f20909" VBox.vgrow="ALWAYS">
+                            <font>
+                                <Font name="System Bold" size="14.0" />
+                            </font>
+                            <VBox.margin>
+                                <Insets top="10.0" />
+                            </VBox.margin>
+                        </Label>
+                        <GridPane fx:id="shotgrid" alignment="CENTER" maxHeight="110.0" prefHeight="110.0" prefWidth="300.0" VBox.vgrow="ALWAYS">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" percentHeight="30.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" percentHeight="30.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                            </rowConstraints>
+                            <children>
+                                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                                    <children>
+                                        <Label fx:id="fg" alignment="CENTER" contentDisplay="CENTER" text="FG" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="30.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1">
+                                    <children>
+                                        <Label fx:id="twopoint" alignment="CENTER" contentDisplay="CENTER" text="2P" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="30.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2">
+                                    <children>
+                                        <Label fx:id="threepoint" alignment="CENTER" contentDisplay="CENTER" text="3P" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="30.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="1">
+                                    <children>
+                                        <Label fx:id="fgfrac" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="20.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                    <children>
+                                        <Label fx:id="twopointfrac" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="20.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                                    <children>
+                                        <Label fx:id="threepointfrac" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="20.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="2">
+                                    <children>
+                                        <Label fx:id="fgperc" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="20.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                    <children>
+                                        <Label fx:id="twopointperc" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="20.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                                    <children>
+                                        <Label fx:id="threepointperc" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                            <font>
+                                                <Font name="Tahoma Bold" size="20.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                            </children>
+                            <VBox.margin>
+                                <Insets bottom="25.0" />
+                            </VBox.margin>
+                        </GridPane>
+                        <Label alignment="BOTTOM_LEFT" prefWidth="198.0" text="Important Updates" textFill="WHITE">
+                            <font>
+                                <Font name="Arial Italic" size="24.0" />
+                            </font>
+                        </Label>
+                        <Label fx:id="updatelabel" alignment="CENTER" prefHeight="49.0" prefWidth="289.0" text="Error Connecting to Server." textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                            <font>
+                                <Font name="Arial" size="18.0" />
+                            </font>
+                        </Label>
+                        <Button fx:id="buttonswitch" mnemonicParsing="false" text="Switch" visible="false" />
+                    </children>
+                </VBox>
+            <VBox fx:id="advancedvbox" alignment="TOP_CENTER" prefHeight="600.0" prefWidth="314.0" GridPane.rowIndex="1" GridPane.rowSpan="2">
+               <children>
+                  <TextArea fx:id="notestextarea" editable="false" prefHeight="111.0" prefWidth="324.0" text="Choosing no value for any parameter is equivalent to choosing all options of the given parameter, unless otherwise noted. (Ex: not selecting a season type will return shots from the Preseason, Regular Season, and Playoffs)&#10;7,500 shot limit for traditional searches, 50,000 shot limit for other searches&#10;Can take up to 30 seconds to complete, seconds depending on volume of shots." wrapText="true">
+                     <VBox.margin>
+                        <Insets bottom="15.0" top="30.0" />
+                     </VBox.margin>
+                     <font>
+                        <Font name="Arial" size="13.0" />
+                     </font>
+                  </TextArea>
+                  <Label fx:id="advancedintrolabel" alignment="CENTER" prefHeight="24.0" prefWidth="241.0" text="Choose your search parameters" textAlignment="CENTER" textFill="WHITE" wrapText="true" VBox.vgrow="ALWAYS">
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
+                     <font>
+                        <Font name="Tahoma Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <ScrollPane fx:id="searchscrollpane" hbarPolicy="NEVER" prefHeight="160.0" prefWidth="314.0">
+                     <content>
+                        <VBox fx:id="advancedvboxinner" alignment="CENTER" prefHeight="196.0" prefWidth="306.0" style="-fx-background-color: slategray;">
+                           <children>
+                              <Label fx:id="seasonslabel" prefHeight="16.0" prefWidth="270.0" text="Seasons (Default: 1996-97, 2019-20)" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                                 <font>
+                                    <Font name="Tahoma" size="13.0" />
+                                 </font>
+                                 <VBox.margin>
+                                    <Insets />
+                                 </VBox.margin>
+                                 <padding>
+                                    <Insets left="10.0" />
+                                 </padding>
+                              </Label>
+                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                 <children>
+                                    <ComboBox fx:id="seasonsbegincombo" maxWidth="175.0" prefHeight="27.0" prefWidth="115.0" promptText="Begin" />
+                                    <Label fx:id="seasondash" alignment="CENTER" text=" - " textFill="WHITE">
+                                       <font>
+                                          <Font name="Arial Bold" size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <ComboBox fx:id="seasonsendcombo" maxWidth="175.0" prefHeight="27.0" prefWidth="115.0" promptText="End" />
+                                 </children>
+                                 <VBox.margin>
+                                    <Insets right="10.0" />
+                                 </VBox.margin>
+                              </HBox>
+                              <Label fx:id="playerslabel" prefHeight="24.0" prefWidth="270.0" text="Players" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                                 <font>
+                                    <Font name="Tahoma" size="13.0" />
+                                 </font>
+                                 <padding>
+                                    <Insets left="10.0" />
+                                 </padding>
+                              </Label>
+                              <ComboBox fx:id="playercomboadvanced" prefWidth="200.0" promptText="Choose Players" VBox.vgrow="ALWAYS">
+                                 <VBox.margin>
+                                    <Insets />
+                                 </VBox.margin>
+                              </ComboBox>
+                              <Label fx:id="seasontypeslabel" prefHeight="24.0" prefWidth="270.0" text="Season Types" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                                 <font>
+                                    <Font name="Tahoma" size="13.0" />
+                                 </font>
+                                 <padding>
+                                    <Insets left="10.0" />
+                                 </padding>
+                              </Label>
+                              <ComboBox fx:id="seasontypescomboadvanced" prefWidth="200.0" promptText="Choose Season Types" VBox.vgrow="ALWAYS">
+                                 <VBox.margin>
+                                    <Insets />
+                                 </VBox.margin>
+                              </ComboBox>
+                              <Label fx:id="shotdistancelabel" prefHeight="24.0" prefWidth="270.0" text="Shot Distance (ft.) (Default: 0, 89)" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                                 <font>
+                                    <Font name="Tahoma" size="13.0" />
+                                 </font>
+                                 <padding>
+                                    <Insets left="10.0" />
+                                 </padding>
+                              </Label>
+                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                 <children>
+                                    <ComboBox fx:id="distancebegincombo" maxWidth="175.0" prefHeight="27.0" prefWidth="115.0" promptText="Begin" />
+                                    <Label fx:id="distancedash" alignment="CENTER" text=" - " textFill="WHITE">
+                                       <font>
+                                          <Font name="Arial Bold" size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <ComboBox fx:id="distanceendcombo" maxWidth="175.0" prefHeight="27.0" prefWidth="115.0" promptText="End" />
+                                 </children>
+                                 <VBox.margin>
+                                    <Insets right="10.0" />
+                                 </VBox.margin>
+                              </HBox>
+                              <Label fx:id="shotsuccesslabel" prefHeight="24.0" prefWidth="270.0" text="Shot Success  (Max: 1)" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                                 <font>
+                                    <Font name="Tahoma" size="13.0" />
+                                 </font>
+                                 <padding>
+                                    <Insets left="10.0" />
+                                 </padding>
+                              </Label>
+                              <ComboBox fx:id="shotsuccesscombo" prefWidth="200.0" promptText="Choose Makes or Misses" />
+                              <Label fx:id="shotvaluelabel" prefHeight="24.0" prefWidth="270.0" text="Shot Value (Max: 1)" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                                 <font>
+                                    <Font name="Tahoma" size="13.0" />
+                                 </font>
+                                 <padding>
+                                    <Insets left="10.0" />
+                                 </padding>
+                              </Label>
+                              <ComboBox fx:id="shotvaluecombo" prefWidth="200.0" promptText="Choose 2PT or 3PT" />
+                              <Label fx:id="shottypeslabel" prefHeight="24.0" prefWidth="270.0" text="Shot Types" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                                 <font>
+                                    <Font name="Tahoma" size="13.0" />
+                                 </font>
+                                 <padding>
+                                    <Insets left="10.0" />
+                                 </padding>
+                              </Label>
+                              <ComboBox fx:id="shottypescombo" prefWidth="200.0" promptText="Choose Shot Types" />
+                              <Label fx:id="teamslabel" prefHeight="24.0" prefWidth="270.0" text="Shooting Teams" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                                 <font>
+                                    <Font name="Tahoma" size="13.0" />
+                                 </font>
+                                 <padding>
+                                    <Insets left="10.0" />
+                                 </padding>
+                              </Label>
+                              <ComboBox fx:id="teamscombo" prefWidth="200.0" promptText="Choose Teams" />
+                              <Label fx:id="hometeamslabel" prefHeight="24.0" prefWidth="270.0" text="Home Teams" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                                 <font>
+                                    <Font name="Tahoma" size="13.0" />
+                                 </font>
+                                 <padding>
+                                    <Insets left="10.0" />
+                                 </padding>
+                              </Label>
+                              <ComboBox fx:id="hometeamscombo" prefWidth="200.0" promptText="Choose Home Teams" />
+                              <Label fx:id="awayteamslabel" prefHeight="24.0" prefWidth="270.0" text="Away Teams" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                                 <font>
+                                    <Font name="Tahoma" size="13.0" />
+                                 </font>
+                                 <padding>
+                                    <Insets left="10.0" />
+                                 </padding>
+                              </Label>
+                              <ComboBox fx:id="awayteamscombo" prefWidth="200.0" promptText="Choose Away Teams" />
+                              <Label fx:id="courtareaslabel" prefHeight="24.0" prefWidth="270.0" text="Court Areas" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                                 <font>
+                                    <Font name="Tahoma" size="13.0" />
+                                 </font>
+                                 <padding>
+                                    <Insets left="10.0" />
+                                 </padding>
+                              </Label>
+                              <ComboBox fx:id="courtareascombo" prefWidth="200.0" promptText="Choose Court Areas" />
+                              <Label fx:id="courtsideslabel" prefHeight="24.0" prefWidth="270.0" text="Sides of Court" textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                                 <font>
+                                    <Font name="Tahoma" size="13.0" />
+                                 </font>
+                                 <padding>
+                                    <Insets left="10.0" />
+                                 </padding>
+                              </Label>
+                              <ComboBox fx:id="courtsidescombo" prefWidth="200.0" promptText="Choose Sides of Court" />
+                           </children>
+                        </VBox>
+                     </content>
+                  </ScrollPane>
+                  <Button fx:id="searchbuttonadvanced" mnemonicParsing="false" text="Run It" VBox.vgrow="ALWAYS">
+                     <VBox.margin>
+                        <Insets top="20.0" />
+                     </VBox.margin>
+                  </Button>
+                  <Label fx:id="errorlabeladvanced" text="Error Messages Go Here" textFill="#f20909" VBox.vgrow="ALWAYS">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets top="10.0" />
+                     </VBox.margin>
+                  </Label>
+                  <ScrollPane fx:id="selectionscrollpane" hbarPolicy="NEVER" prefHeight="124.0" prefWidth="314.0">
+                     <content>
+                        <AnchorPane prefHeight="94.0" prefWidth="198.0">
+                           <children>
+                              <VBox fx:id="selectionvbox" minWidth="200.0" prefHeight="49.0" prefWidth="210.0" />
+                           </children>
+                        </AnchorPane>
+                     </content>
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
+                  </ScrollPane>
+                  <GridPane fx:id="shotgridadv" alignment="CENTER" maxHeight="110.0" prefHeight="110.0" prefWidth="300.0" VBox.vgrow="ALWAYS">
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                     </columnConstraints>
+                     <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" percentHeight="30.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" percentHeight="30.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                     </rowConstraints>
+                     <children>
+                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                           <children>
+                              <Label fx:id="fgadv" alignment="CENTER" contentDisplay="CENTER" text="FG" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="30.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1">
+                           <children>
+                              <Label fx:id="twopointadv" alignment="CENTER" contentDisplay="CENTER" text="2P" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="30.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2">
+                           <children>
+                              <Label fx:id="threepointadv" alignment="CENTER" contentDisplay="CENTER" text="3P" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="30.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="1">
+                           <children>
+                              <Label fx:id="fgfracadv" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="20.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                           <children>
+                              <Label fx:id="twopointfracadv" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="20.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                           <children>
+                              <Label fx:id="threepointfracadv" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="20.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                        <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="2">
+                           <children>
+                              <Label fx:id="fgpercadv" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="20.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                        <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                           <children>
+                              <Label fx:id="twopointpercadv" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="20.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                        <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                           <children>
+                              <Label fx:id="threepointpercadv" alignment="CENTER" contentDisplay="CENTER" text="--" textAlignment="CENTER" textFill="WHITE">
+                                 <font>
+                                    <Font name="Tahoma Bold" size="20.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
+                     </children>
+                     <VBox.margin>
+                        <Insets bottom="25.0" />
+                     </VBox.margin>
+                  </GridPane>
+               </children>
+               <GridPane.margin>
+                  <Insets left="10.0" />
+               </GridPane.margin>
+            </VBox>
+            </children>
+        </GridPane>
+    </children>
+</VBox>
