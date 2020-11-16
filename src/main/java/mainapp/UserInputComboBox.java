@@ -18,6 +18,7 @@ import javafx.event.EventHandler;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
 /**
@@ -45,22 +46,26 @@ public class UserInputComboBox {
 
         });
 
+        ((ComboBoxListViewSkin) combobox.getSkin()).getListView().setOnMouseExited((Event tIn) -> {
+            combobox.hide();
+        });
         this.combobox.setOnMouseClicked((Event t) -> {
             sb = new StringBuilder();
-            this.combobox.setOnKeyPressed(new EventHandler<KeyEvent>() {
+//            this.combobox.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            ((ComboBoxListViewSkin) combobox.getSkin()).getPopupContent().setOnKeyPressed(new EventHandler<KeyEvent>() {
                 @Override
                 public void handle(KeyEvent event) {
                     if (sb.length() < 20) {
 
                         if (((ComboBoxListViewSkin) combobox.getSkin()).getListView().isVisible() && event.getCode().isLetterKey()) {
                             sb.append(event.getText());
-                        } else if (((ComboBoxListViewSkin) combobox.getSkin()).getListView().isVisible() && event.getCode().equals(event.getCode().BACK_SPACE)) {
+                        } else if (((ComboBoxListViewSkin) combobox.getSkin()).getListView().isVisible() && event.getCode().equals(KeyCode.BACK_SPACE)) {
                             try {
                                 sb.deleteCharAt(sb.length() - 1);
                             } catch (Exception ex) {
 
                             }
-                        } else if (((ComboBoxListViewSkin) combobox.getSkin()).getListView().isVisible() && event.getCode().equals(event.getCode().SPACE)) {
+                        } else if (((ComboBoxListViewSkin) combobox.getSkin()).getListView().isVisible() && event.getCode() == KeyCode.SPACE) {
                             sb.append(" ");
                         }
                         if (sb.toString().length() > 0) {
@@ -78,7 +83,7 @@ public class UserInputComboBox {
 
     private void searchForFirstInstance(String beginsWith) {
         String string;
-        index = 0;
+//        index = 0;
         for (Object each : ((ComboBoxListViewSkin) combobox.getSkin()).getListView().getItems()) {
             string = (String) each;
             if (string.toLowerCase().startsWith(beginsWith)) {

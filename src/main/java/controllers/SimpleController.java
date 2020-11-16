@@ -44,6 +44,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -493,10 +494,13 @@ public class SimpleController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        Scene scene = imageview.getScene();
-//        scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
-//            
-//        });
+        ComboBoxListViewSkin<String> comboBoxListViewSkinPlayer = new ComboBoxListViewSkin<String>(playercombo);
+        comboBoxListViewSkinPlayer.getPopupContent().addEventFilter(KeyEvent.ANY, (event) -> {
+            if (event.getCode().equals(KeyCode.SPACE)) {
+                event.consume();
+            }
+        });
+        playercombo.setSkin(comboBoxListViewSkinPlayer);
         for (Node each : advancedvboxinner.getChildren()) {
             if (each.getClass().equals(ComboBox.class)) {
                 final ComboBox cb = (ComboBox) each;
@@ -521,12 +525,18 @@ public class SimpleController implements Initializable {
 
                 });
                 if (!cb.getId().equals("shotsuccesscombo") && !cb.getId().equals("shotvaluecombo")) {
-                    cb.setSkin(new ComboBoxListViewSkin<String>(cb) {
+                    ComboBoxListViewSkin<String> comboBoxListViewSkin = new ComboBoxListViewSkin<String>(cb) {
                         @Override
                         protected boolean isHideOnClickEnabled() {
                             return false;
                         }
+                    };
+                    comboBoxListViewSkin.getPopupContent().addEventFilter(KeyEvent.ANY, (event) -> {
+                        if (event.getCode().equals(KeyCode.SPACE)) {
+                            event.consume();
+                        }
                     });
+                    cb.setSkin(comboBoxListViewSkin);
 
                 }
 

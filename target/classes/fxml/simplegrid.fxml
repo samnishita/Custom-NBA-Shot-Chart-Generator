@@ -841,7 +841,7 @@
                 </VBox>
             <VBox fx:id="advancedvbox" alignment="TOP_CENTER" prefHeight="600.0" prefWidth="314.0" visible="false" GridPane.rowIndex="1" GridPane.rowSpan="2">
                <children>
-                  <TextArea fx:id="notestextarea" editable="false" prefHeight="111.0" prefWidth="324.0" text="Choosing no value for any parameter is equivalent to choosing all options of the given parameter, unless otherwise noted. (Ex: not selecting a season type will return shots from the Preseason, Regular Season, and Playoffs)&#10;7,500 shot limit for traditional searches, 50,000 shot limit for other searches&#10;Can take up to 30 seconds to complete, seconds depending on volume of shots.&#10;Long dropdown menus can be easily navigated by typing." wrapText="true">
+                  <TextArea fx:id="notestextarea" editable="false" prefHeight="111.0" prefWidth="324.0" text="Choosing no value for any parameter is equivalent to choosing all options of the given parameter, unless otherwise noted. (Ex: not selecting a season type will return shots from the Preseason, Regular Season, and Playoffs)&#10;7,500 shot limit for traditional searches, 50,000 shot limit for other searches&#10;Can take up to 30 seconds to complete, depending on volume of shots.&#10;Long dropdown menus can be easily navigated by typing." wrapText="true">
                      <VBox.margin>
                         <Insets bottom="15.0" top="30.0" />
                      </VBox.margin>
