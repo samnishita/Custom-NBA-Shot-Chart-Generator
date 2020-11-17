@@ -593,7 +593,7 @@ public class SimpleController implements Initializable {
                 setPlayerComboBox();
                 setSeasonsComboBox();
             } catch (IOException ex) {
-                
+
             }
             this.charttitle.setVisible(false);
             searchvbox.setVisible(true);
@@ -629,7 +629,7 @@ public class SimpleController implements Initializable {
             try {
                 initAdvanced();
             } catch (IOException ex) {
-                
+
             }
             this.charttitle.setVisible(false);
             searchvbox.setVisible(false);
@@ -766,7 +766,6 @@ public class SimpleController implements Initializable {
                 msi.getLine2().setManaged(false);
                 allShots.put(shot, msi);
             }
-
         }
         for (Shot each : allShots.keySet()) {
             if (each.getY() > 410) {
@@ -797,18 +796,18 @@ public class SimpleController implements Initializable {
     private void resizeShots() {
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         setViewTypeButtonStyle(0);
-
         double height = imageview.localToParent(imageview.getBoundsInLocal()).getHeight();
         double scaledLineThickness = SHOT_LINE_THICKNESS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue();
         double scaledLineLength = SHOT_MISS_START_END.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue();
         double minX = imageview.localToParent(imageview.getBoundsInLocal()).getMinX();
         double minY = imageview.localToParent(imageview.getBoundsInLocal()).getMinY();
         double width = imageview.localToParent(imageview.getBoundsInLocal()).getWidth();
+        MissedShotIcon msi;
+        Circle circle;
+        Line line1;
+        Line line2;
         if (!allShots.keySet().isEmpty()) {
             for (Shot each : allShots.keySet()) {
-                Circle circle;
-                Line line1;
-                Line line2;
                 if (each.getMake() == 1) {
                     circle = (Circle) allShots.get(each);
                     circle.setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * height / 470 + minX + width / 2);
@@ -816,7 +815,7 @@ public class SimpleController implements Initializable {
                     circle.setRadius(height * SHOT_MADE_RADIUS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue());
                     circle.setStrokeWidth(height * scaledLineThickness);
                 } else {
-                    MissedShotIcon msi = (MissedShotIcon) allShots.get(each);
+                    msi = (MissedShotIcon) allShots.get(each);
                     line1 = msi.getLine1();
                     line2 = msi.getLine2();
                     line1.setStrokeWidth(height * scaledLineThickness);
@@ -829,7 +828,7 @@ public class SimpleController implements Initializable {
                     line2.setStartY((height * -1 * scaledLineLength));
                     line1.setEndY((height * scaledLineLength));
                     line2.setEndY((height * scaledLineLength));
-                    line1.setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * height / 470 + minX + width / 2);// 50/470
+                    line1.setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * height / 470 + minX + width / 2);
                     line2.setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * height / 470 + minX + width / 2);
                     line1.setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * height / 470 + minY + height / 2 - (180.0 * height / 470));
                     line2.setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * height / 470 + minY + height / 2 - (180.0 * height / 470));
@@ -842,18 +841,11 @@ public class SimpleController implements Initializable {
     private void setPlayerComboBox() throws IOException {
         UserInputComboBox playerComboUser = new UserInputComboBox(playercombo);
         this.activePlayers = new HashMap();
-        String year = yearcombo.getValue().toString();
         JSONArray jsonArray = getActivePlayersData();
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject eachPlayer = jsonArray.getJSONObject(i);
             this.activePlayers.put(eachPlayer.getInt("id"), eachPlayer.getString("firstname") + " " + eachPlayer.getString("lastname"));
         }
-//        ArrayList<String> activeList = new ArrayList();
-//
-//        for (int each : this.activePlayers.keySet()) {
-//            activeList.add(activePlayers.get(each).trim());
-//        }
-//        Collections.sort(activeList);
         HashMap<String, String> names = new HashMap();
         ArrayList<String> fixedNames = new ArrayList();
         for (int each : this.activePlayers.keySet()) {
@@ -868,7 +860,6 @@ public class SimpleController implements Initializable {
         if (seasoncombo.getValue() != null) {
             this.previousSeason = seasoncombo.getValue().toString();
         }
-//        this.playercombo.setItems(FXCollections.observableArrayList(activeList));
         playerComboUser.getComboBox().setItems(FXCollections.observableArrayList(realNames));
         if (previousSeason != null && playercombo.getValue() != null && seasoncombo.getItems().contains(previousSeason)) {
             this.seasoncombo.getSelectionModel().select(previousSeason);
@@ -899,7 +890,6 @@ public class SimpleController implements Initializable {
         for (String each : fixedNames) {
             realNames.add(names.get(each));
         }
-//        this.playercomboadvanced.setItems(FXCollections.observableArrayList(realNames));
         playerComboUserAdvanced.getComboBox().setItems(FXCollections.observableArrayList(realNames));
 
     }
@@ -941,7 +931,6 @@ public class SimpleController implements Initializable {
         seasons.add("Playoffs");
         seasontypescomboadvanced.setItems(FXCollections.observableArrayList(seasons));
         seasontypescomboadvanced.getSelectionModel().clearSelection();
-
     }
 
     private JSONArray getInitData() throws IOException {
@@ -1024,26 +1013,18 @@ public class SimpleController implements Initializable {
         double factor = 0.007;
         shotCounter = 0;
         HashMap<String, BigDecimal> averages = useGridAverages();
-        double x;
-        int y;
-        int make;
-        int counter = 0;
         allShots = new LinkedHashMap();
         JSONObject eachShot;
         for (int i = 0; i < jsonArray.length(); i++) {
             eachShot = jsonArray.getJSONObject(i);
-            counter++;
             if (eachShot.getInt("y") >= 400) {
                 continue;
             }
             shotCounter++;
-            y = eachShot.getInt("y");
-            x = eachShot.getInt("x");
-            make = eachShot.getInt("make");
             for (Coordinate each : coordAverages.keySet()) {
-                if (x < each.getX() + 5 + SQUARE_SIZE_ORIG * 1.5 && x >= each.getX() + 5 - SQUARE_SIZE_ORIG * 1.5 && y < each.getY() + 5 + SQUARE_SIZE_ORIG * 1.5 && y >= each.getY() + 5 - SQUARE_SIZE_ORIG * 1.5) {
+                if (eachShot.getInt("x") < each.getX() + 5 + SQUARE_SIZE_ORIG * 1.5 && eachShot.getInt("x") >= each.getX() + 5 - SQUARE_SIZE_ORIG * 1.5 && eachShot.getInt("y") < each.getY() + 5 + SQUARE_SIZE_ORIG * 1.5 && eachShot.getInt("y") >= each.getY() + 5 - SQUARE_SIZE_ORIG * 1.5) {
                     coordAverages.get(each).set(1, coordAverages.get(each).get(1) + 1);
-                    if (make == 1) {
+                    if (eachShot.getInt("make") == 1) {
                         coordAverages.get(each).set(0, coordAverages.get(each).get(0) + 1);
                     }
                 }
@@ -1100,19 +1081,6 @@ public class SimpleController implements Initializable {
             square.setOpacity(0.85);
             square.setTranslateX((each2.getX() + 5) * imageview.getLayoutBounds().getHeight() / 470);
             square.setTranslateY(each2.getY() * imageview.getLayoutBounds().getHeight() / 470 - (175.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
-
-//            square.setOnMouseEntered((MouseEvent t) -> {
-//                Label label = new Label();
-//                label.setText((square.getLayoutX() - 250) + "," + (square.getLayoutY() - 70));
-////                label.setLayoutX(10);
-////                label.setLayoutY(420);
-//                label.setVisible(true);
-//                label.setStyle("-fx-font: " + 30 + "px \"Serif\"; ");
-//                tophbox.getChildren().add(label);
-//            });
-//            square.setOnMouseExited((MouseEvent t) -> {
-//                tophbox.getChildren().remove(tophbox.getChildren().size() - 1);
-//            });
             imagegrid.add(square, 0, 0);
             allTiles.add(square);
         }
@@ -1141,13 +1109,11 @@ public class SimpleController implements Initializable {
                 coordAverages.put(coord, info);
             }
         }
-        int counter = 0;
         Coordinate tempCoord;
         JSONObject eachShot;
         shotCounter = 0;
         for (int i = 0; i < jsonArray.length(); i++) {
             eachShot = jsonArray.getJSONObject(i);
-            counter++;
             if (eachShot.getInt("y") >= 400) {
                 continue;
             }
@@ -1164,16 +1130,12 @@ public class SimpleController implements Initializable {
             }
 
         }
-//        coordValue = new LinkedHashMap();
         coordValue = new ConcurrentHashMap();
-
         try {
             ultraFineHeatMapThreader();
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
-//        normalHeatLooper();
-//        optimizedNormalHeatLooper();
         double weight = 0.5;
         int radius = 25;
         RadialGradient rg1 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
@@ -1211,11 +1173,9 @@ public class SimpleController implements Initializable {
             }
         }
         if (maxValue != 0) {
-
             maxValue = maxValue * (500 * 1.0 / shotCounter);
             maxCutoff = 0.00004 * shotCounter / maxValue + 0.3065;
             diff = maxCutoff / 7;
-//            diff = maxCutoff / (7+((int)(shotCounter/5000)));
             allHeatCircles = new LinkedList();
             for (Coordinate each : coordValue.keySet()) {
                 double value = coordValue.get(each);
@@ -1290,18 +1250,14 @@ public class SimpleController implements Initializable {
     }
 
     private void idwGrid() {
-        long start = System.nanoTime();
         coordValue = new ConcurrentHashMap();
-//        coordValue = new LinkedHashMap();
         double predictedValue = 0;
         double aSum = 0;
         double bSum = 0;
         int p = 2;
         double valueI = 0;
-        int counter = 0;
         for (Coordinate each : coordAverages.keySet()) {
             if (each.getX() % OFFSET == 0 && (each.getY() - 5) % OFFSET == 0) {
-                counter++;
                 aSum = 0;
                 bSum = 0;
                 for (Coordinate each2 : coordAverages.keySet()) {
@@ -1315,10 +1271,6 @@ public class SimpleController implements Initializable {
                 coordValue.put(each, predictedValue);
             }
         }
-
-        long end = System.nanoTime();
-//        System.out.println("idwGrid: " + (end - start) / 1000000000 + " seconds");
-
     }
 
     private double getDistance(Coordinate coordOrig, Coordinate coordI) {
@@ -1342,53 +1294,45 @@ public class SimpleController implements Initializable {
     }
 
     private void resizeGrid() {
-        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+        double height = (imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
+        double width = imageview.localToParent(imageview.getBoundsInLocal()).getWidth();
+        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(height)).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         setViewTypeButtonStyle(1);
-
-        gridbackground.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
-        gridbackground.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
-        imagegrid.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
-        imagegrid.setMaxHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
-        imagegrid.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
-        imagegrid.setMinHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
-        imagegrid.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
-        imagegrid.setPrefHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
-        gridlegendcolor.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (-155.0 / 470));
-        gridlegendcolor.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (185.0 / 470));
-        gridlegendsize.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (155.0 / 470));
-        gridlegendsize.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (185.0 / 470));
-        gridlegendcolor.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        gridlegendcolor.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        gridlegendcolor.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-//        gridlegendcolor.setMaxHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
-//        gridlegendcolor.setMinHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
-//        gridlegendcolor.setPrefHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
-        gridlegendsize.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        gridlegendsize.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        gridlegendsize.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-//        gridlegendsize.setMaxHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
-//        gridlegendsize.setMinHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
-//        gridlegendsize.setPrefHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
-
+        gridbackground.setWidth(width);
+        gridbackground.setHeight(height);
+        imagegrid.setMaxWidth(width);
+        imagegrid.setMaxHeight(height);
+        imagegrid.setMinWidth(width);
+        imagegrid.setMinHeight(height);
+        imagegrid.setPrefWidth(width);
+        imagegrid.setPrefHeight(height);
+        gridlegendcolor.setTranslateX(height * (-155.0 / 470));
+        gridlegendcolor.setTranslateY(height * (185.0 / 470));
+        gridlegendsize.setTranslateX(height * (155.0 / 470));
+        gridlegendsize.setTranslateY(height * (185.0 / 470));
+        gridlegendcolor.setMaxWidth(height * 170.0 / 470);
+        gridlegendcolor.setMinWidth(height * 170.0 / 470);
+        gridlegendcolor.setPrefWidth(height * 170.0 / 470);
+        gridlegendsize.setMaxWidth(height * 170.0 / 470);
+        gridlegendsize.setMinWidth(height * 170.0 / 470);
+        gridlegendsize.setPrefWidth(height * 170.0 / 470);
         Rectangle tempRect;
         double nodeCounter = 0;
         for (Node each : gridsizelegendgradient.getChildren()) {
             tempRect = (Rectangle) each;
-            tempRect.setWidth(((nodeCounter * 1.5) + 2) * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470);
-            tempRect.setHeight(((nodeCounter * 1.5) + 2) * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470);
+            tempRect.setWidth(((nodeCounter * 1.5) + 2) * height / 470);
+            tempRect.setHeight(((nodeCounter * 1.5) + 2) * height / 470);
             nodeCounter++;
         }
-        gridcolorlegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"Lucida Sans\"; ");
-        gridsizelegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"Lucida Sans\";");
-        gridcolorlegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
-        gridcolorlegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
-        gridsizelegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
-        gridsizelegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
-        gridcolorlegendgradient.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 153.0 / 470);
-        gridcolorlegendgradient.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 17.0 / 470);
+        gridcolorlegendtoplabel.setStyle("-fx-font: " + height * 13.0 / 470 + "px \"Lucida Sans\"; ");
+        gridsizelegendtoplabel.setStyle("-fx-font: " + height * 13.0 / 470 + "px \"Lucida Sans\";");
+        gridcolorlegendlowerlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
+        gridcolorlegendupperlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
+        gridsizelegendlowerlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
+        gridsizelegendupperlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
+        gridcolorlegendgradient.setWidth(height * 153.0 / 470);
+        gridcolorlegendgradient.setHeight(height * 17.0 / 470);
 
-        double height = imageview.getLayoutBounds().getHeight();
-        double width = imageview.getLayoutBounds().getWidth();
         squareSize = width / 50;
         int counter = 0;
         Rectangle square;
@@ -1403,16 +1347,16 @@ public class SimpleController implements Initializable {
             }
             square.setTranslateX((each2.getX() + 5) * height / 470);
             square.setTranslateY(each2.getY() * height / 470 - (175.0 * height / 470));
-
             counter++;
         }
     }
 
     private void resize() {
+        double height = (imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
+        double width = imageview.localToParent(imageview.getBoundsInLocal()).getWidth();
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         fontGrid = new BigDecimal(STAT_GRID_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         setViewTypeButtonStyle(10);
-
         try {
             if (searchvbox.isVisible()) {
                 switch (currentSearchModeSelection) {
@@ -1507,16 +1451,12 @@ public class SimpleController implements Initializable {
                 searchscrollpane.setMinHeight(advancedvbox.getLayoutBounds().getHeight() * 0.4);
                 searchscrollpane.setMaxHeight(advancedvbox.getLayoutBounds().getHeight() * 0.4);
                 HBox hbox;
-                Button button;
                 Label label;
                 for (Node each : selectionvbox.getChildren()) {
                     try {
                         hbox = (HBox) each;
                         for (Node eachInner : hbox.getChildren()) {
-                            if (eachInner.getClass().equals(Button.class)) {
-//                                button = (Button) eachInner;
-//                                button.setStyle("-fx-font: " + font + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent; ");
-                            } else if (eachInner.getClass().equals(Label.class)) {
+                           if (eachInner.getClass().equals(Label.class)) {
                                 label = (Label) eachInner;
                                 label.setStyle("-fx-font: " + font * 0.85 + "px \"Arial\";");
                             }
@@ -1527,8 +1467,8 @@ public class SimpleController implements Initializable {
                 }
                 createThreadAndRun(currentSearchModeSelectionAdvanced);
             }
-            mask.setWidth(imageview.getLayoutBounds().getWidth());
-            mask.setHeight(imageview.getLayoutBounds().getHeight());
+            mask.setWidth(width);
+            mask.setHeight(height);
             imagegrid.setClip(mask);
             this.simplelayoutbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
             this.advancedlayoutbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
@@ -1536,19 +1476,19 @@ public class SimpleController implements Initializable {
             titlelabel.setMinWidth(Region.USE_PREF_SIZE);
             titlelabel.setStyle("-fx-font: " + fontGrid * 3 + "px \"Serif\"; ");
             charttitle.setStyle("-fx-font: " + fontGrid * 1.15 + "px \"Arial Italic\";");
-            charttitle.setMinHeight(imageview.getLayoutBounds().getHeight() / 10);
-            charttitle.setMinWidth(imageview.getLayoutBounds().getWidth());
-            charttitle.setMaxHeight(imageview.getLayoutBounds().getHeight() / 10);
-            charttitle.setMaxWidth(imageview.getLayoutBounds().getWidth());
-            gridbackground.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
-            gridbackground.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
-            imagegrid.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
-            imagegrid.setMaxHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
-            imagegrid.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
-            imagegrid.setMinHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
-            imagegrid.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
-            imagegrid.setPrefHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
-            VBox.setMargin(introlabel, new Insets(new BigDecimal(imageview.getLayoutBounds().getHeight()).multiply(new BigDecimal("20")).divide(new BigDecimal("475"), 6, RoundingMode.HALF_UP).doubleValue(), 0, 0, 0));
+            charttitle.setMinHeight(height / 10);
+            charttitle.setMinWidth(width);
+            charttitle.setMaxHeight(height / 10);
+            charttitle.setMaxWidth(width);
+            gridbackground.setWidth(width);
+            gridbackground.setHeight(height);
+            imagegrid.setMaxWidth(width);
+            imagegrid.setMaxHeight(height);
+            imagegrid.setMinWidth(width);
+            imagegrid.setMinHeight(height);
+            imagegrid.setPrefWidth(width);
+            imagegrid.setPrefHeight(height);
+            VBox.setMargin(introlabel, new Insets(new BigDecimal(height).multiply(new BigDecimal("20")).divide(new BigDecimal("475"), 6, RoundingMode.HALF_UP).doubleValue(), 0, 0, 0));
             VBox.setMargin(yearcombo, new Insets(20, 0, 0, 0));
             VBox.setMargin(playercombo, new Insets(20, 0, 0, 0));
             VBox.setMargin(seasoncombo, new Insets(20, 0, 0, 0));
@@ -1559,7 +1499,8 @@ public class SimpleController implements Initializable {
     }
 
     private void resizeHeat() {
-        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+        double height = (imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
+        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(height)).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         setViewTypeButtonStyle(2);
 
         Circle tempCircle;
@@ -1567,37 +1508,37 @@ public class SimpleController implements Initializable {
         for (Coordinate each : coordValue.keySet()) {
             tempCircle = (Circle) allHeatCircles.get(keyCounter);
             tempCircle.setTranslateX(each.getX() * 1.0 * imageview.getLayoutBounds().getHeight() / 470);
-            tempCircle.setTranslateY(each.getY() * 1.0 * imageview.getLayoutBounds().getHeight() / 470 - (185.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
+            tempCircle.setTranslateY(each.getY() * 1.0 * imageview.getLayoutBounds().getHeight() / 470 - (185.0 * height / 470));
             keyCounter++;
         }
 
-        heatlegend.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (-155.0 / 470));
-        heatlegend.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (185.0 / 470));
-        heatlegend.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        heatlegend.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        heatlegend.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        heatlegendgradient.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 153.0 / 470);
-        heatlegendgradient.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 17.0 / 470);
+        heatlegend.setTranslateX(height * (-155.0 / 470));
+        heatlegend.setTranslateY(height * (185.0 / 470));
+        heatlegend.setMaxWidth(height * 170.0 / 470);
+        heatlegend.setMinWidth(height * 170.0 / 470);
+        heatlegend.setPrefWidth(height * 170.0 / 470);
+        heatlegendgradient.setWidth(height * 153.0 / 470);
+        heatlegendgradient.setHeight(height * 17.0 / 470);
         heatlegendtoplabel.maxWidthProperty().bind(heatlegend.maxWidthProperty());
         heatlegendlowerlabel.maxWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.5));
         heatlegendupperlabel.maxWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.5));
         heatlegendlowerlabel.minWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.45));
         heatlegendupperlabel.minWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.45));
-        heatlegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"Lucida Sans\";");
-        heatlegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
-        heatlegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
+        heatlegendtoplabel.setStyle("-fx-font: " + height * 13.0 / 470 + "px \"Lucida Sans\";");
+        heatlegendlowerlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
+        heatlegendupperlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
     }
 
     private void resizeZone() {
-        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+        double height = (imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
+        double width = imageview.localToParent(imageview.getBoundsInLocal()).getWidth();
+        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(height)).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         setViewTypeButtonStyle(3);
-        mask = new Rectangle(imageview.getLayoutBounds().getWidth(), imageview.getLayoutBounds().getHeight());
+        mask = new Rectangle(width, height);
         imagegrid.setClip(mask);
         Node each;
         Label eachLabel;
         Label eachLabelPercent;
-        double width = imageview.getLayoutBounds().getWidth();
-        double height = imageview.getLayoutBounds().getHeight();
         double topFontSize = 18.0;
         double bottomFontSize = 16.0;
         for (int i = 1; i < 16; i++) {
@@ -1617,7 +1558,6 @@ public class SimpleController implements Initializable {
                     each.setTranslateY(height / -2 + (each.getLayoutBounds().getHeight() * each.getScaleY() / 2) + 1.5 * each.getScaleY());
                     eachLabel.setTranslateY(height / -2 + eachLabel.getHeight() / 2 - 3.0 * height / 470);
                     eachLabelPercent.setTranslateY(height / -2 + eachLabel.getHeight() / 2 + 15.0 * height / 470);
-
                     break;
                 case 2:
                     each.setScaleX(width / 500 * 0.98);
@@ -1724,21 +1664,21 @@ public class SimpleController implements Initializable {
             }
 
         }
-        zonelegend.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (-155.0 / 470));
-        zonelegend.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (185.0 / 470));
-        zonelegend.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        zonelegend.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        zonelegend.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        zonelegendgradient.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 153.0 / 470);
-        zonelegendgradient.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 17.0 / 470);
+        zonelegend.setTranslateX(height * (-155.0 / 470));
+        zonelegend.setTranslateY(height * (185.0 / 470));
+        zonelegend.setMaxWidth(height * 170.0 / 470);
+        zonelegend.setMinWidth(height * 170.0 / 470);
+        zonelegend.setPrefWidth(height * 170.0 / 470);
+        zonelegendgradient.setWidth(height * 153.0 / 470);
+        zonelegendgradient.setHeight(height * 17.0 / 470);
         zonelegendtoplabel.maxWidthProperty().bind(zonelegend.maxWidthProperty());
         zonelegendlowerlabel.maxWidthProperty().bind(zonelegend.maxWidthProperty().multiply(0.5));
         zonelegendupperlabel.maxWidthProperty().bind(zonelegend.maxWidthProperty().multiply(0.5));
         zonelegendlowerlabel.minWidthProperty().bind(zonelegend.maxWidthProperty().multiply(0.45));
         zonelegendupperlabel.minWidthProperty().bind(zonelegend.maxWidthProperty().multiply(0.45));
-        zonelegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"Lucida Sans\";");
-        zonelegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
-        zonelegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
+        zonelegendtoplabel.setStyle("-fx-font: " + height * 13.0 / 470 + "px \"Lucida Sans\";");
+        zonelegendlowerlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
+        zonelegendupperlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
     }
 
     private void createThreadAndRun(String selector) {
@@ -2222,7 +2162,6 @@ public class SimpleController implements Initializable {
             Node node = (Node) each;
             node.setVisible(true);
         }
-
         zonelegend.setVisible(true);
         zonelegendgradient.setVisible(true);
         zonelegendlowerlabel.setVisible(true);
@@ -2242,10 +2181,7 @@ public class SimpleController implements Initializable {
             setShotGridAdvanced(jsonArray);
         }
         allZones = new HashMap();
-        Double[] doubles = new Double[3];
-        doubles[0] = 0.0;
-        doubles[1] = 0.0;
-        doubles[2] = 0.0;
+        Double[] doubles;
         for (int i = 1; i < 16; i++) {
             doubles = new Double[3];
             doubles[0] = 0.0;
@@ -2255,11 +2191,8 @@ public class SimpleController implements Initializable {
         }
         allZoneAverages = useZoneAverages();
         JSONObject eachShot;
-        int iteration = 0;
-
         for (int i = 0; i < jsonArray.length(); i++) {
             eachShot = jsonArray.getJSONObject(i);
-            iteration++;
 
             switch (eachShot.getString("shotzonebasic")) {
                 case "Backcourt":
@@ -2387,11 +2320,9 @@ public class SimpleController implements Initializable {
         }
 
         HashMap<Integer, Double> playerZones = new HashMap();
-        int counter = 0;
         for (Integer each : allZones.keySet()) {
             allZones.get(each)[2] = allZones.get(each)[0] * 1.0 / allZones.get(each)[1];
             playerZones.put(each, allZones.get(each)[2]);
-
         }
         Shape tempShape;
         Rectangle tempRect;
@@ -2425,7 +2356,6 @@ public class SimpleController implements Initializable {
             }
         }
         imageview.toFront();
-
         for (int j = 0; j < 15; j++) {
             allLabels.get(j).setText(allZones.get(j + 1)[0].intValue() + "/" + allZones.get(j + 1)[1].intValue());
             allLabels.get(j).toFront();
@@ -2437,8 +2367,6 @@ public class SimpleController implements Initializable {
                 allPercentLabels.get(j).setText(df.format(allZones.get(j + 1)[2] * 100) + "%");
             }
             allPercentLabels.get(j).toFront();
-//            allLabels.get(j).setVisible(true);
-//            allPercentLabels.get(j).setVisible(true);
         }
 
         zonelegend.setVisible(true);
@@ -2674,10 +2602,6 @@ public class SimpleController implements Initializable {
         int count3pMade = 0;
         int count3pTotal = 0;
         allShots = new LinkedHashMap();
-        Circle circle;
-        MissedShotIcon msi;
-        BigDecimal xBig;
-        BigDecimal yBig;
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject eachShot = jsonArray.getJSONObject(i);
             if (eachShot.getString("shottype").equals("3PT Field Goal")) {
@@ -2752,56 +2676,10 @@ public class SimpleController implements Initializable {
         }
     }
 
-    private void normalHeatLooper() {
-        long start = System.nanoTime();
-
-        double aSum = 0;
-        double bSum = 0;
-        int p = 2;
-        int counter = 0;
-        int eachCounter = 0;
-        Coordinate basket = new Coordinate(0, 0);
-        for (Coordinate each : coordAverages.keySet()) {
-            eachCounter = 0;
-            if (each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0) {
-                counter++;
-                aSum = 0;
-                bSum = 0;
-                for (Coordinate each2 : coordAverages.keySet()) {
-                    if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
-                        aSum = aSum + ((coordAverages.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
-                        bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
-                        if (coordAverages.get(each2).get(1).intValue() != 0) {
-                            eachCounter++;
-
-                        }
-                    }
-
-                }
-
-                if (eachCounter > 1) {
-                    coordValue.put(each, aSum / bSum);
-                } else {
-                    coordValue.put(each, 0.0);
-                }
-//                System.out.println("    " + counter);
-            }
-
-        }
-        long end = System.nanoTime();
-        System.out.println("Normal Heat Looper: " + (end - start) / 1000000000 + " seconds");
-
-    }
-
     private void ultraFineHeatMapThreader() throws InterruptedException {
         LinkedList<Coordinate> organizedCoords = new LinkedList();
-//        HashSet<Coordinate> organizedCoords = new HashSet();
-        int x = -250;
-        int y = -52;
-        int iterator = (452 * (x + 250) + y + 52);
         for (Coordinate each : coordAverages.keySet()) {
             organizedCoords.add(each);
-//            System.out.println(each.getX() + "," + each.getY());
         }
         long start = System.nanoTime();
 
@@ -2811,21 +2689,18 @@ public class SimpleController implements Initializable {
         for (int i = 0; i < iMax; i++) {
             final int iFinal = i;
             final int iMaxFinal = iMax;
-            final LinkedList<Coordinate> finalOrganizedCoords = organizedCoords;
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     double aSum = 0;
                     double bSum = 0;
                     int p = 2;
-                    int counter = 0;
                     int eachCounter = 0;
                     int iFinalThread = iFinal;
                     for (Coordinate each : coordAverages.keySet()) {
                         if (each.getY() >= (452 / iMaxFinal) * iFinalThread - 52 && each.getY() < (452 / iMaxFinal) * (iFinalThread + 1) - 52) {
 
                             if (each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0) {
-                                counter++;
                                 aSum = 0;
                                 bSum = 0;
                                 for (Coordinate each2 : coordAverages.keySet()) {
@@ -2848,18 +2723,12 @@ public class SimpleController implements Initializable {
                             }
                         }
                     }
-//                    System.out.println("    " + counter);
-
                 }
             });
             allUltraFineHeatThreads.add(thread);
         }
-//        for (int j = 0; j < allUltraFineHeatThreads.size(); j++) {
-//            allUltraFineHeatThreads.get(j).join();
-//        }
         for (int k = 0; k < allUltraFineHeatThreads.size(); k++) {
             allUltraFineHeatThreads.get(k).start();
-//            Thread.sleep(10000);
         }
         boolean done = false;
         while (!done) {
@@ -2875,95 +2744,7 @@ public class SimpleController implements Initializable {
 
         }
         long end = System.nanoTime();
-        System.out.println("ultraFineThreader: " + (end - start) / 1000000000 + " seconds");
-
-    }
-
-    private void optimizedNormalHeatLooper() {
-
-        double aSum = 0;
-        double bSum = 0;
-        int p = 2;
-        int counter = 0;
-        int eachCounter = 0;
-        LinkedList<Coordinate> organizedCoords = new LinkedList();
-//        HashSet<Coordinate> organizedCoords = new HashSet();
-        int x = -250;
-        int y = -52;
-        int i = (452 * (x + 250) + y + 52);
-        for (Coordinate each : coordAverages.keySet()) {
-            organizedCoords.add(each);
-//            System.out.println(each.getX() + "," + each.getY());
-        }
-        long start = System.nanoTime();
-
-        int xTemp;
-        int yTemp;
-        int iTemp;
-        Coordinate tempCoord;
-        Coordinate centerCoord;
-        while (i < 226452) {
-//            xTemp = x;
-//            yTemp = y;
-            aSum = 0;
-            bSum = 0;
-            eachCounter = 0;
-            centerCoord = organizedCoords.get(i);
-            for (int j = x - MAX_DISTANCE_BETWEEN_NODES_HEAT; j <= x + MAX_DISTANCE_BETWEEN_NODES_HEAT; j++) {
-                if (j < -250) {
-                    continue;
-                }
-                for (int k = y - MAX_DISTANCE_BETWEEN_NODES_HEAT; k <= y + MAX_DISTANCE_BETWEEN_NODES_HEAT; k++) {
-                    if (k < -52) {
-                        continue;
-                    }
-                    iTemp = (452 * (j + 250) + k + 52);
-//                    System.out.println("here");
-                    if (iTemp < 0) {
-                        continue;
-                    }
-                    tempCoord = organizedCoords.get(iTemp);
-
-                    if (iTemp != i && getDistance(centerCoord, tempCoord) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
-//                        System.out.println("here2");
-                        aSum = aSum + ((coordAverages.get(tempCoord).get(1).intValue() * getDistance(centerCoord, tempCoord)) / Math.pow(getDistance(centerCoord, tempCoord), p));
-                        bSum = bSum + (1 / Math.pow(getDistance(centerCoord, tempCoord), p));
-                        if (coordAverages.get(tempCoord).get(1).intValue() != 0) {
-                            eachCounter++;
-//                            System.out.println("here3");
-                        }
-                    }
-                }
-            }
-//inner loop for every column
-//            for (int k=)
-//            while (min<max){
-//                if(y>MAX_DISTANCE_BETWEEN_NODES_HEAT){
-//                    y=-52;
-//                    x=x+offsetHeat*452;
-//                }else{
-//                    
-//                }
-//            }
-            if (eachCounter > 1) {
-                coordValue.put(centerCoord, aSum / bSum);
-//                System.out.println(aSum / bSum);
-            } else {
-                coordValue.put(centerCoord, 0.0);
-            }
-            if (y + offsetHeat > 399) {
-                x = x + offsetHeat;
-                y = -52;
-            } else {
-                y = y + offsetHeat;
-            }
-            i = (452 * (x + 250) + y + 52);
-            counter++;
-            System.out.println(counter);
-
-        }
-        long end = System.nanoTime();
-        System.out.println("Overall Duration: " + (end - start) / 1000000000 + " seconds");
+//        System.out.println("ultraFineThreader: " + (end - start) / 1000000000 + " seconds");
 
     }
 
@@ -3086,7 +2867,6 @@ public class SimpleController implements Initializable {
         Button deleteButton = null;
         Button tempButton = null;
         HBox tempHBox;
-        HBox hboxWithReplacement = null;
         HBox newHBox;
         Insets insets = new Insets(5, 5, 5, 5);
         Insets insetsHBox = new Insets(0, 0, 0, 20);
@@ -3102,7 +2882,6 @@ public class SimpleController implements Initializable {
                             tempLabel = (Label) innerEach;
                             if (tempLabel.getText().startsWith(labelPreText)) {
                                 labelToReplace = tempLabel;
-                                hboxWithReplacement = tempHBox;
                                 deleteButton = tempButton;
                                 break;
                             }
@@ -3124,10 +2903,7 @@ public class SimpleController implements Initializable {
 
             final String SELECTED = combo.getId();
             deleteButton = new Button("X");
-//            deleteButton.setStyle("-fx-text-inner-color: red;");
             deleteButton.setStyle("-fx-text-fill: red;-fx-background-color: transparent; ");
-//        traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
-
             newHBox.getChildren().add(deleteButton);
             final HBox HBOX = (HBox) deleteButton.getParent();
             final Scene FINALSCENE = selectionvbox.getScene();
@@ -3258,12 +3034,8 @@ public class SimpleController implements Initializable {
 
     private void multipleSelectionHBoxCreationMethods(HashSet hashSet, String labelPreText, ComboBox combo) {
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-        Label tempLabel;
-        Label labelToReplace = null;
         Label label;
         Button deleteButton = null;
-        Button tempButton = null;
-        HBox tempHBox;
         HBox newHBox;
         Insets insets = new Insets(5, 5, 5, 5);
         Insets insetsHBox = new Insets(0, 0, 0, 20);
@@ -3278,7 +3050,6 @@ public class SimpleController implements Initializable {
             final String SELECTED = combo.getId();
 
             deleteButton = new Button("X");
-//            deleteButton.setStyle("-fx-text-inner-color: red;");
             deleteButton.setStyle("-fx-text-fill: red;-fx-background-color: transparent;");
             newHBox.getChildren().add(deleteButton);
             final HBox HBOX = (HBox) deleteButton.getParent();
@@ -3320,7 +3091,6 @@ public class SimpleController implements Initializable {
         tempList = getShotTypesList();
         UserInputComboBox shotTypeComboUser = new UserInputComboBox(shottypescombo);
         shotTypeComboUser.getComboBox().setItems(FXCollections.observableArrayList(tempList));
-//        shottypescombo.setItems(FXCollections.observableArrayList(tempList));
         tempList = new ArrayList();
         relevantTeamNameIDHashMap.put("Atlanta Hawks", 1610612737);
         relevantTeamNameIDHashMap.put("Boston Celtics", 1610612738);
@@ -3352,7 +3122,6 @@ public class SimpleController implements Initializable {
         relevantTeamNameIDHashMap.put("Toronto Raptors", 1610612761);
         relevantTeamNameIDHashMap.put("Utah Jazz", 1610612762);
         relevantTeamNameIDHashMap.put("Washington Wizards", 1610612764);
-
         relevantTeamNameIDHashMap.put("Adelaide 36ers", 15019);
         relevantTeamNameIDHashMap.put("Alba Berlin", 12323);
         relevantTeamNameIDHashMap.put("Beijing Ducks", 15021);
@@ -3370,69 +3139,12 @@ public class SimpleController implements Initializable {
         relevantTeamNameIDHashMap.put("San Lorenzo", 12330);
         relevantTeamNameIDHashMap.put("Shanghai Sharks", 12329);
         relevantTeamNameIDHashMap.put("Sydney Kings", 15015);
-
-//        
-//        
-//        // 
-//        tempList.add("Adelaide 36ers");
-//        tempList.add("Alba Berlin");
-//        tempList.add("Beijing Ducks");
-//        tempList.add("FC Barcelona");
-//        tempList.add("Fenerbahce");
-//        tempList.add("Flamengo");
-//        tempList.add("Franca");
-//        tempList.add("Maccabi Haifa");
-//        tempList.add("Maccabi Tel Aviv");
-//        tempList.add("Melbourne United");
-//        tempList.add("Montepaschi Siena");
-//        tempList.add("New Zealand Breakers");
-//        tempList.add("Olimpia Milano");
-//        tempList.add("Real Madrid");
-//        tempList.add("San Lorenzo");
-//        tempList.add("Shanghai Sharks");
-//        tempList.add("Sydney Kings");
-//tempList.add("Atlanta Hawks");
-//        tempList.add("Boston Celtics");
-//        tempList.add("Brooklyn Nets");
-//        tempList.add("Charlotte Hornets");
-//        tempList.add("Chicago Bulls");
-//        tempList.add("Cleveland Cavaliers");
-//        tempList.add("Dallas Mavericks");
-//        tempList.add("Denver Nuggets");
-//        tempList.add("Detroit Pistons");
-//        tempList.add("Golden State Warriors");
-//        tempList.add("Houston Rockets");
-//        tempList.add("Indiana Pacers");
-//        tempList.add("Los Angeles Clippers");
-//        tempList.add("Los Angeles Lakers");
-//        tempList.add("Memphis Grizzlies");
-//        tempList.add("Miami Heat");
-//        tempList.add("Milwaukee Bucks");
-//        tempList.add("Minnesota Timberwolves");
-//        tempList.add("New Orleans Pelicans");
-//        tempList.add("New York Knicks");
-//        tempList.add("Oklahoma City Thunder");
-//        tempList.add("Orlando Magic");
-//tempList.add("Philadelphia 76ers");
-//        tempList.add("Phoenix Suns");
-//        tempList.add("Portland Trail Blazers");
-//        tempList.add("Sacramento Kings");
-//        tempList.add("San Antonio Spurs");
-//        tempList.add("Toronto Raptors");
-//        tempList.add("Utah Jazz");
-//        tempList.add("Washington Wizards");
-//        teamscombo.setItems(FXCollections.observableArrayList(tempList));
-//        hometeamscombo.setItems(FXCollections.observableArrayList(tempList));
-//        awayteamscombo.setItems(FXCollections.observableArrayList(tempList));
         UserInputComboBox teamComboUser = new UserInputComboBox(teamscombo);
         UserInputComboBox homeTeamComboUser = new UserInputComboBox(hometeamscombo);
         UserInputComboBox awayTeamComboUser = new UserInputComboBox(awayteamscombo);
         teamComboUser.getComboBox().setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
         homeTeamComboUser.getComboBox().setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
         awayTeamComboUser.getComboBox().setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
-//        teamscombo.setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
-//        hometeamscombo.setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
-//        awayteamscombo.setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
         tempList = new ArrayList();
         tempList.add("Restricted Area");
         tempList.add("In The Paint (Non-RA)");
@@ -3513,11 +3225,7 @@ public class SimpleController implements Initializable {
         int count2pTotal = 0;
         int count3pMade = 0;
         int count3pTotal = 0;
-        allShots = new LinkedHashMap();
-        Circle circle;
-        MissedShotIcon msi;
-        BigDecimal xBig;
-        BigDecimal yBig;
+        allShots = new LinkedHashMap();   
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject eachShot = jsonArray.getJSONObject(i);
             if (eachShot.getString("shottype").equals("3PT Field Goal")) {
