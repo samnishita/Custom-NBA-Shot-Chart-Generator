@@ -493,6 +493,7 @@ public class SimpleController implements Initializable {
         organizeZoneFXMLElements();
         initSizing();
         JSONArray jsonArrayInit;
+        //Set Updates Box
         try {
             jsonArrayInit = getInitData();
             JSONObject jsonObjMisc2 = jsonArrayInit.getJSONObject(2);
@@ -522,13 +523,7 @@ public class SimpleController implements Initializable {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-
         yearcombo.setItems(FXCollections.observableArrayList(makeYears()));
-        ArrayList<String> fullNames = new ArrayList();
-        for (String each : nameHash.keySet()) {
-            fullNames.add(each);
-        }
-        Collections.sort(fullNames);
         this.yearcombo.setValue("2019-20");
         this.playercombo.setValue("Aaron Gordon");
         this.seasoncombo.setValue("Regular Season");
@@ -571,87 +566,12 @@ public class SimpleController implements Initializable {
             }
 
         });
-        setViewTypeButtonsOnMouseClicked();
-        this.traditionalbutton.setOnMouseEntered((Event t) -> {
-            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-            if ((searchvbox.isVisible() && currentSearchModeSelection.equals("simpletraditional")) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals("advancedtraditional"))) {
-                traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: true;");
-            } else {
-                traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: true;");
-            }
-
+        setAllViewTypeButtonsOnMouseActions();
+        imageview.fitHeightProperty().addListener((ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) -> {
+            resize();
         });
-        this.traditionalbutton.setOnMouseExited((Event t) -> {
-            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-            if ((searchvbox.isVisible() && currentSearchModeSelection.equals("simpletraditional")) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals("advancedtraditional"))) {
-                traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: false;");
-            } else {
-                traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: false;");
-            }
-        });
-        this.gridbutton.setOnMouseEntered((Event t) -> {
-            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-            if ((searchvbox.isVisible() && currentSearchModeSelection.equals("simplegrid")) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals("advancedgrid"))) {
-                gridbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: true;");
-            } else {
-                gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: true;");
-            }
-
-        });
-        this.gridbutton.setOnMouseExited((Event t) -> {
-            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-            if ((searchvbox.isVisible() && currentSearchModeSelection.equals("simplegrid")) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals("advancedgrid"))) {
-                gridbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: false;");
-            } else {
-                gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: false;");
-            }
-        });
-        this.heatmapbutton.setOnMouseEntered((Event t) -> {
-            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-            if ((searchvbox.isVisible() && currentSearchModeSelection.equals("simpleheat")) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals("advancedheat"))) {
-                heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: true;");
-            } else {
-                heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: true;");
-            }
-
-        });
-        this.heatmapbutton.setOnMouseExited((Event t) -> {
-            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-            if ((searchvbox.isVisible() && currentSearchModeSelection.equals("simpleheat")) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals("advancedheat"))) {
-                heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: false;");
-            } else {
-                heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: false;");
-            }
-        });
-        this.zonebutton.setOnMouseEntered((Event t) -> {
-            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-            if ((searchvbox.isVisible() && currentSearchModeSelection.equals("simplezone")) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals("advancedzone"))) {
-                zonebutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: true;");
-            } else {
-                zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: true;");
-            }
-
-        });
-        this.zonebutton.setOnMouseExited((Event t) -> {
-            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-            if ((searchvbox.isVisible() && currentSearchModeSelection.equals("simplezone")) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals("advancedzone"))) {
-                zonebutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: false;");
-            } else {
-                zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: false;");
-            }
-        });
-
-        imageview.fitHeightProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
-                resize();
-            }
-        });
-        imageview.fitWidthProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
-                resize();
-            }
+        imageview.fitWidthProperty().addListener((ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) -> {
+            resize();
         });
         this.yearcombo.setOnAction((Event t) -> {
             try {
@@ -673,15 +593,13 @@ public class SimpleController implements Initializable {
                 setPlayerComboBox();
                 setSeasonsComboBox();
             } catch (IOException ex) {
-                Logger.getLogger(SimpleController.class.getName()).log(Level.SEVERE, null, ex);
+                
             }
-
             this.charttitle.setVisible(false);
             searchvbox.setVisible(true);
             advancedvbox.setVisible(false);
             removeAllShotsFromView();
             resetView();
-            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
             this.fgfrac.setText("--");
             this.fgperc.setText("--");
             this.twopointfrac.setText("--");
@@ -689,60 +607,31 @@ public class SimpleController implements Initializable {
             this.threepointfrac.setText("--");
             this.threepointperc.setText("--");
             imageview.setImage(new Image("/images/transparent.png"));
-
             switch (currentSearchModeSelection) {
                 case "simpletraditional":
-//                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
-//                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-//                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-//                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
                     setViewTypeButtonStyle(0);
-
                     break;
                 case "simplegrid":
-//                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
-//                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
-//                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-//                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
                     setViewTypeButtonStyle(1);
-
                     break;
                 case "simpleheat":
-//                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
-//                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-//                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
-//                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
                     setViewTypeButtonStyle(2);
-
                     break;
                 case "simplezone":
-//                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
-//                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
-//                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-//                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
                     setViewTypeButtonStyle(3);
-
                     break;
                 case "":
-//                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
-//                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-//                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-//                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
                     setViewTypeButtonStyle(10);
-
                     break;
             }
         });
         this.advancedlayoutbutton.setOnMouseClicked((Event t) -> {
-
             try {
                 initAdvanced();
             } catch (IOException ex) {
-                Logger.getLogger(SimpleController.class.getName()).log(Level.SEVERE, null, ex);
+                
             }
-
             this.charttitle.setVisible(false);
-
             searchvbox.setVisible(false);
             advancedvbox.setVisible(true);
             resize();
@@ -755,7 +644,6 @@ public class SimpleController implements Initializable {
             this.threepointfracadv.setText("--");
             this.threepointpercadv.setText("--");
             imageview.setImage(new Image("/images/transparent.png"));
-            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
             switch (currentSearchModeSelectionAdvanced) {
                 case "advancedtraditional":
                     setViewTypeButtonStyle(0);
@@ -775,9 +663,7 @@ public class SimpleController implements Initializable {
             }
         });
         this.searchbuttonadvanced.setOnMouseClicked((Event t) -> {
-            if (!beginSeason.equals("") || !endSeason.equals("") || !beginDistance.equals("") || !endDistance.equals("") || !shotSuccess.equals("") || !shotValue.equals("")
-                    || !allSelectedPlayers.isEmpty() || !allSelectedSeasonTypes.isEmpty() || !allSelectedShotTypes.isEmpty() || !allSelectedTeams.isEmpty()
-                    || !allSelectedHomeTeams.isEmpty() || !allSelectedAwayTeams.isEmpty() || !allSelectedCourtAreas.isEmpty() || !allSelectedCourtSides.isEmpty()) {
+            if (checkForEmptyAdvancedSearch()) {
                 switch (currentSearchModeSelectionAdvanced) {
                     case "advancedtraditional":
                         traditional();
@@ -840,7 +726,6 @@ public class SimpleController implements Initializable {
 
     private JSONArray doSimpleSearch() throws SQLException, IOException {
         removeAllShotsFromView();
-//        JSONArray jsonArray = getSimpleTraditionalShotData();
         return getSimpleShotData();
     }
 
@@ -3579,14 +3464,6 @@ public class SimpleController implements Initializable {
     }
 
     private JSONArray createAdvancedJSONOutput(String searchTypeSelector) throws IOException, Exception {
-//        boolean isGood = false;
-//        if (!beginSeason.equals("") || !endSeason.equals("") || !beginDistance.equals("") || !endDistance.equals("") || !shotSuccess.equals("") || !shotValue.equals("")
-//                || !allSelectedPlayers.isEmpty() || !allSelectedSeasonTypes.isEmpty() || !allSelectedShotTypes.isEmpty() || !allSelectedTeams.isEmpty()
-//                || !allSelectedHomeTeams.isEmpty() || !allSelectedAwayTeams.isEmpty() || !allSelectedCourtAreas.isEmpty() || !allSelectedCourtSides.isEmpty()) {
-//            isGood = true;
-//        } else {
-//            throw new Exception();
-//        }
         JSONObject obj = new JSONObject();
         obj.put("selector", searchTypeSelector);
         obj.put("beginSeason", beginSeason);
@@ -3757,138 +3634,6 @@ public class SimpleController implements Initializable {
         }
     }
 
-    private void setViewTypeButtonsOnMouseClicked() {
-        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-        this.traditionalbutton.setOnMouseClicked((Event t) -> {
-            setEachViewButtonOnClicked(0, "simpletraditional", "advancedtraditional");
-//            setViewTypeButtonStyle(0);
-//            if (searchvbox.isVisible()) {
-//                try {
-//                    this.previousYear = this.yearcombo.getValue().toString();
-//                    this.previousPlayer = this.playercombo.getValue().toString();
-//                    this.previousSeason = this.seasoncombo.getValue().toString();
-//                    if (this.currentSearchModeSelection.equals("")) {
-//                        this.currentSearchModeSelection = "simpletraditional";
-//                    } else {
-//                        traditional();
-//                    }
-//                } catch (NullPointerException ex) {
-//                    this.errorlabel.setText("Please select one from each category");
-//                    this.errorlabel.setVisible(true);
-//                }
-//            } else {
-//                if (checkForEmptyAdvancedSearch()) {
-//                    if (this.currentSearchModeSelectionAdvanced.equals("")) {
-//                        this.currentSearchModeSelectionAdvanced = "advancedtraditional";
-//                    } else {
-//                        traditional();
-//                    }
-//                } else {
-//                    this.errorlabeladvanced.setText("Please include at least one search parameter");
-//                    this.errorlabeladvanced.setVisible(true);
-//                }
-//
-//            }
-        });
-        this.gridbutton.setOnMouseClicked((Event t) -> {
-            setEachViewButtonOnClicked(1, "simplegrid", "advancedgrid");
-
-//            setViewTypeButtonStyle(1);
-//            if (searchvbox.isVisible()) {
-//                try {
-//                    this.previousYear = this.yearcombo.getValue().toString();
-//                    this.previousPlayer = this.playercombo.getValue().toString();
-//                    this.previousSeason = this.seasoncombo.getValue().toString();
-//                    if (this.currentSearchModeSelection.equals("")) {
-//                        this.currentSearchModeSelection = "simplegrid";
-//                    } else {
-//                        grid();
-//                    }
-//                } catch (NullPointerException ex) {
-//                    this.errorlabel.setText("Please select one from each category");
-//                    this.errorlabel.setVisible(true);
-//                }
-//
-//            } else {
-//                if (checkForEmptyAdvancedSearch()) {
-//                    if (this.currentSearchModeSelectionAdvanced.equals("")) {
-//                        this.currentSearchModeSelectionAdvanced = "advancedgrid";
-//                    } else {
-//                        grid();
-//                    }
-//                } else {
-//                    this.errorlabeladvanced.setText("Please include at least one search parameter");
-//                    this.errorlabeladvanced.setVisible(true);
-//                }
-//            }
-        });
-        this.heatmapbutton.setOnMouseClicked((Event t) -> {
-            setEachViewButtonOnClicked(2, "simpleheat", "advancedheat");
-
-//            setViewTypeButtonStyle(2);
-//            if (searchvbox.isVisible()) {
-//                try {
-//                    this.previousYear = this.yearcombo.getValue().toString();
-//                    this.previousPlayer = this.playercombo.getValue().toString();
-//                    this.previousSeason = this.seasoncombo.getValue().toString();
-//                    if (this.currentSearchModeSelection.equals("")) {
-//                        this.currentSearchModeSelection = "simpleheat";
-//                    } else {
-//                        heat();
-//                    }
-//                } catch (NullPointerException ex) {
-//                    this.errorlabel.setText("Please select one from each category");
-//                    this.errorlabel.setVisible(true);
-//                }
-//
-//            } else {
-//                if (checkForEmptyAdvancedSearch()) {
-//                    if (this.currentSearchModeSelectionAdvanced.equals("")) {
-//                        this.currentSearchModeSelectionAdvanced = "advancedheat";
-//                    } else {
-//                        heat();
-//                    }
-//                } else {
-//                    this.errorlabeladvanced.setText("Please include at least one search parameter");
-//                    this.errorlabeladvanced.setVisible(true);
-//                }
-//            }
-        });
-        this.zonebutton.setOnMouseClicked((Event t) -> {
-            setEachViewButtonOnClicked(3, "simplezone", "advancedzone");
-
-//            setViewTypeButtonStyle(3);
-//
-//            if (searchvbox.isVisible()) {
-//                try {
-//                    this.previousYear = this.yearcombo.getValue().toString();
-//                    this.previousPlayer = this.playercombo.getValue().toString();
-//                    this.previousSeason = this.seasoncombo.getValue().toString();
-//                    if (this.currentSearchModeSelection.equals("")) {
-//                        this.currentSearchModeSelection = "simplezone";
-//                    } else {
-//                        zone();
-//                    }
-//                } catch (NullPointerException ex) {
-//                    this.errorlabel.setText("Please select one from each category");
-//                    this.errorlabel.setVisible(true);
-//                }
-//
-//            } else {
-//                if (checkForEmptyAdvancedSearch()) {
-//                    if (this.currentSearchModeSelectionAdvanced.equals("")) {
-//                        this.currentSearchModeSelectionAdvanced = "advancedzone";
-//                    } else {
-//                        zone();
-//                    }
-//                } else {
-//                    this.errorlabeladvanced.setText("Please include at least one search parameter");
-//                    this.errorlabeladvanced.setVisible(true);
-//                }
-//            }
-        });
-    }
-
     private void setViewTypeButtonStyle(int selector) {
         for (int i = 0; i < viewButtons.size(); i++) {
             if (i == selector) {
@@ -3908,7 +3653,7 @@ public class SimpleController implements Initializable {
         return false;
     }
 
-    private void setEachViewButtonOnClicked(int selector, String currentSearch, String currentSearchAdvanced) {
+    private void setEachViewTypeButtonOnClicked(int selector, String currentSearch, String currentSearchAdvanced) {
         setViewTypeButtonStyle(selector);
 
         if (searchvbox.isVisible()) {
@@ -3965,5 +3710,61 @@ public class SimpleController implements Initializable {
             }
         }
 
+    }
+
+    private void setEachViewTypeButtonsOnMouseEntered(int selector, String currentSearch, String currentSearchAdvanced) {
+        if ((searchvbox.isVisible() && currentSearchModeSelection.equals(currentSearch)) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals(currentSearchAdvanced))) {
+            viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: true;");
+        } else {
+            viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: true;");
+        }
+    }
+
+    private void setEachViewTypeButtonsOnMouseExited(int selector, String currentSearch, String currentSearchAdvanced) {
+        if ((searchvbox.isVisible() && currentSearchModeSelection.equals(currentSearch)) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals(currentSearchAdvanced))) {
+            viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: false;");
+        } else {
+            viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: false;");
+        }
+    }
+
+    private void setAllViewTypeButtonsOnMouseActions() {
+        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+        this.traditionalbutton.setOnMouseClicked((Event t) -> {
+            setEachViewTypeButtonOnClicked(0, "simpletraditional", "advancedtraditional");
+        });
+        this.gridbutton.setOnMouseClicked((Event t) -> {
+            setEachViewTypeButtonOnClicked(1, "simplegrid", "advancedgrid");
+        });
+        this.heatmapbutton.setOnMouseClicked((Event t) -> {
+            setEachViewTypeButtonOnClicked(2, "simpleheat", "advancedheat");
+        });
+        this.zonebutton.setOnMouseClicked((Event t) -> {
+            setEachViewTypeButtonOnClicked(3, "simplezone", "advancedzone");
+        });
+        this.traditionalbutton.setOnMouseEntered((Event t) -> {
+            setEachViewTypeButtonsOnMouseEntered(0, "simpletraditional", "advancedtraditional");
+        });
+        this.traditionalbutton.setOnMouseExited((Event t) -> {
+            setEachViewTypeButtonsOnMouseExited(0, "simpletraditional", "advancedtraditional");
+        });
+        this.gridbutton.setOnMouseEntered((Event t) -> {
+            setEachViewTypeButtonsOnMouseEntered(1, "simplegrid", "advancedgrid");
+        });
+        this.gridbutton.setOnMouseExited((Event t) -> {
+            setEachViewTypeButtonsOnMouseExited(1, "simplegrid", "advancedgrid");
+        });
+        this.heatmapbutton.setOnMouseEntered((Event t) -> {
+            setEachViewTypeButtonsOnMouseEntered(2, "simpleheat", "advancedheat");
+        });
+        this.heatmapbutton.setOnMouseExited((Event t) -> {
+            setEachViewTypeButtonsOnMouseExited(2, "simpleheat", "advancedheat");
+        });
+        this.zonebutton.setOnMouseEntered((Event t) -> {
+            setEachViewTypeButtonsOnMouseEntered(3, "simplezone", "advancedzone");
+        });
+        this.zonebutton.setOnMouseExited((Event t) -> {
+            setEachViewTypeButtonsOnMouseExited(3, "simplezone", "advancedzone");
+        });
     }
 }
