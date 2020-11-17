@@ -29,7 +29,6 @@ import javafx.collections.FXCollections;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
@@ -51,7 +50,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
@@ -78,39 +76,30 @@ import org.json.JSONObject;
  */
 public class SimpleController implements Initializable {
 
-    private String firstname;
-    private String lastname;
     private LinkedHashMap<String, String[]> nameHash;
-    private ArrayList<Circle> makes;
-    private ArrayList<Line> misses;
-    private BigDecimal origWidth = new BigDecimal("500");
-    private BigDecimal origHeight = new BigDecimal("470");
-    private BigDecimal shotmadeRadius = new BigDecimal("5");
-    private BigDecimal shotmissStartEnd = new BigDecimal("3");
-    private BigDecimal shotLineThickness = new BigDecimal("2");
-    private BigDecimal transY = new BigDecimal("-180");
+    private final BigDecimal ORIG_HEIGHT = new BigDecimal("470");
+    private final BigDecimal SHOT_MADE_RADIUS = new BigDecimal("5");
+    private final BigDecimal SHOT_MISS_START_END = new BigDecimal("3");
+    private final BigDecimal SHOT_LINE_THICKNESS = new BigDecimal("2");
     private LinkedHashMap<Shot, Object> allShots = new LinkedHashMap();
     private HashMap<Integer, String> activePlayers;
-    private int comboFontSize = 18;
-    private int statGridFontSize = 20;
+    private final int COMBO_FONT_SIZE = 18;
+    private final int STAT_GRID_FONT_SIZE = 20;
     private String previousYear;
     private String previousPlayer;
     private String previousSeason;
     private ResourceBundle reader = null;
     private double squareSize = 10.0;
-    private final double SQUARESIZEORIG = 10.0;
+    private final double SQUARE_SIZE_ORIG = 10.0;
     private LinkedHashMap<Coordinate, LinkedList<Double>> coordAverages;
     private int maxShotsPerMaxSquare = 0;
     private ConcurrentHashMap<Coordinate, Double> coordValue;
-//    private LinkedHashMap<Coordinate, Double> coordValue;
-    private final int offset = 10;
+    private final int OFFSET = 10;
     private final int maxDistanceBetweenNodes = 20;
     private LinkedList<Rectangle> allTiles;
-    private String activeDisplay = "";
     private double min;
-    private ArrayList<Thread> threads = new ArrayList();
     private String currentSearchModeSelection = "";
-    int shotCounter = 0;
+    private int shotCounter = 0;
     private double maxCutoff = 0.0;
     private double diff = maxCutoff / 10;
     private int offsetHeat = 15;//15 is balanced
@@ -120,7 +109,7 @@ public class SimpleController implements Initializable {
     //25 is pretty grainy, decently quick, does not scale well
     //30 is awful
     //smoothness
-    private int maxDistanceBetweenNodesHeat = 30;//30 is good
+    private final int MAX_DISTANCE_BETWEEN_NODES_HEAT = 30;
     private LinkedList<Circle> allHeatCircles;
     private ArrayList<Node> allZoneFXML = new ArrayList();
     private LinkedList<Label> allLabels;
@@ -149,9 +138,11 @@ public class SimpleController implements Initializable {
     private HashSet<String> allSelectedAwayTeams = new HashSet();
     private HashSet<String> allSelectedCourtAreas = new HashSet();
     private HashSet<String> allSelectedCourtSides = new HashSet();
-    private int index = 0;
     private String currentSearchModeSelectionAdvanced = "";
     private LinkedHashMap<String, Integer> relevantTeamNameIDHashMap = new LinkedHashMap();
+    private double font = 0.0;
+    private double fontGrid = 0.0;
+    private LinkedList<Button> viewButtons = new LinkedList();
 
     @FXML
     ImageView imageview;
@@ -494,100 +485,15 @@ public class SimpleController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        ComboBoxListViewSkin<String> comboBoxListViewSkinPlayer = new ComboBoxListViewSkin<String>(playercombo);
-        comboBoxListViewSkinPlayer.getPopupContent().addEventFilter(KeyEvent.ANY, (event) -> {
-            if (event.getCode().equals(KeyCode.SPACE)) {
-                event.consume();
-            }
-        });
-        playercombo.setSkin(comboBoxListViewSkinPlayer);
-        for (Node each : advancedvboxinner.getChildren()) {
-            if (each.getClass().equals(ComboBox.class)) {
-                final ComboBox cb = (ComboBox) each;
-//                System.out.println(cb.getId());
-                cb.valueProperty().addListener(new ChangeListener() {
-                    @Override
-                    public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                        try {
-                            if (cb.getValue() != null) {
-                                addHBoxToSelectionBox(cb.getId());
-                            }
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-                });
-                cb.setOnMouseClicked((Event t) -> {
-                    ListView<?> lv = ((ComboBoxListViewSkin<?>) cb.getSkin()).getListView();
-                    lv.setOnMouseExited((Event tIn) -> {
-                        cb.hide();
-                    });
+        viewButtons.add(traditionalbutton);
+        viewButtons.add(gridbutton);
+        viewButtons.add(heatmapbutton);
+        viewButtons.add(zonebutton);
 
-                });
-                if (!cb.getId().equals("shotsuccesscombo") && !cb.getId().equals("shotvaluecombo")) {
-                    ComboBoxListViewSkin<String> comboBoxListViewSkin = new ComboBoxListViewSkin<String>(cb) {
-                        @Override
-                        protected boolean isHideOnClickEnabled() {
-                            return false;
-                        }
-                    };
-                    comboBoxListViewSkin.getPopupContent().addEventFilter(KeyEvent.ANY, (event) -> {
-                        if (event.getCode().equals(KeyCode.SPACE)) {
-                            event.consume();
-                        }
-                    });
-                    cb.setSkin(comboBoxListViewSkin);
-
-                }
-
-            } else if (each.getClass().equals(HBox.class)) {
-                HBox hbox = (HBox) each;
-                for (Node eachHBoxNode : hbox.getChildren()) {
-                    if (eachHBoxNode.getClass().equals(ComboBox.class)) {
-                        final ComboBox cb = (ComboBox) eachHBoxNode;
-                        eachHBoxNode.setOnMouseClicked((Event t) -> {
-                            ListView<?> lv = ((ComboBoxListViewSkin<?>) cb.getSkin()).getListView();
-                            lv.setOnMouseExited((Event tIn) -> {
-                                cb.hide();
-                            });
-
-                        });
-                        cb.valueProperty().addListener(new ChangeListener() {
-                            @Override
-                            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                                try {
-//                                    addToSelectionBox(cb.getId());
-                                    if (cb.getValue() != null) {
-                                        addHBoxToSelectionBox(cb.getId());
-                                    }
-
-                                } catch (Exception ex) {
-                                    ex.printStackTrace();
-                                }
-                            }
-                        });
-                    }
-                }
-            }
-        }
-        advancedvbox.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
-        advancedvboxinner.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
-        searchscrollpane.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
-        selectionscrollpane.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
-        try {
-            populateUnchangingComboBoxes();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        selectionvbox.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
-        Stop[] stops = new Stop[]{new Stop(0, Color.BLACK), new Stop(1, Color.RED)};
-        LinearGradient lg1 = new LinearGradient(0, 0, 1, 0, true, CycleMethod.NO_CYCLE, stops);
-        vbox.setStyle("-fx-background-color: linear-gradient(from 25% 25% to 100% 100%, #434343, #cdcccc)");
-        gridpane.setStyle("-fx-background-color: transparent;");
+        createResponsiveComboBoxes();
         organizeZoneFXMLElements();
         initSizing();
-        JSONArray jsonArrayInit;// = new JSONArray()
-        threads = new ArrayList();
+        JSONArray jsonArrayInit;
         try {
             jsonArrayInit = getInitData();
             JSONObject jsonObjMisc2 = jsonArrayInit.getJSONObject(2);
@@ -604,7 +510,7 @@ public class SimpleController implements Initializable {
         try {
             reader = ResourceBundle.getBundle("dbconfig");
             namelabel.setText("Version " + reader.getString("version"));
-            String[] nameArray;// = new String[3]
+            String[] nameArray;
             JSONArray jsonArray = getInitAllPlayersData();
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject eachPlayer = jsonArray.getJSONObject(i);
@@ -628,25 +534,16 @@ public class SimpleController implements Initializable {
         this.playercombo.setValue("Aaron Gordon");
         this.seasoncombo.setValue("Regular Season");
         this.activePlayers = new HashMap();
-
         try {
             setPlayerComboBox();
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-
-        ArrayList<String> seasons = new ArrayList();
-        seasons.add("Preseason");
-        seasons.add("Regular Season");
-        seasons.add("Playoffs");
-        seasoncombo.setItems(FXCollections.observableArrayList(seasons));
-
         try {
             setSeasonsComboBox();
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-
         this.searchbutton.setOnMouseClicked((Event t) -> {
             try {
                 this.yearcombo.getValue().toString();
@@ -675,47 +572,9 @@ public class SimpleController implements Initializable {
             }
 
         });
-
-        this.traditionalbutton.setOnMouseClicked((Event t) -> {
-            double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-//            traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-font-weight: bold;");
-            traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
-            gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-            heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-            zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-            if (searchvbox.isVisible()) {
-                try {
-                    this.previousYear = this.yearcombo.getValue().toString();
-                    this.previousPlayer = this.playercombo.getValue().toString();
-                    this.previousSeason = this.seasoncombo.getValue().toString();
-                    if (this.currentSearchModeSelection.equals("")) {
-                        this.currentSearchModeSelection = "simpletraditional";
-                    } else {
-                        traditional();
-                    }
-                } catch (NullPointerException ex) {
-                    this.errorlabel.setText("Please select one from each category");
-                    this.errorlabel.setVisible(true);
-                }
-            } else {
-                if (!beginSeason.equals("") || !endSeason.equals("") || !beginDistance.equals("") || !endDistance.equals("") || !shotSuccess.equals("") || !shotValue.equals("")
-                        || !allSelectedPlayers.isEmpty() || !allSelectedSeasonTypes.isEmpty() || !allSelectedShotTypes.isEmpty() || !allSelectedTeams.isEmpty()
-                        || !allSelectedHomeTeams.isEmpty() || !allSelectedAwayTeams.isEmpty() || !allSelectedCourtAreas.isEmpty() || !allSelectedCourtSides.isEmpty()) {
-                    if (this.currentSearchModeSelectionAdvanced.equals("")) {
-                        this.currentSearchModeSelectionAdvanced = "advancedtraditional";
-                    } else {
-                        traditional();
-                    }
-                } else {
-                    this.errorlabeladvanced.setText("Please include at least one search parameter");
-                    this.errorlabeladvanced.setVisible(true);
-                }
-
-            }
-        });
-
+        setViewTypeButtonsOnMouseClicked();
         this.traditionalbutton.setOnMouseEntered((Event t) -> {
-            double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
             if ((searchvbox.isVisible() && currentSearchModeSelection.equals("simpletraditional")) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals("advancedtraditional"))) {
                 traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: true;");
             } else {
@@ -724,7 +583,7 @@ public class SimpleController implements Initializable {
 
         });
         this.traditionalbutton.setOnMouseExited((Event t) -> {
-            double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
             if ((searchvbox.isVisible() && currentSearchModeSelection.equals("simpletraditional")) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals("advancedtraditional"))) {
                 traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: false;");
             } else {
@@ -732,7 +591,7 @@ public class SimpleController implements Initializable {
             }
         });
         this.gridbutton.setOnMouseEntered((Event t) -> {
-            double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
             if ((searchvbox.isVisible() && currentSearchModeSelection.equals("simplegrid")) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals("advancedgrid"))) {
                 gridbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: true;");
             } else {
@@ -741,7 +600,7 @@ public class SimpleController implements Initializable {
 
         });
         this.gridbutton.setOnMouseExited((Event t) -> {
-            double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
             if ((searchvbox.isVisible() && currentSearchModeSelection.equals("simplegrid")) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals("advancedgrid"))) {
                 gridbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: false;");
             } else {
@@ -749,7 +608,7 @@ public class SimpleController implements Initializable {
             }
         });
         this.heatmapbutton.setOnMouseEntered((Event t) -> {
-            double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
             if ((searchvbox.isVisible() && currentSearchModeSelection.equals("simpleheat")) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals("advancedheat"))) {
                 heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: true;");
             } else {
@@ -758,7 +617,7 @@ public class SimpleController implements Initializable {
 
         });
         this.heatmapbutton.setOnMouseExited((Event t) -> {
-            double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
             if ((searchvbox.isVisible() && currentSearchModeSelection.equals("simpleheat")) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals("advancedheat"))) {
                 heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: false;");
             } else {
@@ -766,7 +625,7 @@ public class SimpleController implements Initializable {
             }
         });
         this.zonebutton.setOnMouseEntered((Event t) -> {
-            double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
             if ((searchvbox.isVisible() && currentSearchModeSelection.equals("simplezone")) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals("advancedzone"))) {
                 zonebutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: true;");
             } else {
@@ -775,7 +634,7 @@ public class SimpleController implements Initializable {
 
         });
         this.zonebutton.setOnMouseExited((Event t) -> {
-            double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
             if ((searchvbox.isVisible() && currentSearchModeSelection.equals("simplezone")) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals("advancedzone"))) {
                 zonebutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: false;");
             } else {
@@ -783,117 +642,6 @@ public class SimpleController implements Initializable {
             }
         });
 
-        this.gridbutton.setOnMouseClicked((Event t) -> {
-            double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-            traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-            gridbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
-            heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-            zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-            if (searchvbox.isVisible()) {
-                try {
-                    this.previousYear = this.yearcombo.getValue().toString();
-                    this.previousPlayer = this.playercombo.getValue().toString();
-                    this.previousSeason = this.seasoncombo.getValue().toString();
-                    if (this.currentSearchModeSelection.equals("")) {
-                        this.currentSearchModeSelection = "simplegrid";
-                    } else {
-                        grid();
-                    }
-                } catch (NullPointerException ex) {
-                    this.errorlabel.setText("Please select one from each category");
-                    this.errorlabel.setVisible(true);
-                }
-
-            } else {
-                if (!beginSeason.equals("") || !endSeason.equals("") || !beginDistance.equals("") || !endDistance.equals("") || !shotSuccess.equals("") || !shotValue.equals("")
-                        || !allSelectedPlayers.isEmpty() || !allSelectedSeasonTypes.isEmpty() || !allSelectedShotTypes.isEmpty() || !allSelectedTeams.isEmpty()
-                        || !allSelectedHomeTeams.isEmpty() || !allSelectedAwayTeams.isEmpty() || !allSelectedCourtAreas.isEmpty() || !allSelectedCourtSides.isEmpty()) {
-                    if (this.currentSearchModeSelectionAdvanced.equals("")) {
-                        this.currentSearchModeSelectionAdvanced = "advancedgrid";
-                    } else {
-                        grid();
-                    }
-                } else {
-                    this.errorlabeladvanced.setText("Please include at least one search parameter");
-                    this.errorlabeladvanced.setVisible(true);
-                }
-            }
-
-        });
-        this.heatmapbutton.setOnMouseClicked((Event t) -> {
-            double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-            traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-            gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-            heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
-            zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-            if (searchvbox.isVisible()) {
-                try {
-                    this.previousYear = this.yearcombo.getValue().toString();
-                    this.previousPlayer = this.playercombo.getValue().toString();
-                    this.previousSeason = this.seasoncombo.getValue().toString();
-                    if (this.currentSearchModeSelection.equals("")) {
-                        this.currentSearchModeSelection = "simpleheat";
-                    } else {
-                        heat();
-                    }
-                } catch (NullPointerException ex) {
-                    this.errorlabel.setText("Please select one from each category");
-                    this.errorlabel.setVisible(true);
-                }
-
-            } else {
-                if (!beginSeason.equals("") || !endSeason.equals("") || !beginDistance.equals("") || !endDistance.equals("") || !shotSuccess.equals("") || !shotValue.equals("")
-                        || !allSelectedPlayers.isEmpty() || !allSelectedSeasonTypes.isEmpty() || !allSelectedShotTypes.isEmpty() || !allSelectedTeams.isEmpty()
-                        || !allSelectedHomeTeams.isEmpty() || !allSelectedAwayTeams.isEmpty() || !allSelectedCourtAreas.isEmpty() || !allSelectedCourtSides.isEmpty()) {
-                    if (this.currentSearchModeSelectionAdvanced.equals("")) {
-                        this.currentSearchModeSelectionAdvanced = "advancedheat";
-                    } else {
-                        heat();
-                    }
-                } else {
-                    this.errorlabeladvanced.setText("Please include at least one search parameter");
-                    this.errorlabeladvanced.setVisible(true);
-                }
-            }
-
-        });
-        this.zonebutton.setOnMouseClicked((Event t) -> {
-            double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-            traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-            gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-            heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-            zonebutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
-            if (searchvbox.isVisible()) {
-                try {
-                    this.previousYear = this.yearcombo.getValue().toString();
-                    this.previousPlayer = this.playercombo.getValue().toString();
-                    this.previousSeason = this.seasoncombo.getValue().toString();
-                    if (this.currentSearchModeSelection.equals("")) {
-                        this.currentSearchModeSelection = "simplezone";
-                    } else {
-                        zone();
-                    }
-                } catch (NullPointerException ex) {
-                    this.errorlabel.setText("Please select one from each category");
-                    this.errorlabel.setVisible(true);
-                }
-
-            } else {
-                if (!beginSeason.equals("") || !endSeason.equals("") || !beginDistance.equals("") || !endDistance.equals("") || !shotSuccess.equals("") || !shotValue.equals("")
-                        || !allSelectedPlayers.isEmpty() || !allSelectedSeasonTypes.isEmpty() || !allSelectedShotTypes.isEmpty() || !allSelectedTeams.isEmpty()
-                        || !allSelectedHomeTeams.isEmpty() || !allSelectedAwayTeams.isEmpty() || !allSelectedCourtAreas.isEmpty() || !allSelectedCourtSides.isEmpty()) {
-                    if (this.currentSearchModeSelectionAdvanced.equals("")) {
-                        this.currentSearchModeSelectionAdvanced = "advancedzone";
-                    } else {
-                        zone();
-                    }
-                } else {
-                    this.errorlabeladvanced.setText("Please include at least one search parameter");
-                    this.errorlabeladvanced.setVisible(true);
-                }
-            }
-
-        });
         imageview.fitHeightProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
@@ -934,7 +682,7 @@ public class SimpleController implements Initializable {
             advancedvbox.setVisible(false);
             removeAllShotsFromView();
             resetView();
-            double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
             this.fgfrac.setText("--");
             this.fgperc.setText("--");
             this.twopointfrac.setText("--");
@@ -945,34 +693,44 @@ public class SimpleController implements Initializable {
 
             switch (currentSearchModeSelection) {
                 case "simpletraditional":
-                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
-                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+//                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+                    setViewTypeButtonStyle(0);
+
                     break;
                 case "simplegrid":
-                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
-                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
-                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+//                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+                    setViewTypeButtonStyle(1);
+
                     break;
                 case "simpleheat":
-                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
-                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
-                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+//                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+                    setViewTypeButtonStyle(2);
+
                     break;
                 case "simplezone":
-                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
-                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
-                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+//                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+                    setViewTypeButtonStyle(3);
+
                     break;
                 case "":
-                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
-                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+                    setViewTypeButtonStyle(10);
+
                     break;
             }
         });
@@ -998,37 +756,47 @@ public class SimpleController implements Initializable {
             this.threepointfracadv.setText("--");
             this.threepointpercadv.setText("--");
             imageview.setImage(new Image("/images/transparent.png"));
-            double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
             switch (currentSearchModeSelectionAdvanced) {
                 case "advancedtraditional":
-                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
-                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+//                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    
+                    setViewTypeButtonStyle(0);
                     break;
                 case "advancedgrid":
-                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
-                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
-                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+//                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+                    setViewTypeButtonStyle(1);
+
                     break;
                 case "advancedheat":
-                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
-                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
-                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+//                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+                    setViewTypeButtonStyle(2);
+
                     break;
                 case "advancedzone":
-                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
-                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
-                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+//                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+                    setViewTypeButtonStyle(3);
+
                     break;
                 case "":
-                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
-                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+//                    gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//                    heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//                    zonebutton.setStyle("-fx-font: " + font + "px \"Arial \";-fx-background-color: transparent;");
+                    setViewTypeButtonStyle(10);
+
                     break;
             }
         });
@@ -1127,11 +895,11 @@ public class SimpleController implements Initializable {
             xBig = BigDecimal.valueOf(eachShot.getInt("x"));
             yBig = BigDecimal.valueOf(eachShot.getInt("y"));
             if (eachShot.getInt("make") == 1) {
-                circle = new Circle(imageview.getLayoutBounds().getHeight() * shotmadeRadius.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue());
+                circle = new Circle(imageview.getLayoutBounds().getHeight() * SHOT_MADE_RADIUS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue());
                 circle.setFill(Color.TRANSPARENT);
                 circle.setTranslateX(xBig.intValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);
                 circle.setTranslateY(yBig.intValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2 - (185.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
-                circle.setStrokeWidth(imageview.getLayoutBounds().getHeight() * shotLineThickness.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue());
+                circle.setStrokeWidth(imageview.getLayoutBounds().getHeight() * SHOT_LINE_THICKNESS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue());
                 circle.setStroke(Color.LIMEGREEN);
                 circle.setManaged(false);
                 allShots.put(shot, circle);
@@ -1139,8 +907,8 @@ public class SimpleController implements Initializable {
                 msi = new MissedShotIcon((xBig.intValue()) / 470,
                         ((yBig.intValue() - 55) / 470),
                         imageview.getLayoutBounds().getHeight(),
-                        shotmissStartEnd.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue(),
-                        shotLineThickness.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue(),
+                        SHOT_MISS_START_END.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue(),
+                        SHOT_LINE_THICKNESS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue(),
                         imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2,
                         imageview.localToParent(imageview.getBoundsInLocal()).getMinY());
                 msi.getLine1().setManaged(false);
@@ -1176,15 +944,16 @@ public class SimpleController implements Initializable {
     }
 
     private void resizeShots() {
-        double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-        traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
-        gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-        heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-        zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+//        traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+//        gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//        heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//        zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+        setViewTypeButtonStyle(0);
 
         double height = imageview.localToParent(imageview.getBoundsInLocal()).getHeight();
-        double scaledLineThickness = shotLineThickness.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue();
-        double scaledLineLength = shotmissStartEnd.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue();
+        double scaledLineThickness = SHOT_LINE_THICKNESS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue();
+        double scaledLineLength = SHOT_MISS_START_END.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue();
         double minX = imageview.localToParent(imageview.getBoundsInLocal()).getMinX();
         double minY = imageview.localToParent(imageview.getBoundsInLocal()).getMinY();
         double width = imageview.localToParent(imageview.getBoundsInLocal()).getWidth();
@@ -1197,7 +966,7 @@ public class SimpleController implements Initializable {
                     circle = (Circle) allShots.get(each);
                     circle.setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * height / 470 + minX + width / 2);
                     circle.setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * height / 470 + minY + height / 2 - (185.0 * height / 470));
-                    circle.setRadius(height * shotmadeRadius.divide(origHeight, 6, RoundingMode.HALF_UP).doubleValue());
+                    circle.setRadius(height * SHOT_MADE_RADIUS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue());
                     circle.setStrokeWidth(height * scaledLineThickness);
                 } else {
                     MissedShotIcon msi = (MissedShotIcon) allShots.get(each);
@@ -1289,7 +1058,6 @@ public class SimpleController implements Initializable {
     }
 
     private void setSeasonsComboBox() throws IOException {
-        int id = 0;
         ArrayList<String> seasons = new ArrayList();
         seasons.add("Preseason");
         seasons.add("Regular Season");
@@ -1396,8 +1164,8 @@ public class SimpleController implements Initializable {
         }
         Coordinate coord;
         coordAverages = new LinkedHashMap();
-        for (int j = -55; j < 400; j = j + (int) SQUARESIZEORIG) {
-            for (int i = -250; i < 250; i = i + (int) SQUARESIZEORIG) {
+        for (int j = -55; j < 400; j = j + (int) SQUARE_SIZE_ORIG) {
+            for (int i = -250; i < 250; i = i + (int) SQUARE_SIZE_ORIG) {
                 coord = new Coordinate(i, j);
                 LinkedList info = new LinkedList();
                 info.add(0.0);
@@ -1426,7 +1194,7 @@ public class SimpleController implements Initializable {
             x = eachShot.getInt("x");
             make = eachShot.getInt("make");
             for (Coordinate each : coordAverages.keySet()) {
-                if (x < each.getX() + 5 + SQUARESIZEORIG * 1.5 && x >= each.getX() + 5 - SQUARESIZEORIG * 1.5 && y < each.getY() + 5 + SQUARESIZEORIG * 1.5 && y >= each.getY() + 5 - SQUARESIZEORIG * 1.5) {
+                if (x < each.getX() + 5 + SQUARE_SIZE_ORIG * 1.5 && x >= each.getX() + 5 - SQUARE_SIZE_ORIG * 1.5 && y < each.getY() + 5 + SQUARE_SIZE_ORIG * 1.5 && y >= each.getY() + 5 - SQUARE_SIZE_ORIG * 1.5) {
                     coordAverages.get(each).set(1, coordAverages.get(each).get(1) + 1);
                     if (make == 1) {
                         coordAverages.get(each).set(0, coordAverages.get(each).get(0) + 1);
@@ -1685,7 +1453,7 @@ public class SimpleController implements Initializable {
         double valueI = 0;
         int counter = 0;
         for (Coordinate each : coordAverages.keySet()) {
-            if (each.getX() % offset == 0 && (each.getY() - 5) % offset == 0) {
+            if (each.getX() % OFFSET == 0 && (each.getY() - 5) % OFFSET == 0) {
                 counter++;
                 aSum = 0;
                 bSum = 0;
@@ -1727,11 +1495,12 @@ public class SimpleController implements Initializable {
     }
 
     private void resizeGrid() {
-        double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-        traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent; ");
-        heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent; ");
-        gridbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
-        zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+//        traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent; ");
+//        heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent; ");
+//        gridbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+//        zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+        setViewTypeButtonStyle(1);
 
         gridbackground.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
         gridbackground.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
@@ -1797,12 +1566,13 @@ public class SimpleController implements Initializable {
     }
 
     private void resize() {
-        double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-        double fontGrid = new BigDecimal(statGridFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-        traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent; ");
-        heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent; ");
-        gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-        zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+        fontGrid = new BigDecimal(STAT_GRID_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+//        traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent; ");
+//        heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent; ");
+//        gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//        zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+        setViewTypeButtonStyle(10);
 
         try {
             if (searchvbox.isVisible()) {
@@ -1949,24 +1719,13 @@ public class SimpleController implements Initializable {
         }
     }
 
-    private void interruptAllThreads() {
-        for (Thread each : threads) {
-            try {
-                each.interrupt();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-        threads.clear();
-
-    }
-
     private void resizeHeat() {
-        double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-        traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent; ");
-        heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent; ");
-        gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-        zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+//        traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent; ");
+//        heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent; ");
+//        gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//        zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+        setViewTypeButtonStyle(2);
 
         Circle tempCircle;
         int keyCounter = 0;
@@ -1977,19 +1736,6 @@ public class SimpleController implements Initializable {
             keyCounter++;
         }
 
-//        heatlegend.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (-155.0 / 470));
-//        heatlegend.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (190.0 / 470));
-//        heatlegend.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-//        heatlegend.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-//        heatlegend.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-//        heatlegendgradient.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 153.0 / 470);
-//        heatlegendgradient.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 17.0 / 470);
-//        heatlegendtoplabel.maxWidthProperty().bind(heatlegend.maxWidthProperty());
-//        heatlegendlowerlabel.maxWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.5));
-//        heatlegendupperlabel.maxWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.5));
-//        heatlegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"Lucida Sans\";");
-//        heatlegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
-//        heatlegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
         heatlegend.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (-155.0 / 470));
         heatlegend.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (185.0 / 470));
         heatlegend.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
@@ -2008,12 +1754,12 @@ public class SimpleController implements Initializable {
     }
 
     private void resizeZone() {
-        double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-        traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent; ");
-        heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent; ");
-        gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-        zonebutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
-
+        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+//        traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent; ");
+//        heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent; ");
+//        gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//        zonebutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+        setViewTypeButtonStyle(3);
         mask = new Rectangle(imageview.getLayoutBounds().getWidth(), imageview.getLayoutBounds().getHeight());
         imagegrid.setClip(mask);
         Node each;
@@ -2272,7 +2018,6 @@ public class SimpleController implements Initializable {
 
         }
 
-        activeDisplay = "simpletraditional";
         imageview.setImage(new Image("/images/newbackcourt.png"));
 
     }
@@ -2312,23 +2057,6 @@ public class SimpleController implements Initializable {
             }
 
         }
-
-//        this.currentSearchModeSelection = "simplegrid";
-//        resetView();
-//        try {
-//            this.previousYear = this.yearcombo.getValue().toString();
-//            this.previousPlayer = this.playercombo.getValue().toString();
-//            this.previousSeason = this.seasoncombo.getValue().toString();
-//            plotGrid(doSimpleSearch());
-//        } catch (SQLException ex) {
-//            ex.printStackTrace();
-//        } catch (NullPointerException ex) {
-//            this.errorlabel.setText("Please try again");
-//            this.errorlabel.setVisible(true);
-//        } catch (IOException ex) {
-//            ex.printStackTrace();
-//        }
-//        activeDisplay = "simplegrid";
         gridbackground.setVisible(true);
         gridbackground.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
         gridbackground.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
@@ -2344,9 +2072,6 @@ public class SimpleController implements Initializable {
         gridlegendsize.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
         gridlegendsize.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
         gridlegendsize.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-//        gridlegendsize.setMaxHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
-//        gridlegendsize.setMinHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
-//        gridlegendsize.setPrefHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 80.0 / 470);
         gridcolorlegendgradient.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 153.0 / 470);
         gridcolorlegendgradient.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 17.0 / 470);
         gridcolorlegendtoplabel.maxWidthProperty().bind(gridlegendcolor.maxWidthProperty());
@@ -3038,17 +2763,15 @@ public class SimpleController implements Initializable {
     }
 
     private void initSizing() {
-//        imageview.minHeight(470);
-//        imageview.minWidth(500);
         searchvbox.setVisible(true);
         advancedvbox.setVisible(false);
-        double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-        traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-        gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-        heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-        zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
-
-        double fontGrid = new BigDecimal(statGridFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+//        traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//        gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//        heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//        zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+        setViewTypeButtonStyle(10);
+        fontGrid = new BigDecimal(STAT_GRID_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         titlelabel.setMinWidth(Region.USE_PREF_SIZE);
         titlelabel.setStyle("-fx-font: " + fontGrid * 3 + "px \"Serif\"; ");
         this.errorlabel.setVisible(false);
@@ -3060,7 +2783,6 @@ public class SimpleController implements Initializable {
         this.playercombo.setStyle("-fx-font: " + font + "px \"Serif\";");
         this.seasoncombo.prefWidthProperty().bind(this.gridpane.widthProperty().divide(5));
         this.seasoncombo.setStyle("-fx-font: " + font + "px \"Serif\";");
-//        this.searchbutton.prefWidthProperty().bind(this.gridpane.widthProperty().divide(6));
         this.searchbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
         this.simplelayoutbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
         this.advancedlayoutbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
@@ -3082,7 +2804,6 @@ public class SimpleController implements Initializable {
 
         resetView();
         VBox.setMargin(introlabel, new Insets(new BigDecimal(imageview.getLayoutBounds().getHeight()).multiply(new BigDecimal("20")).divide(new BigDecimal("475"), 6, RoundingMode.HALF_UP).doubleValue(), 0, 0, 0));
-//        VBox.setMargin(this.introlabel, new Insets(10, 0, 0, 0));
         VBox.setMargin(this.yearcombo, new Insets(20, 0, 0, 0));
         VBox.setMargin(this.playercombo, new Insets(20, 0, 0, 0));
         VBox.setMargin(this.seasoncombo, new Insets(20, 0, 0, 0));
@@ -3092,7 +2813,6 @@ public class SimpleController implements Initializable {
         mask = new Rectangle(imageview.getLayoutBounds().getWidth(), imageview.getLayoutBounds().getHeight());
         searchscrollpane.prefWidthProperty().bind(advancedvbox.widthProperty());
         advancedvboxinner.prefWidthProperty().bind(searchscrollpane.widthProperty());
-//        notestextarea.setStyle("-fx-background: transparent;-fx-background-color: transparent; -fx-text-fill: white;");
         selectionvbox.prefWidthProperty().bind(selectionscrollpane.widthProperty().multiply(0.95));
         advancedintrolabel.prefWidthProperty().bind(advancedvboxinner.widthProperty());
         seasonsbegincombo.prefWidthProperty().bind(advancedvboxinner.widthProperty().multiply(0.4));
@@ -3121,11 +2841,22 @@ public class SimpleController implements Initializable {
         courtareascombo.prefWidthProperty().bind(advancedvboxinner.widthProperty().multiply(0.66));
         courtsideslabel.prefWidthProperty().bind(advancedvboxinner.widthProperty().multiply(0.9));
         courtsidescombo.prefWidthProperty().bind(advancedvboxinner.widthProperty().multiply(0.66));
-//        advancedvbox.minHeightProperty().bind(gridpane.minHeightProperty().multiply(0.9));
-//        advancedvbox.maxHeightProperty().bind(gridpane.maxHeightProperty().multiply(0.9));
-//        searchscrollpane.minHeightProperty().bind(advancedvbox.minHeightProperty().multiply(0.33));
-//        searchscrollpane.maxHeightProperty().bind(advancedvbox.maxHeightProperty().multiply(0.33));
         imageview.setImage(new Image("/images/newtransparent.png"));
+
+        advancedvbox.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
+        advancedvboxinner.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
+        searchscrollpane.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
+        selectionscrollpane.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
+        try {
+            populateUnchangingComboBoxes();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        selectionvbox.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
+        Stop[] stops = new Stop[]{new Stop(0, Color.BLACK), new Stop(1, Color.RED)};
+        LinearGradient lg1 = new LinearGradient(0, 0, 1, 0, true, CycleMethod.NO_CYCLE, stops);
+        vbox.setStyle("-fx-background-color: linear-gradient(from 25% 25% to 100% 100%, #434343, #cdcccc)");
+        gridpane.setStyle("-fx-background-color: transparent;");
     }
 
     private void resetView() {
@@ -3256,7 +2987,7 @@ public class SimpleController implements Initializable {
                 aSum = 0;
                 bSum = 0;
                 for (Coordinate each2 : coordAverages.keySet()) {
-                    if (!each.equals(each2) && getDistance(each, each2) < maxDistanceBetweenNodesHeat) {
+                    if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
                         aSum = aSum + ((coordAverages.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
                         bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
                         if (coordAverages.get(each2).get(1).intValue() != 0) {
@@ -3317,7 +3048,7 @@ public class SimpleController implements Initializable {
                                 aSum = 0;
                                 bSum = 0;
                                 for (Coordinate each2 : coordAverages.keySet()) {
-                                    if (!each.equals(each2) && getDistance(each, each2) < maxDistanceBetweenNodesHeat) {
+                                    if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
                                         aSum = aSum + ((coordAverages.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
                                         bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
                                         if (coordAverages.get(each2).get(1).intValue() != 0) {
@@ -3397,11 +3128,11 @@ public class SimpleController implements Initializable {
             bSum = 0;
             eachCounter = 0;
             centerCoord = organizedCoords.get(i);
-            for (int j = x - maxDistanceBetweenNodesHeat; j <= x + maxDistanceBetweenNodesHeat; j++) {
+            for (int j = x - MAX_DISTANCE_BETWEEN_NODES_HEAT; j <= x + MAX_DISTANCE_BETWEEN_NODES_HEAT; j++) {
                 if (j < -250) {
                     continue;
                 }
-                for (int k = y - maxDistanceBetweenNodesHeat; k <= y + maxDistanceBetweenNodesHeat; k++) {
+                for (int k = y - MAX_DISTANCE_BETWEEN_NODES_HEAT; k <= y + MAX_DISTANCE_BETWEEN_NODES_HEAT; k++) {
                     if (k < -52) {
                         continue;
                     }
@@ -3412,7 +3143,7 @@ public class SimpleController implements Initializable {
                     }
                     tempCoord = organizedCoords.get(iTemp);
 
-                    if (iTemp != i && getDistance(centerCoord, tempCoord) < maxDistanceBetweenNodesHeat) {
+                    if (iTemp != i && getDistance(centerCoord, tempCoord) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
 //                        System.out.println("here2");
                         aSum = aSum + ((coordAverages.get(tempCoord).get(1).intValue() * getDistance(centerCoord, tempCoord)) / Math.pow(getDistance(centerCoord, tempCoord), p));
                         bSum = bSum + (1 / Math.pow(getDistance(centerCoord, tempCoord), p));
@@ -3426,7 +3157,7 @@ public class SimpleController implements Initializable {
 //inner loop for every column
 //            for (int k=)
 //            while (min<max){
-//                if(y>maxDistanceBetweenNodesHeat){
+//                if(y>MAX_DISTANCE_BETWEEN_NODES_HEAT){
 //                    y=-52;
 //                    x=x+offsetHeat*452;
 //                }else{
@@ -3468,13 +3199,13 @@ public class SimpleController implements Initializable {
 //            aSum = 0;
 //            bSum = 0;
 //            //get each column
-//            for (int j = -1 * (int) maxDistanceBetweenNodesHeat; j <= maxDistanceBetweenNodesHeat; j++) {
+//            for (int j = -1 * (int) MAX_DISTANCE_BETWEEN_NODES_HEAT; j <= MAX_DISTANCE_BETWEEN_NODES_HEAT; j++) {
 //                //get each row 
 //                if (j < 0) {
 //                    continue;
 //                }
 //                System.out.println("j: " + j);
-//                for (int k = i + j * 462 - maxDistanceBetweenNodesHeat; k <= i + j * 462 + maxDistanceBetweenNodesHeat; k++) {
+//                for (int k = i + j * 462 - MAX_DISTANCE_BETWEEN_NODES_HEAT; k <= i + j * 462 + MAX_DISTANCE_BETWEEN_NODES_HEAT; k++) {
 //                    if (k >= 0 && i != k) {
 //                        System.out.println("k: " + k);
 //                        aSum = aSum + ((coordAverages.get(organizedCoords.get(k)).get(1).intValue() * getDistance(organizedCoords.get(i), organizedCoords.get(k))) / Math.pow(getDistance(organizedCoords.get(i), organizedCoords.get(k)), p));
@@ -3495,7 +3226,7 @@ public class SimpleController implements Initializable {
 //                aSum = 0;
 //                bSum = 0;
 //                for (Coordinate each2 : coordAverages.keySet()) {
-//                    if (!each.equals(each2) && getDistance(each, each2) < maxDistanceBetweenNodesHeat) {
+//                    if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
 //                        aSum = aSum + ((coordAverages.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
 //                        bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
 //                        if (coordAverages.get(each2).get(1).intValue() != 0) {
@@ -3642,7 +3373,7 @@ public class SimpleController implements Initializable {
     }
 
     private void singleSelectionHBoxCreationMethods(String alreadySelected, String labelPreText, ComboBox combo) {
-        double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         Label tempLabel;
         Label labelToReplace = null;
         Label label;
@@ -3820,7 +3551,7 @@ public class SimpleController implements Initializable {
     }
 
     private void multipleSelectionHBoxCreationMethods(HashSet hashSet, String labelPreText, ComboBox combo) {
-        double font = new BigDecimal(comboFontSize).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         Label tempLabel;
         Label labelToReplace = null;
         Label label;
@@ -4068,13 +3799,7 @@ public class SimpleController implements Initializable {
         obj.put("allSelectedCourtAreas", allSelectedCourtAreas);
         obj.put("allSelectedCourtSides", allSelectedCourtSides);
         Main.getPrintWriterOut().println(obj.toString());
-//        return ; 
-//        if (isGood) {
         return new JSONArray(Main.getServerResponse().readLine());
-//        } else {
-//            return null;
-//        }
-
     }
 
     private void setShotGridAdvanced(JSONArray jsonArray) {
@@ -4133,5 +3858,245 @@ public class SimpleController implements Initializable {
         }
         this.charttitle.setText("Custom Search");
         this.charttitle.setVisible(true);
+    }
+
+    private void createResponsiveComboBoxes() {
+        ComboBoxListViewSkin<String> comboBoxListViewSkinPlayer = new ComboBoxListViewSkin(playercombo);
+        comboBoxListViewSkinPlayer.getPopupContent().addEventFilter(KeyEvent.ANY, (event) -> {
+            if (event.getCode().equals(KeyCode.SPACE)) {
+                event.consume();
+            }
+        });
+        playercombo.setSkin(comboBoxListViewSkinPlayer);
+        for (Node each : advancedvboxinner.getChildren()) {
+            if (each.getClass().equals(ComboBox.class)) {
+                final ComboBox cb = (ComboBox) each;
+                cb.valueProperty().addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ObservableValue observable, Object oldValue, Object newValue) {
+                        try {
+                            if (cb.getValue() != null) {
+                                addHBoxToSelectionBox(cb.getId());
+                            }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                });
+                cb.setOnMouseClicked((Event t) -> {
+                    ListView<?> lv = ((ComboBoxListViewSkin<?>) cb.getSkin()).getListView();
+                    lv.setOnMouseExited((Event tIn) -> {
+                        cb.hide();
+                    });
+
+                });
+                if (!cb.getId().equals("shotsuccesscombo") && !cb.getId().equals("shotvaluecombo")) {
+                    ComboBoxListViewSkin<String> comboBoxListViewSkin = new ComboBoxListViewSkin<String>(cb) {
+                        @Override
+                        protected boolean isHideOnClickEnabled() {
+                            return false;
+                        }
+                    };
+                    comboBoxListViewSkin.getPopupContent().addEventFilter(KeyEvent.ANY, (event) -> {
+                        if (event.getCode().equals(KeyCode.SPACE)) {
+                            event.consume();
+                        }
+                    });
+                    cb.setSkin(comboBoxListViewSkin);
+
+                }
+
+            } else if (each.getClass().equals(HBox.class)) {
+                HBox hbox = (HBox) each;
+                for (Node eachHBoxNode : hbox.getChildren()) {
+                    if (eachHBoxNode.getClass().equals(ComboBox.class)) {
+                        final ComboBox cb = (ComboBox) eachHBoxNode;
+                        eachHBoxNode.setOnMouseClicked((Event t) -> {
+                            ListView<?> lv = ((ComboBoxListViewSkin<?>) cb.getSkin()).getListView();
+                            lv.setOnMouseExited((Event tIn) -> {
+                                cb.hide();
+                            });
+
+                        });
+                        cb.valueProperty().addListener(new ChangeListener() {
+                            @Override
+                            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
+                                try {
+                                    if (cb.getValue() != null) {
+                                        addHBoxToSelectionBox(cb.getId());
+                                    }
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    private void setViewTypeButtonsOnMouseClicked() {
+        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+        this.traditionalbutton.setOnMouseClicked((Event t) -> {
+//            traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+//            gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//            heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//            zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+            setViewTypeButtonStyle(0);
+            if (searchvbox.isVisible()) {
+                try {
+                    this.previousYear = this.yearcombo.getValue().toString();
+                    this.previousPlayer = this.playercombo.getValue().toString();
+                    this.previousSeason = this.seasoncombo.getValue().toString();
+                    if (this.currentSearchModeSelection.equals("")) {
+                        this.currentSearchModeSelection = "simpletraditional";
+                    } else {
+                        traditional();
+                    }
+                } catch (NullPointerException ex) {
+                    this.errorlabel.setText("Please select one from each category");
+                    this.errorlabel.setVisible(true);
+                }
+            } else {
+                if (!beginSeason.equals("") || !endSeason.equals("") || !beginDistance.equals("") || !endDistance.equals("") || !shotSuccess.equals("") || !shotValue.equals("")
+                        || !allSelectedPlayers.isEmpty() || !allSelectedSeasonTypes.isEmpty() || !allSelectedShotTypes.isEmpty() || !allSelectedTeams.isEmpty()
+                        || !allSelectedHomeTeams.isEmpty() || !allSelectedAwayTeams.isEmpty() || !allSelectedCourtAreas.isEmpty() || !allSelectedCourtSides.isEmpty()) {
+                    if (this.currentSearchModeSelectionAdvanced.equals("")) {
+                        this.currentSearchModeSelectionAdvanced = "advancedtraditional";
+                    } else {
+                        traditional();
+                    }
+                } else {
+                    this.errorlabeladvanced.setText("Please include at least one search parameter");
+                    this.errorlabeladvanced.setVisible(true);
+                }
+
+            }
+        });
+        this.gridbutton.setOnMouseClicked((Event t) -> {
+            setViewTypeButtonStyle(1);
+
+//            traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//            gridbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+//            heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//            zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+            if (searchvbox.isVisible()) {
+                try {
+                    this.previousYear = this.yearcombo.getValue().toString();
+                    this.previousPlayer = this.playercombo.getValue().toString();
+                    this.previousSeason = this.seasoncombo.getValue().toString();
+                    if (this.currentSearchModeSelection.equals("")) {
+                        this.currentSearchModeSelection = "simplegrid";
+                    } else {
+                        grid();
+                    }
+                } catch (NullPointerException ex) {
+                    this.errorlabel.setText("Please select one from each category");
+                    this.errorlabel.setVisible(true);
+                }
+
+            } else {
+                if (!beginSeason.equals("") || !endSeason.equals("") || !beginDistance.equals("") || !endDistance.equals("") || !shotSuccess.equals("") || !shotValue.equals("")
+                        || !allSelectedPlayers.isEmpty() || !allSelectedSeasonTypes.isEmpty() || !allSelectedShotTypes.isEmpty() || !allSelectedTeams.isEmpty()
+                        || !allSelectedHomeTeams.isEmpty() || !allSelectedAwayTeams.isEmpty() || !allSelectedCourtAreas.isEmpty() || !allSelectedCourtSides.isEmpty()) {
+                    if (this.currentSearchModeSelectionAdvanced.equals("")) {
+                        this.currentSearchModeSelectionAdvanced = "advancedgrid";
+                    } else {
+                        grid();
+                    }
+                } else {
+                    this.errorlabeladvanced.setText("Please include at least one search parameter");
+                    this.errorlabeladvanced.setVisible(true);
+                }
+            }
+
+        });
+        this.heatmapbutton.setOnMouseClicked((Event t) -> {
+//            traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//            gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//            heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+//            zonebutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+            setViewTypeButtonStyle(2);
+
+            if (searchvbox.isVisible()) {
+                try {
+                    this.previousYear = this.yearcombo.getValue().toString();
+                    this.previousPlayer = this.playercombo.getValue().toString();
+                    this.previousSeason = this.seasoncombo.getValue().toString();
+                    if (this.currentSearchModeSelection.equals("")) {
+                        this.currentSearchModeSelection = "simpleheat";
+                    } else {
+                        heat();
+                    }
+                } catch (NullPointerException ex) {
+                    this.errorlabel.setText("Please select one from each category");
+                    this.errorlabel.setVisible(true);
+                }
+
+            } else {
+                if (!beginSeason.equals("") || !endSeason.equals("") || !beginDistance.equals("") || !endDistance.equals("") || !shotSuccess.equals("") || !shotValue.equals("")
+                        || !allSelectedPlayers.isEmpty() || !allSelectedSeasonTypes.isEmpty() || !allSelectedShotTypes.isEmpty() || !allSelectedTeams.isEmpty()
+                        || !allSelectedHomeTeams.isEmpty() || !allSelectedAwayTeams.isEmpty() || !allSelectedCourtAreas.isEmpty() || !allSelectedCourtSides.isEmpty()) {
+                    if (this.currentSearchModeSelectionAdvanced.equals("")) {
+                        this.currentSearchModeSelectionAdvanced = "advancedheat";
+                    } else {
+                        heat();
+                    }
+                } else {
+                    this.errorlabeladvanced.setText("Please include at least one search parameter");
+                    this.errorlabeladvanced.setVisible(true);
+                }
+            }
+
+        });
+        this.zonebutton.setOnMouseClicked((Event t) -> {
+//            traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//            gridbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//            heatmapbutton.setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+//            zonebutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+            setViewTypeButtonStyle(3);
+
+            if (searchvbox.isVisible()) {
+                try {
+                    this.previousYear = this.yearcombo.getValue().toString();
+                    this.previousPlayer = this.playercombo.getValue().toString();
+                    this.previousSeason = this.seasoncombo.getValue().toString();
+                    if (this.currentSearchModeSelection.equals("")) {
+                        this.currentSearchModeSelection = "simplezone";
+                    } else {
+                        zone();
+                    }
+                } catch (NullPointerException ex) {
+                    this.errorlabel.setText("Please select one from each category");
+                    this.errorlabel.setVisible(true);
+                }
+
+            } else {
+                if (!beginSeason.equals("") || !endSeason.equals("") || !beginDistance.equals("") || !endDistance.equals("") || !shotSuccess.equals("") || !shotValue.equals("")
+                        || !allSelectedPlayers.isEmpty() || !allSelectedSeasonTypes.isEmpty() || !allSelectedShotTypes.isEmpty() || !allSelectedTeams.isEmpty()
+                        || !allSelectedHomeTeams.isEmpty() || !allSelectedAwayTeams.isEmpty() || !allSelectedCourtAreas.isEmpty() || !allSelectedCourtSides.isEmpty()) {
+                    if (this.currentSearchModeSelectionAdvanced.equals("")) {
+                        this.currentSearchModeSelectionAdvanced = "advancedzone";
+                    } else {
+                        zone();
+                    }
+                } else {
+                    this.errorlabeladvanced.setText("Please include at least one search parameter");
+                    this.errorlabeladvanced.setVisible(true);
+                }
+            }
+
+        });
+    }
+
+    private void setViewTypeButtonStyle(int selector) {
+        for (int i = 0; i < viewButtons.size(); i++) {
+            if (i == selector) {
+                viewButtons.get(i).setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+            } else {
+                viewButtons.get(i).setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+            }
+        }
     }
 }
