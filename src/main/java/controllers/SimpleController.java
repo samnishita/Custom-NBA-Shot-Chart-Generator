@@ -100,7 +100,7 @@ public class SimpleController implements Initializable {
     private ResourceBundle reader = null;
     private double squareSize = 10.0;
     private final double SQUARE_SIZE_ORIG = 10.0;
-    private LinkedHashMap<Coordinate, LinkedList<Double>> coordAverages;
+    private LinkedHashMap<Coordinate, ArrayList<Double>> coordAverages;
     private int maxShotsPerMaxSquare = 0;
     private ConcurrentHashMap<Coordinate, Double> coordValue;
     private final int OFFSET = 10;
@@ -774,12 +774,13 @@ public class SimpleController implements Initializable {
         }
         HashMap<String, String> names = new HashMap();
         ArrayList<String> fixedNames = new ArrayList();
+        LinkedList<String> realNames = new LinkedList();
+
         for (int each : this.activePlayers.keySet()) {
             names.put(activePlayers.get(each).replaceAll("[^A-Za-z0-9]", "").toLowerCase(), activePlayers.get(each));
             fixedNames.add(activePlayers.get(each).replaceAll("[^A-Za-z0-9]", "").toLowerCase());
         }
         Collections.sort(fixedNames);
-        LinkedList<String> realNames = new LinkedList();
         for (String each : fixedNames) {
             realNames.add(names.get(each));
         }
@@ -910,7 +911,7 @@ public class SimpleController implements Initializable {
 
     private JSONArray getSimpleShotData() throws IOException {
         JSONObject jsonObjOut = new JSONObject();
-        jsonObjOut.put("selector","simple"+ currentSimpleSearch.toString().toLowerCase());
+        jsonObjOut.put("selector", "simple" + currentSimpleSearch.toString().toLowerCase());
         jsonObjOut.put("year", this.yearcombo.getValue().toString());
         jsonObjOut.put("playername", nameHash.get(this.playercombo.getValue().toString()));
         jsonObjOut.put("seasontype", this.seasoncombo.getValue().toString());
@@ -929,7 +930,7 @@ public class SimpleController implements Initializable {
         for (int j = -55; j < 400; j = j + (int) SQUARE_SIZE_ORIG) {
             for (int i = -250; i < 250; i = i + (int) SQUARE_SIZE_ORIG) {
                 coord = new Coordinate(i, j);
-                LinkedList info = new LinkedList();
+                ArrayList info = new ArrayList();
                 info.add(0.0);
                 info.add(0.0);
                 info.add(0.0);
@@ -1028,7 +1029,7 @@ public class SimpleController implements Initializable {
         for (int x = -250; x < 251; x++) {
             for (int y = -52; y < 400; y++) {
                 coord = new Coordinate(x, y);
-                LinkedList info = new LinkedList();
+                ArrayList info = new ArrayList();
                 info.add(0.0);
                 info.add(0.0);
                 info.add(0.0);
@@ -1202,10 +1203,6 @@ public class SimpleController implements Initializable {
     private double getDistance(Coordinate coordOrig, Coordinate coordI) {
         double a = coordOrig.getX() - coordI.getX();
         double b = coordOrig.getY() - coordI.getY();
-        if (Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2)) < 0) {
-            System.err.print("NEGATIVE ERROR");
-            System.exit(1);
-        }
         return Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
     }
 
@@ -1676,7 +1673,7 @@ public class SimpleController implements Initializable {
                 this.errorlabel.setVisible(true);
             }
         } else {
-            currentAdvancedSearch =  Search.TRADITIONAL;
+            currentAdvancedSearch = Search.TRADITIONAL;
             resetView();
             try {
                 JSONArray jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
@@ -1702,7 +1699,7 @@ public class SimpleController implements Initializable {
 
     private void grid() {
         if (searchvbox.isVisible()) {
-            currentSimpleSearch =  Search.GRID;
+            currentSimpleSearch = Search.GRID;
             resetView();
             try {
                 this.previousYear = this.yearcombo.getValue().toString();
@@ -1718,7 +1715,7 @@ public class SimpleController implements Initializable {
                 ex.printStackTrace();
             }
         } else {
-            currentAdvancedSearch =  Search.GRID;
+            currentAdvancedSearch = Search.GRID;
             resetView();
             try {
                 JSONArray jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
@@ -1777,7 +1774,7 @@ public class SimpleController implements Initializable {
 
     private void heat() {
         if (searchvbox.isVisible()) {
-            currentSimpleSearch =  Search.HEAT;
+            currentSimpleSearch = Search.HEAT;
             resetView();
             try {
                 this.previousYear = this.yearcombo.getValue().toString();
@@ -1791,7 +1788,7 @@ public class SimpleController implements Initializable {
                 this.errorlabel.setVisible(true);
             }
         } else {
-            this.currentAdvancedSearch =  Search.HEAT;
+            this.currentAdvancedSearch = Search.HEAT;
             resetView();
             try {
                 JSONArray jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
@@ -2027,7 +2024,7 @@ public class SimpleController implements Initializable {
 
     private void zone() {
         if (searchvbox.isVisible()) {
-            currentSimpleSearch =  Search.ZONE;
+            currentSimpleSearch = Search.ZONE;
             resetView();
             try {
                 this.previousYear = this.yearcombo.getValue().toString();
@@ -2044,7 +2041,7 @@ public class SimpleController implements Initializable {
             }
 
         } else {
-            currentAdvancedSearch =  Search.ZONE;
+            currentAdvancedSearch = Search.ZONE;
             resetView();
             try {
                 JSONArray jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
@@ -2577,11 +2574,9 @@ public class SimpleController implements Initializable {
     }
 
     private void ultraFineHeatMapThreader() throws InterruptedException {
-        long start = System.nanoTime();
-
         allUltraFineHeatThreads = new ArrayList();
-//        offsetHeat = 15;
-        int maxThreads = 5;
+//        offsetHeat = 10;
+        int maxThreads = 6;
         Thread thread;
         for (int i = 0; i < maxThreads; i++) {
             final int iFinal = i;
@@ -2606,33 +2601,31 @@ public class SimpleController implements Initializable {
                                 }
                             }
 
-                        }
-
+                        }                       
                         if (eachCounter > 1) {
                             coordValue.put(each, aSum / bSum);
                         } else {
                             coordValue.put(each, 0.0);
                         }
-
                     }
+
                 }
+               
             });
             allUltraFineHeatThreads.add(thread);
         }
-
-        for (int k = 0; k < allUltraFineHeatThreads.size(); k++) {
-            allUltraFineHeatThreads.get(k).start();
-        }
+        long start = System.nanoTime();
+        allUltraFineHeatThreads.forEach(eachThread -> eachThread.start());
         boolean done = false;
         while (!done) {
             try {
-                for (int j = 0; j < allUltraFineHeatThreads.size(); j++) {
-                    allUltraFineHeatThreads.get(j).join();
+                for (Thread eachThread : allUltraFineHeatThreads) {
+                    eachThread.join();
                 }
 //                Thread.sleep(1000);
                 done = true;
             } catch (InterruptedException ex) {
-                System.out.println("Error caught with boolean 'done'");
+
             }
 
         }
@@ -3333,40 +3326,40 @@ public class SimpleController implements Initializable {
     private void setAllViewTypeButtonsOnMouseActions() {
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         this.traditionalbutton.setOnMouseClicked((Event t) -> {
-            setEachViewTypeButtonOnClicked(0,  Search.TRADITIONAL);
+            setEachViewTypeButtonOnClicked(0, Search.TRADITIONAL);
         });
         this.gridbutton.setOnMouseClicked((Event t) -> {
-            setEachViewTypeButtonOnClicked(1,  Search.GRID);
+            setEachViewTypeButtonOnClicked(1, Search.GRID);
         });
         this.heatmapbutton.setOnMouseClicked((Event t) -> {
-            setEachViewTypeButtonOnClicked(2,  Search.HEAT);
+            setEachViewTypeButtonOnClicked(2, Search.HEAT);
         });
         this.zonebutton.setOnMouseClicked((Event t) -> {
-            setEachViewTypeButtonOnClicked(3,  Search.ZONE);
+            setEachViewTypeButtonOnClicked(3, Search.ZONE);
         });
         this.traditionalbutton.setOnMouseEntered((Event t) -> {
-            setEachViewTypeButtonsOnMouseEntered(0,  Search.TRADITIONAL);
+            setEachViewTypeButtonsOnMouseEntered(0, Search.TRADITIONAL);
         });
         this.traditionalbutton.setOnMouseExited((Event t) -> {
-            setEachViewTypeButtonsOnMouseExited(0,  Search.TRADITIONAL);
+            setEachViewTypeButtonsOnMouseExited(0, Search.TRADITIONAL);
         });
         this.gridbutton.setOnMouseEntered((Event t) -> {
-            setEachViewTypeButtonsOnMouseEntered(1,  Search.GRID);
+            setEachViewTypeButtonsOnMouseEntered(1, Search.GRID);
         });
         this.gridbutton.setOnMouseExited((Event t) -> {
-            setEachViewTypeButtonsOnMouseExited(1,  Search.GRID);
+            setEachViewTypeButtonsOnMouseExited(1, Search.GRID);
         });
         this.heatmapbutton.setOnMouseEntered((Event t) -> {
-            setEachViewTypeButtonsOnMouseEntered(2,  Search.HEAT);
+            setEachViewTypeButtonsOnMouseEntered(2, Search.HEAT);
         });
         this.heatmapbutton.setOnMouseExited((Event t) -> {
-            setEachViewTypeButtonsOnMouseExited(2,  Search.HEAT);
+            setEachViewTypeButtonsOnMouseExited(2, Search.HEAT);
         });
         this.zonebutton.setOnMouseEntered((Event t) -> {
-            setEachViewTypeButtonsOnMouseEntered(3,  Search.ZONE);
+            setEachViewTypeButtonsOnMouseEntered(3, Search.ZONE);
         });
         this.zonebutton.setOnMouseExited((Event t) -> {
-            setEachViewTypeButtonsOnMouseExited(3,  Search.ZONE);
+            setEachViewTypeButtonsOnMouseExited(3, Search.ZONE);
         });
     }
 
