@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.beans.value.ChangeListener;
@@ -76,6 +77,14 @@ import org.json.JSONObject;
  */
 public class SimpleController implements Initializable {
 
+    enum Search {
+        TRADITIONAL,
+        GRID,
+        ZONE,
+        HEAT,
+        NONE
+    }
+
     private LinkedHashMap<String, String[]> nameHash;
     private final BigDecimal ORIG_HEIGHT = new BigDecimal("470");
     private final BigDecimal SHOT_MADE_RADIUS = new BigDecimal("5");
@@ -98,7 +107,7 @@ public class SimpleController implements Initializable {
     private final int maxDistanceBetweenNodes = 20;
     private LinkedList<Rectangle> allTiles;
     private double min;
-    private String currentSearchModeSelection = "";
+//    private String currentSearchModeSelection = "";
     private int shotCounter = 0;
     private double maxCutoff = 0.0;
     private double diff = maxCutoff / 10;
@@ -138,11 +147,15 @@ public class SimpleController implements Initializable {
     private HashSet<String> allSelectedAwayTeams = new HashSet();
     private HashSet<String> allSelectedCourtAreas = new HashSet();
     private HashSet<String> allSelectedCourtSides = new HashSet();
-    private String currentSearchModeSelectionAdvanced = "";
+//    private String currentSearchModeSelectionAdvanced = "";
     private LinkedHashMap<String, Integer> relevantTeamNameIDHashMap = new LinkedHashMap();
     private double font = 0.0;
     private double fontGrid = 0.0;
     private LinkedList<Button> viewButtons = new LinkedList();
+    private Search currentSimpleSearch = Search.NONE;
+    private Search currentAdvancedSearch = Search.NONE;
+    private ArrayList<Label> simpleFGLabels = new ArrayList();
+    private ArrayList<Label> advancedFGLabels = new ArrayList();
 
     @FXML
     ImageView imageview;
@@ -485,26 +498,25 @@ public class SimpleController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        viewButtons.add(traditionalbutton);
-        viewButtons.add(gridbutton);
-        viewButtons.add(heatmapbutton);
-        viewButtons.add(zonebutton);
+        Collections.addAll(viewButtons, traditionalbutton, gridbutton, heatmapbutton, zonebutton);
+//        viewButtons.add(traditionalbutton);
+//        viewButtons.add(gridbutton);
+//        viewButtons.add(heatmapbutton);
+//        viewButtons.add(zonebutton);
+        Collections.addAll(simpleFGLabels, fgfrac, fgperc, twopointfrac, twopointperc, threepointfrac, threepointperc);
+        Collections.addAll(advancedFGLabels, fgfracadv, fgpercadv, twopointfracadv, twopointpercadv, threepointfracadv, threepointpercadv);
         createResponsiveComboBoxes();
         organizeZoneFXMLElements();
         initSizing();
-        JSONArray jsonArrayInit;
+
         //Set Updates Box
         try {
-            jsonArrayInit = getInitData();
+            JSONArray jsonArrayInit = getInitData();
             JSONObject jsonObjMisc2 = jsonArrayInit.getJSONObject(2);
-
-            JSONObject jsonObjMisc1 = jsonArrayInit.getJSONObject(1);
-            dateaccuracy.setText(jsonObjMisc1.getString("value"));
-            JSONObject jsonObjMisc0 = jsonArrayInit.getJSONObject(0);
-            updatelabel.setText(jsonObjMisc0.getString("value")
-            );
+            dateaccuracy.setText(jsonArrayInit.getJSONObject(1).getString("value"));
+            updatelabel.setText(jsonArrayInit.getJSONObject(0).getString("value"));
         } catch (IOException ex) {
-            ex.printStackTrace();
+            System.out.println("Error caught in Misc Initialization");
         }
         nameHash = new LinkedHashMap();
         try {
@@ -521,7 +533,7 @@ public class SimpleController implements Initializable {
                 nameHash.put((eachPlayer.getString("firstname") + " " + eachPlayer.getString("lastname")).trim(), nameArray);
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            System.out.println("Error caught in creation of nameHash");
         }
         yearcombo.setItems(FXCollections.observableArrayList(makeYears()));
         this.yearcombo.setValue("2019-20");
@@ -530,106 +542,60 @@ public class SimpleController implements Initializable {
         this.activePlayers = new HashMap();
         try {
             setPlayerComboBox();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        try {
             setSeasonsComboBox();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            System.out.println("Error caught setting comboboxes");
         }
-        this.searchbutton.setOnMouseClicked((Event t) -> {
+        this.searchbutton.setOnMouseClicked(t -> {
             try {
                 this.yearcombo.getValue().toString();
                 this.playercombo.getValue().toString();
                 this.seasoncombo.getValue().toString();
-                switch (currentSearchModeSelection) {
-                    case "simpletraditional":
-                        traditional();
-                        break;
-                    case "simplegrid":
-                        grid();
-                        break;
-                    case "simpleheat":
-                        heat();
-                        break;
-                    case "simplezone":
-                        zone();
-                        break;
-                    default:
-                        traditional();
-                        break;
-                }
+                runSearch();
             } catch (NullPointerException ex) {
                 this.errorlabel.setText("Please select one from each category");
                 this.errorlabel.setVisible(true);
             }
-
         });
         setAllViewTypeButtonsOnMouseActions();
-        imageview.fitHeightProperty().addListener((ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) -> {
-            resize();
-        });
-        imageview.fitWidthProperty().addListener((ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) -> {
-            resize();
-        });
-        this.yearcombo.setOnAction((Event t) -> {
+        imageview.fitHeightProperty().addListener((ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) -> resize());
+        imageview.fitWidthProperty().addListener((ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) -> resize());
+        this.yearcombo.setOnAction(t -> {
             try {
                 setPlayerComboBox();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                System.out.println("Error setting player combobox");
             }
         });
         this.playercombo.setOnAction((Event t) -> {
             try {
                 setSeasonsComboBox();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                System.out.println("Error setting seasons combobox");
             }
         });
-        this.simplelayoutbutton.setOnMouseClicked((Event t) -> {
+        this.simplelayoutbutton.setOnMouseClicked(t -> {
             initSizing();
             try {
                 setPlayerComboBox();
                 setSeasonsComboBox();
             } catch (IOException ex) {
-
+                System.out.println("Error setting comboboxes");
             }
             this.charttitle.setVisible(false);
             searchvbox.setVisible(true);
             advancedvbox.setVisible(false);
             removeAllShotsFromView();
             resetView();
-            this.fgfrac.setText("--");
-            this.fgperc.setText("--");
-            this.twopointfrac.setText("--");
-            this.twopointperc.setText("--");
-            this.threepointfrac.setText("--");
-            this.threepointperc.setText("--");
+            simpleFGLabels.forEach(each -> each.setText("--"));
             imageview.setImage(new Image("/images/transparent.png"));
-            switch (currentSearchModeSelection) {
-                case "simpletraditional":
-                    setViewTypeButtonStyle(0);
-                    break;
-                case "simplegrid":
-                    setViewTypeButtonStyle(1);
-                    break;
-                case "simpleheat":
-                    setViewTypeButtonStyle(2);
-                    break;
-                case "simplezone":
-                    setViewTypeButtonStyle(3);
-                    break;
-                case "":
-                    setViewTypeButtonStyle(10);
-                    break;
-            }
+            changeButtonStyles();
         });
-        this.advancedlayoutbutton.setOnMouseClicked((Event t) -> {
+        this.advancedlayoutbutton.setOnMouseClicked(t -> {
             try {
                 initAdvanced();
             } catch (IOException ex) {
-
+                System.out.println("Error caught initializing advanced");
             }
             this.charttitle.setVisible(false);
             searchvbox.setVisible(false);
@@ -637,50 +603,13 @@ public class SimpleController implements Initializable {
             resize();
             removeAllShotsFromView();
             resetView();
-            this.fgfracadv.setText("--");
-            this.fgpercadv.setText("--");
-            this.twopointfracadv.setText("--");
-            this.twopointpercadv.setText("--");
-            this.threepointfracadv.setText("--");
-            this.threepointpercadv.setText("--");
+            advancedFGLabels.forEach(each -> each.setText("--"));
             imageview.setImage(new Image("/images/transparent.png"));
-            switch (currentSearchModeSelectionAdvanced) {
-                case "advancedtraditional":
-                    setViewTypeButtonStyle(0);
-                    break;
-                case "advancedgrid":
-                    setViewTypeButtonStyle(1);
-                    break;
-                case "advancedheat":
-                    setViewTypeButtonStyle(2);
-                    break;
-                case "advancedzone":
-                    setViewTypeButtonStyle(3);
-                    break;
-                case "":
-                    setViewTypeButtonStyle(10);
-                    break;
-            }
+            changeButtonStyles();
         });
-        this.searchbuttonadvanced.setOnMouseClicked((Event t) -> {
+        this.searchbuttonadvanced.setOnMouseClicked(t -> {
             if (checkForEmptyAdvancedSearch()) {
-                switch (currentSearchModeSelectionAdvanced) {
-                    case "advancedtraditional":
-                        traditional();
-                        break;
-                    case "advancedgrid":
-                        grid();
-                        break;
-                    case "advancedheat":
-                        heat();
-                        break;
-                    case "advancedzone":
-                        zone();
-                        break;
-                    default:
-                        traditional();
-                        break;
-                }
+                runSearch();
             } else {
                 this.errorlabeladvanced.setText("Please include at least one search parameter");
                 this.errorlabeladvanced.setVisible(true);
@@ -708,14 +637,12 @@ public class SimpleController implements Initializable {
     private ArrayList makeYears() {
         int year = 2019;
         ArrayList<String> years = new ArrayList(30);
-        int subYear;
         String subYearString;
         while (year >= 1996) {
-            subYear = (year - 1899) % 100;
-            if (subYear < 10) {
-                subYearString = "0" + subYear;
+            if ((year - 1899) % 100 < 10) {
+                subYearString = "0" + (year - 1899) % 100;
             } else {
-                subYearString = "" + subYear;
+                subYearString = "" + (year - 1899) % 100;
             }
             years.add(year + "-" + subYearString);
             year--;
@@ -767,28 +694,27 @@ public class SimpleController implements Initializable {
                 allShots.put(shot, msi);
             }
         }
-        for (Shot each : allShots.keySet()) {
-            if (each.getY() > 410) {
-                continue;
-            }
-            if (each.getMake() == 0) {
-                MissedShotIcon msiTemp = (MissedShotIcon) allShots.get(each);
-                msiTemp.getLine1().setManaged(false);
-                msiTemp.getLine2().setManaged(false);
-                msiTemp.getLine1().setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);// 50/470
-                msiTemp.getLine2().setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);
-                msiTemp.getLine1().setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2 - (180.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
-                msiTemp.getLine2().setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2 - (180.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
-                imagegrid.getChildren().add(msiTemp.getLine1());
-                imagegrid.getChildren().add(msiTemp.getLine2());
-            } else {
-                imagegrid.getChildren().add((Circle) allShots.get(each));
-            }
-        }
+        allShots.keySet().stream()
+                .filter((each) -> (each.getY() <= 410))
+                .forEachOrdered((each) -> {
+                    if (each.getMake() == 0) {
+                        MissedShotIcon msiTemp = (MissedShotIcon) allShots.get(each);
+                        msiTemp.getLine1().setManaged(false);
+                        msiTemp.getLine2().setManaged(false);
+                        msiTemp.getLine1().setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);// 50/470
+                        msiTemp.getLine2().setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);
+                        msiTemp.getLine1().setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2 - (180.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
+                        msiTemp.getLine2().setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2 - (180.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
+                        imagegrid.getChildren().add(msiTemp.getLine1());
+                        imagegrid.getChildren().add(msiTemp.getLine2());
+                    } else {
+                        imagegrid.getChildren().add((Circle) allShots.get(each));
+                    }
+                });
         if (searchvbox.isVisible()) {
-            createThreadAndRun(currentSearchModeSelection);
+            createThreadAndRun(currentSimpleSearch);
         } else {
-            createThreadAndRun(currentSearchModeSelectionAdvanced);
+            createThreadAndRun(currentAdvancedSearch);
         }
 
     }
@@ -984,7 +910,7 @@ public class SimpleController implements Initializable {
 
     private JSONArray getSimpleShotData() throws IOException {
         JSONObject jsonObjOut = new JSONObject();
-        jsonObjOut.put("selector", currentSearchModeSelection);
+        jsonObjOut.put("selector","simple"+ currentSimpleSearch.toString().toLowerCase());
         jsonObjOut.put("year", this.yearcombo.getValue().toString());
         jsonObjOut.put("playername", nameHash.get(this.playercombo.getValue().toString()));
         jsonObjOut.put("seasontype", this.seasoncombo.getValue().toString());
@@ -1085,9 +1011,9 @@ public class SimpleController implements Initializable {
             allTiles.add(square);
         }
         if (searchvbox.isVisible()) {
-            createThreadAndRun(currentSearchModeSelection);
+            createThreadAndRun(currentSimpleSearch);
         } else {
-            createThreadAndRun(currentSearchModeSelectionAdvanced);
+            createThreadAndRun(currentAdvancedSearch);
         }
     }
 
@@ -1242,9 +1168,9 @@ public class SimpleController implements Initializable {
             imagegrid.getChildren().add(circle);
         }
         if (searchvbox.isVisible()) {
-            createThreadAndRun(currentSearchModeSelection);
+            createThreadAndRun(currentSimpleSearch);
         } else {
-            createThreadAndRun(currentSearchModeSelectionAdvanced);
+            createThreadAndRun(currentAdvancedSearch);
         }
 
     }
@@ -1359,17 +1285,17 @@ public class SimpleController implements Initializable {
         setViewTypeButtonStyle(10);
         try {
             if (searchvbox.isVisible()) {
-                switch (currentSearchModeSelection) {
-                    case "simpletraditional":
+                switch (currentSimpleSearch) {
+                    case TRADITIONAL:
                         resizeShots();
                         break;
-                    case "simplegrid":
+                    case GRID:
                         resizeGrid();
                         break;
-                    case "simpleheat":
+                    case HEAT:
                         resizeHeat();
                         break;
-                    case "simplezone":
+                    case ZONE:
                         resizeZone();
                         break;
                     default:
@@ -1390,20 +1316,20 @@ public class SimpleController implements Initializable {
                 threepoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
                 threepointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
                 threepointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                createThreadAndRun(currentSearchModeSelection);
+                createThreadAndRun(currentSimpleSearch);
 
             } else {
-                switch (currentSearchModeSelectionAdvanced) {
-                    case "advancedtraditional":
+                switch (currentAdvancedSearch) {
+                    case TRADITIONAL:
                         resizeShots();
                         break;
-                    case "advancedgrid":
+                    case GRID:
                         resizeGrid();
                         break;
-                    case "advancedheat":
+                    case HEAT:
                         resizeHeat();
                         break;
-                    case "advancedzone":
+                    case ZONE:
                         resizeZone();
                         break;
                     default:
@@ -1456,7 +1382,7 @@ public class SimpleController implements Initializable {
                     try {
                         hbox = (HBox) each;
                         for (Node eachInner : hbox.getChildren()) {
-                           if (eachInner.getClass().equals(Label.class)) {
+                            if (eachInner.getClass().equals(Label.class)) {
                                 label = (Label) eachInner;
                                 label.setStyle("-fx-font: " + font * 0.85 + "px \"Arial\";");
                             }
@@ -1465,7 +1391,7 @@ public class SimpleController implements Initializable {
 
                     }
                 }
-                createThreadAndRun(currentSearchModeSelectionAdvanced);
+                createThreadAndRun(currentAdvancedSearch);
             }
             mask.setWidth(width);
             mask.setHeight(height);
@@ -1502,7 +1428,6 @@ public class SimpleController implements Initializable {
         double height = (imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(height)).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         setViewTypeButtonStyle(2);
-
         Circle tempCircle;
         int keyCounter = 0;
         for (Coordinate each : coordValue.keySet()) {
@@ -1681,58 +1606,42 @@ public class SimpleController implements Initializable {
         zonelegendupperlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
     }
 
-    private void createThreadAndRun(String selector) {
-        final String FINALSELECTOR = selector;
-        switch (FINALSELECTOR) {
-            case ("simpletraditional"):
-            case ("advancedtraditional"):
+    private void createThreadAndRun(Search selector) {
+        Search givenSearch = selector;
+        switch (givenSearch) {
+            case TRADITIONAL:
                 if (tTrad.isAlive()) {
                     tTrad.interrupt();
                 }
-                tTrad = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        threadRunner(FINALSELECTOR);
-                    }
+                tTrad = new Thread(() -> {
+                    threadRunner(givenSearch);
                 });
                 tTrad.start();
                 break;
-            case ("simplegrid"):
-            case ("advancedgrid"):
+            case GRID:
                 if (tGrid.isAlive()) {
                     tGrid.interrupt();
                 }
-                tGrid = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        threadRunner(FINALSELECTOR);
-                    }
+                tGrid = new Thread(() -> {
+                    threadRunner(givenSearch);
                 });
                 tGrid.start();
                 break;
-            case ("simpleheat"):
-            case ("advancedheat"):
+            case HEAT:
                 if (tHeat.isAlive()) {
                     tHeat.interrupt();
                 }
-                tHeat = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        threadRunner(FINALSELECTOR);
-                    }
+                tHeat = new Thread(() -> {
+                    threadRunner(givenSearch);
                 });
                 tHeat.start();
                 break;
-            case ("simplezone"):
-            case ("advancedzone"):
+            case ZONE:
                 if (tZone.isAlive()) {
                     tZone.interrupt();
                 }
-                tZone = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        threadRunner(FINALSELECTOR);
-                    }
+                tZone = new Thread(() -> {
+                    threadRunner(givenSearch);
                 });
                 tZone.start();
                 break;
@@ -1753,26 +1662,24 @@ public class SimpleController implements Initializable {
 
     private void traditional() {
         if (searchvbox.isVisible()) {
-            this.currentSearchModeSelection = "simpletraditional";
+            currentSimpleSearch = Search.TRADITIONAL;
             resetView();
             try {
                 this.previousYear = this.yearcombo.getValue().toString();
                 this.previousPlayer = this.playercombo.getValue().toString();
                 this.previousSeason = this.seasoncombo.getValue().toString();
                 plotTraditionalShots(doSimpleSearch());
-            } catch (SQLException ex) {
-                ex.printStackTrace();
+            } catch (SQLException | IOException ex) {
+                System.out.println("Error caught doing a traditional search");
             } catch (NullPointerException ex) {
                 this.errorlabel.setText("Please try again");
                 this.errorlabel.setVisible(true);
-            } catch (IOException ex) {
-                ex.printStackTrace();
             }
         } else {
-            this.currentSearchModeSelectionAdvanced = "advancedtraditional";
+            currentAdvancedSearch =  Search.TRADITIONAL;
             resetView();
             try {
-                JSONArray jsonArray = createAdvancedJSONOutput(currentSearchModeSelectionAdvanced);
+                JSONArray jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
                 removeAllShotsFromView();
                 plotTraditionalShots(jsonArray);
             } catch (SQLException ex) {
@@ -1795,7 +1702,7 @@ public class SimpleController implements Initializable {
 
     private void grid() {
         if (searchvbox.isVisible()) {
-            this.currentSearchModeSelection = "simplegrid";
+            currentSimpleSearch =  Search.GRID;
             resetView();
             try {
                 this.previousYear = this.yearcombo.getValue().toString();
@@ -1811,10 +1718,10 @@ public class SimpleController implements Initializable {
                 ex.printStackTrace();
             }
         } else {
-            this.currentSearchModeSelectionAdvanced = "advancedgrid";
+            currentAdvancedSearch =  Search.GRID;
             resetView();
             try {
-                JSONArray jsonArray = createAdvancedJSONOutput(currentSearchModeSelectionAdvanced);
+                JSONArray jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
                 removeAllShotsFromView();
                 plotGrid(jsonArray);
             } catch (NullPointerException ex) {
@@ -1870,36 +1777,33 @@ public class SimpleController implements Initializable {
 
     private void heat() {
         if (searchvbox.isVisible()) {
-            this.currentSearchModeSelection = "simpleheat";
+            currentSimpleSearch =  Search.HEAT;
             resetView();
             try {
                 this.previousYear = this.yearcombo.getValue().toString();
                 this.previousPlayer = this.playercombo.getValue().toString();
                 this.previousSeason = this.seasoncombo.getValue().toString();
                 plotHeat(doSimpleSearch());
-            } catch (SQLException ex) {
+            } catch (SQLException | IOException ex) {
                 ex.printStackTrace();
             } catch (NullPointerException ex) {
                 this.errorlabel.setText("Please try again");
                 this.errorlabel.setVisible(true);
-            } catch (IOException ex) {
-                ex.printStackTrace();
             }
         } else {
-            this.currentSearchModeSelectionAdvanced = "advancedheat";
+            this.currentAdvancedSearch =  Search.HEAT;
             resetView();
             try {
-                JSONArray jsonArray = createAdvancedJSONOutput(currentSearchModeSelectionAdvanced);
+                JSONArray jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
                 removeAllShotsFromView();
                 plotHeat(jsonArray);
             } catch (NullPointerException ex) {
                 this.errorlabeladvanced.setText("Please try again");
                 this.errorlabeladvanced.setVisible(true);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                System.out.println("Error caught doing heat search");
             } catch (Exception ex) {
-                this.errorlabeladvanced.setText("Please try again");
-                this.errorlabeladvanced.setVisible(true);
+                Logger.getLogger(SimpleController.class.getName()).log(Level.SEVERE, null, ex);
             }
 
         }
@@ -2123,7 +2027,7 @@ public class SimpleController implements Initializable {
 
     private void zone() {
         if (searchvbox.isVisible()) {
-            this.currentSearchModeSelection = "simplezone";
+            currentSimpleSearch =  Search.ZONE;
             resetView();
             try {
                 this.previousYear = this.yearcombo.getValue().toString();
@@ -2140,10 +2044,10 @@ public class SimpleController implements Initializable {
             }
 
         } else {
-            this.currentSearchModeSelectionAdvanced = "advancedzone";
+            currentAdvancedSearch =  Search.ZONE;
             resetView();
             try {
-                JSONArray jsonArray = createAdvancedJSONOutput(currentSearchModeSelectionAdvanced);
+                JSONArray jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
                 removeAllShotsFromView();
                 plotZone(jsonArray);
             } catch (NullPointerException ex) {
@@ -2372,9 +2276,9 @@ public class SimpleController implements Initializable {
         zonelegend.setVisible(true);
         zonelegend.toFront();
         if (searchvbox.isVisible()) {
-            createThreadAndRun(currentSearchModeSelection);
+            createThreadAndRun(currentSimpleSearch);
         } else {
-            createThreadAndRun(currentSearchModeSelectionAdvanced);
+            createThreadAndRun(currentAdvancedSearch);
 
         }
     }
@@ -2642,26 +2546,22 @@ public class SimpleController implements Initializable {
         this.charttitle.setVisible(true);
     }
 
-    private void threadRunner(String FINALSELECTOR) {
+    private void threadRunner(Search search) {
         try {
             for (int i = 0; i < 2; i++) {
                 try {
                     Thread.sleep(300);
-                    switch (FINALSELECTOR) {
-                        case ("simpletraditional"):
-                        case ("advancedtraditional"):
+                    switch (search) {
+                        case TRADITIONAL:
                             resizeShots();
                             break;
-                        case ("simplegrid"):
-                        case ("advancedgrid"):
+                        case GRID:
                             resizeGrid();
                             break;
-                        case ("simpleheat"):
-                        case ("advancedheat"):
+                        case HEAT:
                             resizeHeat();
                             break;
-                        case ("simplezone"):
-                        case ("advancedzone"):
+                        case ZONE:
                             resizeZone();
                             break;
                     }
@@ -2677,56 +2577,49 @@ public class SimpleController implements Initializable {
     }
 
     private void ultraFineHeatMapThreader() throws InterruptedException {
-        LinkedList<Coordinate> organizedCoords = new LinkedList();
-        for (Coordinate each : coordAverages.keySet()) {
-            organizedCoords.add(each);
-        }
         long start = System.nanoTime();
 
         allUltraFineHeatThreads = new ArrayList();
-        offsetHeat = 15;
-        int iMax = 5;
-        for (int i = 0; i < iMax; i++) {
+//        offsetHeat = 15;
+        int maxThreads = 5;
+        Thread thread;
+        for (int i = 0; i < maxThreads; i++) {
             final int iFinal = i;
-            final int iMaxFinal = iMax;
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    double aSum = 0;
-                    double bSum = 0;
-                    int p = 2;
-                    int eachCounter = 0;
-                    int iFinalThread = iFinal;
-                    for (Coordinate each : coordAverages.keySet()) {
-                        if (each.getY() >= (452 / iMaxFinal) * iFinalThread - 52 && each.getY() < (452 / iMaxFinal) * (iFinalThread + 1) - 52) {
-
-                            if (each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0) {
-                                aSum = 0;
-                                bSum = 0;
-                                for (Coordinate each2 : coordAverages.keySet()) {
-                                    if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
-                                        aSum = aSum + ((coordAverages.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
-                                        bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
-                                        if (coordAverages.get(each2).get(1).intValue() != 0) {
-                                            eachCounter++;
-
-                                        }
-                                    }
-
-                                }
-
-                                if (eachCounter > 1) {
-                                    coordValue.put(each, aSum / bSum);
-                                } else {
-                                    coordValue.put(each, 0.0);
+            final int iMaxFinal = maxThreads;
+            thread = new Thread(() -> {
+                double aSum = 0;
+                double bSum = 0;
+                int p = 2;
+                int eachCounter = 0;
+                int iFinalThread = iFinal;
+                for (Coordinate each : coordAverages.keySet()) {
+                    if (each.getY() >= (452 / iMaxFinal) * iFinalThread - 52 && each.getY() < (452 / iMaxFinal) * (iFinalThread + 1) - 52
+                            && each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0) {
+                        aSum = 0;
+                        bSum = 0;
+                        for (Coordinate each2 : coordAverages.keySet()) {
+                            if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
+                                aSum = aSum + ((coordAverages.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
+                                bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
+                                if (coordAverages.get(each2).get(1).intValue() != 0) {
+                                    eachCounter++;
                                 }
                             }
+
                         }
+
+                        if (eachCounter > 1) {
+                            coordValue.put(each, aSum / bSum);
+                        } else {
+                            coordValue.put(each, 0.0);
+                        }
+
                     }
                 }
             });
             allUltraFineHeatThreads.add(thread);
         }
+
         for (int k = 0; k < allUltraFineHeatThreads.size(); k++) {
             allUltraFineHeatThreads.get(k).start();
         }
@@ -2736,15 +2629,15 @@ public class SimpleController implements Initializable {
                 for (int j = 0; j < allUltraFineHeatThreads.size(); j++) {
                     allUltraFineHeatThreads.get(j).join();
                 }
-                Thread.sleep(1000);
+//                Thread.sleep(1000);
                 done = true;
             } catch (InterruptedException ex) {
-                ex.printStackTrace();
+                System.out.println("Error caught with boolean 'done'");
             }
 
         }
         long end = System.nanoTime();
-//        System.out.println("ultraFineThreader: " + (end - start) / 1000000000 + " seconds");
+        System.out.println("ultraFineThreader: " + (end - start) * 1.0 / 1000000000 + " seconds");
 
     }
 
@@ -3175,9 +3068,9 @@ public class SimpleController implements Initializable {
         return shotTypes;
     }
 
-    private JSONArray createAdvancedJSONOutput(String searchTypeSelector) throws IOException, Exception {
+    private JSONArray createAdvancedJSONOutput(Search searchTypeSelector) throws IOException, Exception {
         JSONObject obj = new JSONObject();
-        obj.put("selector", searchTypeSelector);
+        obj.put("selector", "advanced" + searchTypeSelector.toString().toLowerCase());
         obj.put("beginSeason", beginSeason);
         obj.put("endSeason", endSeason);
         ArrayList<Integer> allSelectedPlayerIDs = new ArrayList();
@@ -3225,7 +3118,7 @@ public class SimpleController implements Initializable {
         int count2pTotal = 0;
         int count3pMade = 0;
         int count3pTotal = 0;
-        allShots = new LinkedHashMap();   
+        allShots = new LinkedHashMap();
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject eachShot = jsonArray.getJSONObject(i);
             if (eachShot.getString("shottype").equals("3PT Field Goal")) {
@@ -3361,7 +3254,7 @@ public class SimpleController implements Initializable {
         return false;
     }
 
-    private void setEachViewTypeButtonOnClicked(int selector, String currentSearch, String currentSearchAdvanced) {
+    private void setEachViewTypeButtonOnClicked(int selector, Search currentSearch) {
         setViewTypeButtonStyle(selector);
 
         if (searchvbox.isVisible()) {
@@ -3369,8 +3262,8 @@ public class SimpleController implements Initializable {
                 this.previousYear = this.yearcombo.getValue().toString();
                 this.previousPlayer = this.playercombo.getValue().toString();
                 this.previousSeason = this.seasoncombo.getValue().toString();
-                if (this.currentSearchModeSelection.equals("")) {
-                    this.currentSearchModeSelection = currentSearch;
+                if (currentSimpleSearch.equals(Search.NONE)) {
+                    currentSimpleSearch = currentSearch;
                 } else {
                     switch (selector) {
                         case 0:
@@ -3388,14 +3281,15 @@ public class SimpleController implements Initializable {
                     }
                 }
             } catch (NullPointerException ex) {
+                ex.printStackTrace();
                 this.errorlabel.setText("Please select one from each category");
                 this.errorlabel.setVisible(true);
             }
 
         } else {
             if (checkForEmptyAdvancedSearch()) {
-                if (this.currentSearchModeSelectionAdvanced.equals("")) {
-                    this.currentSearchModeSelectionAdvanced = currentSearchAdvanced;
+                if (currentAdvancedSearch.equals(Search.NONE)) {
+                    currentAdvancedSearch = currentSearch;
                 } else {
                     switch (selector) {
                         case 0:
@@ -3420,16 +3314,16 @@ public class SimpleController implements Initializable {
 
     }
 
-    private void setEachViewTypeButtonsOnMouseEntered(int selector, String currentSearch, String currentSearchAdvanced) {
-        if ((searchvbox.isVisible() && currentSearchModeSelection.equals(currentSearch)) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals(currentSearchAdvanced))) {
+    private void setEachViewTypeButtonsOnMouseEntered(int selector, Search currentSearch) {
+        if ((searchvbox.isVisible() && currentSimpleSearch.equals(currentSearch)) || (advancedvbox.isVisible() && currentAdvancedSearch.equals(currentSearch))) {
             viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: true;");
         } else {
             viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: true;");
         }
     }
 
-    private void setEachViewTypeButtonsOnMouseExited(int selector, String currentSearch, String currentSearchAdvanced) {
-        if ((searchvbox.isVisible() && currentSearchModeSelection.equals(currentSearch)) || (advancedvbox.isVisible() && currentSearchModeSelectionAdvanced.equals(currentSearchAdvanced))) {
+    private void setEachViewTypeButtonsOnMouseExited(int selector, Search currentSearch) {
+        if ((searchvbox.isVisible() && currentSimpleSearch.equals(currentSearch)) || (advancedvbox.isVisible() && currentAdvancedSearch.equals(currentSearch))) {
             viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: false;");
         } else {
             viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: false;");
@@ -3439,40 +3333,96 @@ public class SimpleController implements Initializable {
     private void setAllViewTypeButtonsOnMouseActions() {
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         this.traditionalbutton.setOnMouseClicked((Event t) -> {
-            setEachViewTypeButtonOnClicked(0, "simpletraditional", "advancedtraditional");
+            setEachViewTypeButtonOnClicked(0,  Search.TRADITIONAL);
         });
         this.gridbutton.setOnMouseClicked((Event t) -> {
-            setEachViewTypeButtonOnClicked(1, "simplegrid", "advancedgrid");
+            setEachViewTypeButtonOnClicked(1,  Search.GRID);
         });
         this.heatmapbutton.setOnMouseClicked((Event t) -> {
-            setEachViewTypeButtonOnClicked(2, "simpleheat", "advancedheat");
+            setEachViewTypeButtonOnClicked(2,  Search.HEAT);
         });
         this.zonebutton.setOnMouseClicked((Event t) -> {
-            setEachViewTypeButtonOnClicked(3, "simplezone", "advancedzone");
+            setEachViewTypeButtonOnClicked(3,  Search.ZONE);
         });
         this.traditionalbutton.setOnMouseEntered((Event t) -> {
-            setEachViewTypeButtonsOnMouseEntered(0, "simpletraditional", "advancedtraditional");
+            setEachViewTypeButtonsOnMouseEntered(0,  Search.TRADITIONAL);
         });
         this.traditionalbutton.setOnMouseExited((Event t) -> {
-            setEachViewTypeButtonsOnMouseExited(0, "simpletraditional", "advancedtraditional");
+            setEachViewTypeButtonsOnMouseExited(0,  Search.TRADITIONAL);
         });
         this.gridbutton.setOnMouseEntered((Event t) -> {
-            setEachViewTypeButtonsOnMouseEntered(1, "simplegrid", "advancedgrid");
+            setEachViewTypeButtonsOnMouseEntered(1,  Search.GRID);
         });
         this.gridbutton.setOnMouseExited((Event t) -> {
-            setEachViewTypeButtonsOnMouseExited(1, "simplegrid", "advancedgrid");
+            setEachViewTypeButtonsOnMouseExited(1,  Search.GRID);
         });
         this.heatmapbutton.setOnMouseEntered((Event t) -> {
-            setEachViewTypeButtonsOnMouseEntered(2, "simpleheat", "advancedheat");
+            setEachViewTypeButtonsOnMouseEntered(2,  Search.HEAT);
         });
         this.heatmapbutton.setOnMouseExited((Event t) -> {
-            setEachViewTypeButtonsOnMouseExited(2, "simpleheat", "advancedheat");
+            setEachViewTypeButtonsOnMouseExited(2,  Search.HEAT);
         });
         this.zonebutton.setOnMouseEntered((Event t) -> {
-            setEachViewTypeButtonsOnMouseEntered(3, "simplezone", "advancedzone");
+            setEachViewTypeButtonsOnMouseEntered(3,  Search.ZONE);
         });
         this.zonebutton.setOnMouseExited((Event t) -> {
-            setEachViewTypeButtonsOnMouseExited(3, "simplezone", "advancedzone");
+            setEachViewTypeButtonsOnMouseExited(3,  Search.ZONE);
         });
+    }
+
+    private void runSearch() {
+        Search tempSearch;
+        if (searchvbox.isVisible()) {
+            tempSearch = currentSimpleSearch;
+        } else {
+            tempSearch = currentAdvancedSearch;
+        }
+        switch (tempSearch) {
+            case TRADITIONAL:
+                traditional();
+                break;
+            case GRID:
+                grid();
+                break;
+            case HEAT:
+                heat();
+                break;
+            case ZONE:
+                zone();
+                break;
+            default:
+                traditional();
+                break;
+        }
+    }
+
+    private void changeButtonStyles() {
+        Search tempSearch;
+        if (searchvbox.isVisible()) {
+            tempSearch = currentSimpleSearch;
+        } else {
+            tempSearch = currentAdvancedSearch;
+        }
+        switch (tempSearch) {
+            case TRADITIONAL:
+                setViewTypeButtonStyle(0);
+                break;
+            case GRID:
+                setViewTypeButtonStyle(1);
+                break;
+            case HEAT:
+                setViewTypeButtonStyle(2);
+                break;
+            case ZONE:
+                setViewTypeButtonStyle(3);
+                break;
+            default:
+                setViewTypeButtonStyle(10);
+                break;
+        }
+    }
+
+    private void chooseResize() {
+
     }
 }
