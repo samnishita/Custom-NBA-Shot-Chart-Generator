@@ -157,352 +157,92 @@ public class SimpleController implements Initializable {
     private ArrayList<Label> simpleFGLabels = new ArrayList();
     private ArrayList<Label> advancedFGLabels = new ArrayList();
 
+    //General Features
     @FXML
-    ImageView imageview;
+    private BorderPane borderpane;
     @FXML
-    BorderPane borderpane;
+    private VBox vbox, centralvbox;
     @FXML
-    GridPane gridpane;
+    private ImageView imageview;
     @FXML
-    VBox vbox;
+    private Label titlelabel, lastupdatedlabel, charttitle, dateaccuracy, updatelabel, namelabel;
     @FXML
-    ComboBox yearcombo;
+    private HBox tophbox;
     @FXML
-    ComboBox playercombo;
+    private Line line;
     @FXML
-    ComboBox seasoncombo;
+    private Button simplelayoutbutton, advancedlayoutbutton, comparelayoutbutton;
+    //GridPanes
     @FXML
-    Button searchbutton;
+    private GridPane gridpane, topgridpane, imagegrid, shotgrid, shotgridadv;
+    //Chart Types
     @FXML
-    Label errorlabel;
+    private HBox buttonbox;
     @FXML
-    VBox searchvbox;
+    private Button traditionalbutton, heatmapbutton, gridbutton, zonebutton;
     @FXML
-    Label introlabel;
+    private Rectangle gridbackground;
     @FXML
-    Label fg;
+    private Group group1, group2, group3, group5, group6, group10, group12, group14;
     @FXML
-    Label fgfrac;
+    private Rectangle rect1, rect2, rect3, rect5, rect6, rect10, rect11, rect12, rect14, rect15;
     @FXML
-    Label fgperc;
+    private Arc arc1, arc2, arc3, arc4, arc5, arc6, arc7, arc8, arc9, arc10, arc12, arc13, arc14;
     @FXML
-    Label twopoint;
+    private Label label1, label2, label3, label4, label5, label6, label7, label8, label9, label10,
+            label11, label12, label13, label14, label15, labelpercent1, labelpercent2, labelpercent3,
+            labelpercent4, labelpercent5, labelpercent6, labelpercent7, labelpercent8, labelpercent9,
+            labelpercent10, labelpercent11, labelpercent12, labelpercent13, labelpercent14, labelpercent15;
+    //Legends
     @FXML
-    Label twopointfrac;
+    private VBox gridlegendsize, gridlegendcolor, heatlegend, zonelegend;
     @FXML
-    Label twopointperc;
+    private Rectangle gridcolorlegendgradient, heatlegendgradient, zonelegendgradient;
     @FXML
-    Label threepoint;
+    private HBox gridsizelegendgradient;
     @FXML
-    Label threepointfrac;
+    private Label gridcolorlegendtoplabel, gridcolorlegendlowerlabel, gridcolorlegendupperlabel,
+            gridsizelegendtoplabel, gridsizelegendlowerlabel, gridsizelegendupperlabel;
     @FXML
-    Label threepointperc;
+    private Label heatlegendtoplabel, heatlegendlowerlabel, heatlegendupperlabel;
     @FXML
-    GridPane shotgrid;
+    private Label zonelegendtoplabel, zonelegendlowerlabel, zonelegendupperlabel;
+    //Simple Search Elements
     @FXML
-    Label titlelabel;
+    private VBox searchvbox;
     @FXML
-    Button traditionalbutton;
+    private Label introlabel, errorlabel;
     @FXML
-    Button heatmapbutton;
+    private ComboBox yearcombo, playercombo, seasoncombo;
     @FXML
-    Button gridbutton;
+    private Label fg, fgfrac, fgperc, twopoint, twopointfrac, twopointperc, threepoint, threepointfrac, threepointperc;
     @FXML
-    Button zonebutton;
+    private Button searchbutton;
+    //Advanced Search Elements
     @FXML
-    Label lastupdatedlabel;
+    private ScrollPane searchscrollpane, selectionscrollpane;
     @FXML
-    GridPane topgridpane;
+    private Label advancedintrolabel, errorlabeladvanced;
     @FXML
-    HBox tophbox;
+    private Button searchbuttonadvanced;
     @FXML
-    Label namelabel;
+    private VBox advancedvbox, advancedvboxinner, selectionvbox;
     @FXML
-    Line line;
+    private Label seasonslabel, playerslabel, seasontypeslabel, shotdistancelabel, shotsuccesslabel, shotvaluelabel,
+            shottypeslabel, teamslabel, hometeamslabel, awayteamslabel, courtareaslabel, courtsideslabel,
+            seasondash, distancedash;
     @FXML
-    Label charttitle;
+    private ComboBox seasonsbegincombo, seasonsendcombo, playercomboadvanced, seasontypescomboadvanced,
+            distancebegincombo, distanceendcombo, shotsuccesscombo, shotvaluecombo, shottypescombo,
+            teamscombo, hometeamscombo, awayteamscombo, courtareascombo, courtsidescombo;
     @FXML
-    Label dateaccuracy;
+    private Label fgadv, fgfracadv, fgpercadv, twopointadv, twopointfracadv, twopointpercadv, threepointadv, threepointfracadv, threepointpercadv;
     @FXML
-    Label updatelabel;
-    @FXML
-    Rectangle gridbackground;
-    @FXML
-    VBox centralvbox;
-    @FXML
-    HBox buttonbox;
-    @FXML
-    GridPane imagegrid;
-    @FXML
-    VBox gridlegendsize;
-    @FXML
-    VBox gridlegendcolor;
-    @FXML
-    Label gridcolorlegendtoplabel;
-    @FXML
-    Label gridcolorlegendlowerlabel;
-    @FXML
-    Label gridcolorlegendupperlabel;
-    @FXML
-    Label gridsizelegendtoplabel;
-    @FXML
-    Label gridsizelegendlowerlabel;
-    @FXML
-    Label gridsizelegendupperlabel;
-    @FXML
-    Rectangle gridcolorlegendgradient;
-    @FXML
-    HBox gridsizelegendgradient;
-    @FXML
-    VBox heatlegend;
-    @FXML
-    Label heatlegendtoplabel;
-    @FXML
-    Label heatlegendlowerlabel;
-    @FXML
-    Label heatlegendupperlabel;
-    @FXML
-    Rectangle heatlegendgradient;
-    @FXML
-    VBox zonelegend;
-    @FXML
-    Label zonelegendtoplabel;
-    @FXML
-    Label zonelegendlowerlabel;
-    @FXML
-    Label zonelegendupperlabel;
-    @FXML
-    Rectangle zonelegendgradient;
-    @FXML
-    Group group1;
-    @FXML
-    Rectangle rect1;
-    @FXML
-    Arc arc1;
-    @FXML
-    Group group2;
-    @FXML
-    Rectangle rect2;
-    @FXML
-    Arc arc2;
-    @FXML
-    Group group3;
-    @FXML
-    Rectangle rect3;
-    @FXML
-    Arc arc3;
-    @FXML
-    Arc arc4;
-    @FXML
-    Group group5;
-    @FXML
-    Rectangle rect5;
-    @FXML
-    Arc arc5;
-    @FXML
-    Group group6;
-    @FXML
-    Rectangle rect6;
-    @FXML
-    Arc arc6;
-    @FXML
-    Arc arc7;
-    @FXML
-    Arc arc8;
-    @FXML
-    Arc arc9;
-    @FXML
-    Group group10;
-    @FXML
-    Rectangle rect10;
-    @FXML
-    Arc arc10;
-    @FXML
-    Rectangle rect11;
-    @FXML
-    Group group12;
-    @FXML
-    Rectangle rect12;
-    @FXML
-    Arc arc12;
-    @FXML
-    Arc arc13;
-    @FXML
-    Group group14;
-    @FXML
-    Rectangle rect14;
-    @FXML
-    Arc arc14;
-    @FXML
-    Rectangle rect15;
-    @FXML
-    Label label1;
-    @FXML
-    Label label2;
-    @FXML
-    Label label3;
-    @FXML
-    Label label4;
-    @FXML
-    Label label5;
-    @FXML
-    Label label6;
-    @FXML
-    Label label7;
-    @FXML
-    Label label8;
-    @FXML
-    Label label9;
-    @FXML
-    Label label10;
-    @FXML
-    Label label11;
-    @FXML
-    Label label12;
-    @FXML
-    Label label13;
-    @FXML
-    Label label14;
-    @FXML
-    Label label15;
-    @FXML
-    Label labelpercent1;
-    @FXML
-    Label labelpercent2;
-    @FXML
-    Label labelpercent3;
-    @FXML
-    Label labelpercent4;
-    @FXML
-    Label labelpercent5;
-    @FXML
-    Label labelpercent6;
-    @FXML
-    Label labelpercent7;
-    @FXML
-    Label labelpercent8;
-    @FXML
-    Label labelpercent9;
-    @FXML
-    Label labelpercent10;
-    @FXML
-    Label labelpercent11;
-    @FXML
-    Label labelpercent12;
-    @FXML
-    Label labelpercent13;
-    @FXML
-    Label labelpercent14;
-    @FXML
-    Label labelpercent15;
-    @FXML
-    Button simplelayoutbutton;
-    @FXML
-    Button advancedlayoutbutton;
-    @FXML
-    Button comparelayoutbutton;
-    @FXML
-    ScrollPane searchscrollpane;
-    @FXML
-    VBox advancedvbox;
-    @FXML
-    VBox advancedvboxinner;
-    @FXML
-    Label seasonslabel;
-    @FXML
-    ComboBox seasonsbegincombo;
-    @FXML
-    ComboBox seasonsendcombo;
-    @FXML
-    Label playerslabel;
-    @FXML
-    ComboBox playercomboadvanced;
-    @FXML
-    Label seasontypeslabel;
-    @FXML
-    ComboBox seasontypescomboadvanced;
-    @FXML
-    Label shotdistancelabel;
-    @FXML
-    ComboBox distancebegincombo;
-    @FXML
-    ComboBox distanceendcombo;
-    @FXML
-    Label shotsuccesslabel;
-    @FXML
-    ComboBox shotsuccesscombo;
-    @FXML
-    Label shotvaluelabel;
-    @FXML
-    ComboBox shotvaluecombo;
-    @FXML
-    Label shottypeslabel;
-    @FXML
-    ComboBox shottypescombo;
-    @FXML
-    Label teamslabel;
-    @FXML
-    ComboBox teamscombo;
-    @FXML
-    Label hometeamslabel;
-    @FXML
-    ComboBox hometeamscombo;
-    @FXML
-    Label awayteamslabel;
-    @FXML
-    ComboBox awayteamscombo;
-    @FXML
-    Label courtareaslabel;
-    @FXML
-    ComboBox courtareascombo;
-    @FXML
-    Label courtsideslabel;
-    @FXML
-    ComboBox courtsidescombo;
-    @FXML
-    ScrollPane selectionscrollpane;
-    @FXML
-    VBox selectionvbox;
-    @FXML
-    Button searchbuttonadvanced;
-    @FXML
-    Label errorlabeladvanced;
-    @FXML
-    Label fgadv;
-    @FXML
-    Label fgfracadv;
-    @FXML
-    Label fgpercadv;
-    @FXML
-    Label twopointadv;
-    @FXML
-    Label twopointfracadv;
-    @FXML
-    Label twopointpercadv;
-    @FXML
-    Label threepointadv;
-    @FXML
-    Label threepointfracadv;
-    @FXML
-    Label threepointpercadv;
-    @FXML
-    GridPane shotgridadv;
-    @FXML
-    TextArea notestextarea;
-    @FXML
-    Label seasondash;
-    @FXML
-    Label distancedash;
-    @FXML
-    Label advancedintrolabel;
+    private TextArea notestextarea;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         Collections.addAll(viewButtons, traditionalbutton, gridbutton, heatmapbutton, zonebutton);
-//        viewButtons.add(traditionalbutton);
-//        viewButtons.add(gridbutton);
-//        viewButtons.add(heatmapbutton);
-//        viewButtons.add(zonebutton);
         Collections.addAll(simpleFGLabels, fgfrac, fgperc, twopointfrac, twopointperc, threepointfrac, threepointperc);
         Collections.addAll(advancedFGLabels, fgfracadv, fgpercadv, twopointfracadv, twopointpercadv, threepointfracadv, threepointpercadv);
         createResponsiveComboBoxes();
@@ -1431,6 +1171,7 @@ public class SimpleController implements Initializable {
             tempCircle = (Circle) allHeatCircles.get(keyCounter);
             tempCircle.setTranslateX(each.getX() * 1.0 * imageview.getLayoutBounds().getHeight() / 470);
             tempCircle.setTranslateY(each.getY() * 1.0 * imageview.getLayoutBounds().getHeight() / 470 - (185.0 * height / 470));
+            tempCircle.setRadius(25.0 * height / 470.0);
             keyCounter++;
         }
 
@@ -2601,7 +2342,7 @@ public class SimpleController implements Initializable {
                                 }
                             }
 
-                        }                       
+                        }
                         if (eachCounter > 1) {
                             coordValue.put(each, aSum / bSum);
                         } else {
@@ -2610,7 +2351,7 @@ public class SimpleController implements Initializable {
                     }
 
                 }
-               
+
             });
             allUltraFineHeatThreads.add(thread);
         }
@@ -3413,9 +3154,5 @@ public class SimpleController implements Initializable {
                 setViewTypeButtonStyle(10);
                 break;
         }
-    }
-
-    private void chooseResize() {
-
     }
 }
