@@ -1,7 +1,6 @@
 mainapp/Coordinate.class
 controllers/SimpleController$2.class
 mainapp/UserInputComboBox$1.class
-controllers/SimpleController$4.class
 controllers/SimpleController$Search.class
 controllers/SimpleController$1.class
 controllers/SimpleController.class
@@ -9,4 +8,3 @@ mainapp/UserInputComboBox.class
 mainapp/MissedShotIcon.class
 mainapp/Main.class
 mainapp/Shot.class
-controllers/SimpleController$3.class

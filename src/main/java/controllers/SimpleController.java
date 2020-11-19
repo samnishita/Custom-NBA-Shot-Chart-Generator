@@ -111,13 +111,7 @@ public class SimpleController implements Initializable {
     private int shotCounter = 0;
     private double maxCutoff = 0.0;
     private double diff = maxCutoff / 10;
-    private int offsetHeat = 15;//15 is balanced
-    //5 is ultrafine but needs opacity fix and is time intensive
-    //10 is a little better than 15
-    //20 is faster than 15 but more fuzzy, on the verge of bad scaling
-    //25 is pretty grainy, decently quick, does not scale well
-    //30 is awful
-    //smoothness
+    private int offsetHeat = 15;
     private final int MAX_DISTANCE_BETWEEN_NODES_HEAT = 30;
     private LinkedList<Circle> allHeatCircles;
     private ArrayList<Node> allZoneFXML = new ArrayList();
@@ -248,7 +242,6 @@ public class SimpleController implements Initializable {
         createResponsiveComboBoxes();
         organizeZoneFXMLElements();
         initSizing();
-
         //Set Updates Box
         try {
             JSONArray jsonArrayInit = getInitData();
@@ -307,7 +300,7 @@ public class SimpleController implements Initializable {
                 System.out.println("Error setting player combobox");
             }
         });
-        this.playercombo.setOnAction((Event t) -> {
+        this.playercombo.setOnAction(t -> {
             try {
                 setSeasonsComboBox();
             } catch (IOException ex) {
@@ -374,7 +367,7 @@ public class SimpleController implements Initializable {
         return this.vbox;
     }
 
-    private ArrayList makeYears() {
+    private ArrayList<String> makeYears() {
         int year = 2019;
         ArrayList<String> years = new ArrayList(30);
         String subYearString;
@@ -391,12 +384,11 @@ public class SimpleController implements Initializable {
         return years;
     }
 
-    private JSONArray doSimpleSearch() throws SQLException, IOException {
-        removeAllShotsFromView();
-        return getSimpleShotData();
-    }
-
-    private void plotTraditionalShots(JSONArray jsonArray) throws SQLException {
+//    private JSONArray doSimpleSearch() throws SQLException, IOException {
+//        removeAllShotsFromView();
+//        return getSimpleShotData();
+//    }
+    private void plotTraditionalShots(JSONArray jsonArray) {
         if (searchvbox.isVisible()) {
             setShotGrid(jsonArray);
         } else {
@@ -801,7 +793,7 @@ public class SimpleController implements Initializable {
         try {
             ultraFineHeatMapThreader();
         } catch (InterruptedException ex) {
-            ex.printStackTrace();
+            System.out.println("Error caught calculating heat map");
         }
         double weight = 0.5;
         int radius = 25;
@@ -887,27 +879,13 @@ public class SimpleController implements Initializable {
                 }
             }
         }
-        for (Circle circle : circles1) {
-            imagegrid.getChildren().add(circle);
-        }
-        for (Circle circle : circles2) {
-            imagegrid.getChildren().add(circle);
-        }
-        for (Circle circle : circles3) {
-            imagegrid.getChildren().add(circle);
-        }
-        for (Circle circle : circles4) {
-            imagegrid.getChildren().add(circle);
-        }
-        for (Circle circle : circles5) {
-            imagegrid.getChildren().add(circle);
-        }
-        for (Circle circle : circles6) {
-            imagegrid.getChildren().add(circle);
-        }
-        for (Circle circle : circles7) {
-            imagegrid.getChildren().add(circle);
-        }
+        circles1.forEach(circle -> imagegrid.getChildren().add(circle));
+        circles2.forEach(circle -> imagegrid.getChildren().add(circle));
+        circles3.forEach(circle -> imagegrid.getChildren().add(circle));
+        circles4.forEach(circle -> imagegrid.getChildren().add(circle));
+        circles5.forEach(circle -> imagegrid.getChildren().add(circle));
+        circles6.forEach(circle -> imagegrid.getChildren().add(circle));
+        circles7.forEach(circle -> imagegrid.getChildren().add(circle));
         if (searchvbox.isVisible()) {
             createThreadAndRun(currentSimpleSearch);
         } else {
@@ -941,17 +919,14 @@ public class SimpleController implements Initializable {
     }
 
     private double getDistance(Coordinate coordOrig, Coordinate coordI) {
-        double a = coordOrig.getX() - coordI.getX();
-        double b = coordOrig.getY() - coordI.getY();
-        return Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+        return Math.sqrt(Math.pow(coordOrig.getX() - coordI.getX(), 2) + Math.pow(coordOrig.getY() - coordI.getY(), 2));
     }
 
     private HashMap<String, BigDecimal> useGridAverages() throws IOException {
         HashMap<String, BigDecimal> hashmap = new HashMap();
         JSONArray jsonArray = getGridAveragesData();
         for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject eachShot = jsonArray.getJSONObject(i);
-            hashmap.put(eachShot.getString("uniqueid"), eachShot.getBigDecimal("average"));
+            hashmap.put(jsonArray.getJSONObject(i).getString("uniqueid"), jsonArray.getJSONObject(i).getBigDecimal("average"));
         }
         return hashmap;
     }
@@ -995,7 +970,6 @@ public class SimpleController implements Initializable {
         gridsizelegendupperlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
         gridcolorlegendgradient.setWidth(height * 153.0 / 470);
         gridcolorlegendgradient.setHeight(height * 17.0 / 470);
-
         squareSize = width / 50;
         int counter = 0;
         Rectangle square;
@@ -1406,27 +1380,25 @@ public class SimpleController implements Initializable {
                 this.previousYear = this.yearcombo.getValue().toString();
                 this.previousPlayer = this.playercombo.getValue().toString();
                 this.previousSeason = this.seasoncombo.getValue().toString();
-                plotTraditionalShots(doSimpleSearch());
-            } catch (SQLException | IOException ex) {
-                System.out.println("Error caught doing a traditional search");
+                removeAllShotsFromView();
+                plotTraditionalShots(getSimpleShotData());
             } catch (NullPointerException ex) {
                 this.errorlabel.setText("Please try again");
                 this.errorlabel.setVisible(true);
+            } catch (IOException ex) {
+                System.out.println("Exception caught plotting traditional shots");
             }
         } else {
             currentAdvancedSearch = Search.TRADITIONAL;
             resetView();
             try {
-                JSONArray jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
                 removeAllShotsFromView();
-                plotTraditionalShots(jsonArray);
-            } catch (SQLException ex) {
+                plotTraditionalShots(createAdvancedJSONOutput(currentAdvancedSearch));
+            } catch (SQLException | IOException ex) {
                 ex.printStackTrace();
             } catch (NullPointerException ex) {
                 this.errorlabeladvanced.setText("Please try again");
                 this.errorlabeladvanced.setVisible(true);
-            } catch (IOException ex) {
-                ex.printStackTrace();
             } catch (Exception ex) {
                 this.errorlabeladvanced.setText("Please try again");
                 this.errorlabeladvanced.setVisible(true);
@@ -1446,9 +1418,8 @@ public class SimpleController implements Initializable {
                 this.previousYear = this.yearcombo.getValue().toString();
                 this.previousPlayer = this.playercombo.getValue().toString();
                 this.previousSeason = this.seasoncombo.getValue().toString();
-                plotGrid(doSimpleSearch());
-            } catch (SQLException ex) {
-                ex.printStackTrace();
+                removeAllShotsFromView();
+                plotGrid(getSimpleShotData());
             } catch (NullPointerException ex) {
                 this.errorlabel.setText("Please try again");
                 this.errorlabel.setVisible(true);
@@ -1521,12 +1492,13 @@ public class SimpleController implements Initializable {
                 this.previousYear = this.yearcombo.getValue().toString();
                 this.previousPlayer = this.playercombo.getValue().toString();
                 this.previousSeason = this.seasoncombo.getValue().toString();
-                plotHeat(doSimpleSearch());
-            } catch (SQLException | IOException ex) {
-                ex.printStackTrace();
+                removeAllShotsFromView();
+                plotHeat(getSimpleShotData());
             } catch (NullPointerException ex) {
                 this.errorlabel.setText("Please try again");
                 this.errorlabel.setVisible(true);
+            } catch (IOException ex) {
+                System.out.println("Error caught plotting heatmap");
             }
         } else {
             this.currentAdvancedSearch = Search.HEAT;
@@ -1569,122 +1541,26 @@ public class SimpleController implements Initializable {
         circle.setTranslateX(x * 1.0 * imageview.getLayoutBounds().getHeight() / 470);
         circle.setTranslateY(y * 1.0 * imageview.getLayoutBounds().getHeight() / 470 - (185.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
         circle.setOpacity(0.75);
-        //square.setTranslateX((each2.getX() + 5) * imageview.getLayoutBounds().getHeight() / 470);
-        //+ imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2
-//            square.setTranslateY(each2.getY() * imageview.getLayoutBounds().getHeight() / 470 - (175.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
-
-//        circle.setOnMouseEntered((MouseEvent t) -> {
-//            Label label = new Label();
-//            label.setText((circle.getLayoutX() - 250) + "," + (circle.getLayoutY() - 55));
-//            label.setLayoutX(350);
-//            label.setLayoutY(420);
-//            label.setVisible(true);
-//            anchorpane.getChildren().add(label);
-//        });
-//        circle.setOnMouseExited((MouseEvent t) -> {
-//            anchorpane.getChildren().remove(anchorpane.getChildren().size() - 1);
-//        });
     }
 
     private void organizeZoneFXMLElements() {
-        allZoneFXML.add(group1);
-        allZoneFXML.add(rect1);
-        allZoneFXML.add(arc1);
-        allZoneFXML.add(group2);
-        allZoneFXML.add(rect2);
-        allZoneFXML.add(arc2);
-        allZoneFXML.add(group3);
-        allZoneFXML.add(rect3);
-        allZoneFXML.add(arc3);
-        allZoneFXML.add(arc4);
-        allZoneFXML.add(group5);
-        allZoneFXML.add(rect5);
-        allZoneFXML.add(arc5);
-        allZoneFXML.add(group6);
-        allZoneFXML.add(rect6);
-        allZoneFXML.add(arc6);
-        allZoneFXML.add(arc7);
-        allZoneFXML.add(arc8);
-        allZoneFXML.add(arc9);
-        allZoneFXML.add(group10);
-        allZoneFXML.add(rect10);
-        allZoneFXML.add(arc10);
-        allZoneFXML.add(rect11);
-        allZoneFXML.add(group12);
-        allZoneFXML.add(rect12);
-        allZoneFXML.add(arc12);
-        allZoneFXML.add(arc13);
-        allZoneFXML.add(group14);
-        allZoneFXML.add(rect14);
-        allZoneFXML.add(arc14);
-        allZoneFXML.add(rect15);
-        allZoneFXML.add(label1);
-        allZoneFXML.add(label2);
-        allZoneFXML.add(label3);
-        allZoneFXML.add(label4);
-        allZoneFXML.add(label5);
-        allZoneFXML.add(label6);
-        allZoneFXML.add(label7);
-        allZoneFXML.add(label8);
-        allZoneFXML.add(label9);
-        allZoneFXML.add(label10);
-        allZoneFXML.add(label11);
-        allZoneFXML.add(label12);
-        allZoneFXML.add(label13);
-        allZoneFXML.add(label14);
-        allZoneFXML.add(label15);
-        allZoneFXML.add(labelpercent1);
-        allZoneFXML.add(labelpercent2);
-        allZoneFXML.add(labelpercent3);
-        allZoneFXML.add(labelpercent4);
-        allZoneFXML.add(labelpercent5);
-        allZoneFXML.add(labelpercent6);
-        allZoneFXML.add(labelpercent7);
-        allZoneFXML.add(labelpercent8);
-        allZoneFXML.add(labelpercent9);
-        allZoneFXML.add(labelpercent10);
-        allZoneFXML.add(labelpercent11);
-        allZoneFXML.add(labelpercent12);
-        allZoneFXML.add(labelpercent13);
-        allZoneFXML.add(labelpercent14);
-        allZoneFXML.add(labelpercent15);
-        allZoneFXML.add(zonelegend);
-        allZoneFXML.add(zonelegendtoplabel);
-        allZoneFXML.add(zonelegendlowerlabel);
-        allZoneFXML.add(zonelegendupperlabel);
-        allZoneFXML.add(zonelegendgradient);
+        Collections.addAll(allZoneFXML, group1, rect1, arc1, group2, rect2, arc2, group3, rect3,
+                arc3, arc4, group5, rect5, arc5, group6, rect6, arc6, arc7, arc8, arc9, group10,
+                rect10, arc10, rect11, group12, rect12, arc12, arc13, group14, rect14, arc14, rect15,
+                label1, label2, label3, label4, label5, label6, label7, label8, label9, label10, label11,
+                label12, label13, label14, label15, labelpercent1, labelpercent2, labelpercent3,
+                labelpercent4, labelpercent5, labelpercent6, labelpercent7, labelpercent8, labelpercent9,
+                labelpercent10, labelpercent11, labelpercent12, labelpercent13, labelpercent14,
+                labelpercent15, zonelegend, zonelegendtoplabel, zonelegendlowerlabel,
+                zonelegendupperlabel, zonelegendgradient);
         allLabels = new LinkedList();
-        allLabels.add(label1);
-        allLabels.add(label2);
-        allLabels.add(label3);
-        allLabels.add(label4);
-        allLabels.add(label5);
-        allLabels.add(label6);
-        allLabels.add(label7);
-        allLabels.add(label8);
-        allLabels.add(label9);
-        allLabels.add(label10);
-        allLabels.add(label11);
-        allLabels.add(label12);
-        allLabels.add(label13);
-        allLabels.add(label14);
-        allLabels.add(label15);
+        Collections.addAll(allLabels, label1, label2, label3, label4, label5, label6, label7, label8, label9,
+                label10, label11, label12, label13, label14, label15);
         allPercentLabels = new LinkedList();
-        allPercentLabels.add(labelpercent1);
-        allPercentLabels.add(labelpercent2);
-        allPercentLabels.add(labelpercent3);
-        allPercentLabels.add(labelpercent4);
-        allPercentLabels.add(labelpercent5);
-        allPercentLabels.add(labelpercent6);
-        allPercentLabels.add(labelpercent7);
-        allPercentLabels.add(labelpercent8);
-        allPercentLabels.add(labelpercent9);
-        allPercentLabels.add(labelpercent10);
-        allPercentLabels.add(labelpercent11);
-        allPercentLabels.add(labelpercent12);
-        allPercentLabels.add(labelpercent13);
-        allPercentLabels.add(labelpercent14);
-        allPercentLabels.add(labelpercent15);
+        Collections.addAll(allPercentLabels, labelpercent1, labelpercent2, labelpercent3,
+                labelpercent4, labelpercent5, labelpercent6, labelpercent7, labelpercent8,
+                labelpercent9, labelpercent10, labelpercent11, labelpercent12,
+                labelpercent13, labelpercent14, labelpercent15);
         Shape shape1 = Shape.union(rect1, arc1);
         Shape shape2 = Shape.union(rect2, arc2);
         Shape shape3 = Shape.union(rect3, arc3);
@@ -1693,74 +1569,44 @@ public class SimpleController implements Initializable {
         Shape shape10 = Shape.union(rect10, arc10);
         Shape shape12 = Shape.union(rect12, arc12);
         Shape shape14 = Shape.union(rect14, arc14);
-        ArrayList<Shape> shapes = new ArrayList();
-        shapes.add(shape1);
-        shapes.add(shape2);
-        shapes.add(shape3);
-        shapes.add(shape5);
-        shapes.add(shape6);
-        shapes.add(shape10);
-        shapes.add(shape12);
-        shapes.add(shape14);
         allShapes = new LinkedList();
-        allShapes.add(shape1);
-        allShapes.add(shape2);
-        allShapes.add(shape3);
-        allShapes.add(arc4);
-        allShapes.add(shape5);
-        allShapes.add(shape6);
-        allShapes.add(arc7);
-        allShapes.add(arc8);
-        allShapes.add(arc9);
-        allShapes.add(shape10);
-        allShapes.add(rect11);
-        allShapes.add(shape12);
-        allShapes.add(arc13);
-        allShapes.add(shape14);
-        allShapes.add(rect15);
+        Collections.addAll(allShapes, shape1, shape2, shape3, arc4, shape5, shape6, arc7, arc8, arc9,
+                shape10, rect11, shape12, arc13, shape14, rect15);
         double strokeWidth = 3.0;
         Paint strokeColor = Color.web("#434343");
-        for (Shape shape : shapes) {
-            shape.setStroke(strokeColor);
-            shape.setStrokeWidth(strokeWidth);
-            shape.setStrokeType(StrokeType.OUTSIDE);
-            imagegrid.getChildren().add(shape);
+        Arc tempArc;
+        Shape tempShape;
+        for (Node node : allShapes) {
+            if (node.getClass().equals(Arc.class)) {
+                tempArc = (Arc) node;
+                tempArc.setStroke(strokeColor);
+                tempArc.setStrokeWidth(strokeWidth);
+                tempArc.setStrokeType(StrokeType.OUTSIDE);
+            } else if (!node.getClass().equals(Rectangle.class)) {
+                tempShape = (Shape) node;
+                tempShape.setStroke(strokeColor);
+                tempShape.setStrokeWidth(strokeWidth);
+                tempShape.setStrokeType(StrokeType.OUTSIDE);
+                imagegrid.getChildren().add(node);
+            }
         }
         rect11.toFront();
         rect15.toFront();
         shape12.toFront();
         shape14.toFront();
         arc13.toFront();
-        arc13.setStroke(strokeColor);
-        arc13.setStrokeWidth(strokeWidth);
-        arc13.setStrokeType(StrokeType.OUTSIDE);
         shape6.toFront();
         shape10.toFront();
         arc8.toFront();
-        arc8.setStroke(strokeColor);
-        arc8.setStrokeWidth(strokeWidth);
-        arc8.setStrokeType(StrokeType.OUTSIDE);
         arc7.toFront();
-        arc7.setStroke(strokeColor);
-        arc7.setStrokeWidth(strokeWidth);
-        arc7.setStrokeType(StrokeType.OUTSIDE);
         arc9.toFront();
-        arc9.setStroke(strokeColor);
-        arc9.setStrokeWidth(strokeWidth);
-        arc9.setStrokeType(StrokeType.OUTSIDE);
         shape3.toFront();
         shape5.toFront();
         arc4.toFront();
-        arc4.setStroke(strokeColor);
-        arc4.setStrokeWidth(strokeWidth);
-        arc4.setStrokeType(StrokeType.OUTSIDE);
         shape2.toFront();
         shape1.toFront();
         shape1.setStrokeType(StrokeType.INSIDE);
-        for (Object each : allShapes) {
-            Node node = (Node) each;
-            node.setVisible(false);
-        }
+        allShapes.forEach(eachNode -> eachNode.setVisible(false));
     }
 
     private void zone() {
@@ -1771,9 +1617,8 @@ public class SimpleController implements Initializable {
                 this.previousYear = this.yearcombo.getValue().toString();
                 this.previousPlayer = this.playercombo.getValue().toString();
                 this.previousSeason = this.seasoncombo.getValue().toString();
-                plotZone(doSimpleSearch());
-            } catch (SQLException ex) {
-                ex.printStackTrace();
+                removeAllShotsFromView();
+                plotZone(getSimpleShotData());
             } catch (NullPointerException ex) {
                 this.errorlabel.setText("Please try again");
                 this.errorlabel.setVisible(true);
@@ -1970,31 +1815,15 @@ public class SimpleController implements Initializable {
         Rectangle tempRect;
         Arc tempArc;
         for (int i = 1; i < 16; i++) {
-            switch (i) {
-                case 1:
-                case 2:
-                case 3:
-                case 5:
-                case 6:
-                case 10:
-                case 12:
-                case 14:
-                    tempShape = (Shape) allShapes.get(i - 1);
-                    changeShapeColor(tempShape, playerZones.get(i), i);
-                    break;
-                case 4:
-                case 7:
-                case 8:
-                case 9:
-                case 13:
-                    tempArc = (Arc) allShapes.get(i - 1);
-                    changeArcColor(tempArc, playerZones.get(i), i);
-                    break;
-                case 11:
-                case 15:
-                    tempRect = (Rectangle) allShapes.get(i - 1);
-                    changeRectColor(tempRect, playerZones.get(i), i);
-                    break;
+            if (allShapes.get(i-1).getClass().equals(Arc.class)) {
+                tempArc = (Arc) allShapes.get(i - 1);
+                changeArcColor(tempArc, playerZones.get(i), i);
+            } else if (allShapes.get(i-1).getClass().equals(Rectangle.class)) {
+                tempRect = (Rectangle) allShapes.get(i - 1);
+                changeRectColor(tempRect, playerZones.get(i), i);
+            } else {
+                tempShape = (Shape) allShapes.get(i-1);
+                changeShapeColor(tempShape, playerZones.get(i), i);
             }
         }
         imageview.toFront();
@@ -2010,7 +1839,6 @@ public class SimpleController implements Initializable {
             }
             allPercentLabels.get(j).toFront();
         }
-
         zonelegend.setVisible(true);
         zonelegend.toFront();
         if (searchvbox.isVisible()) {
@@ -2074,7 +1902,7 @@ public class SimpleController implements Initializable {
         if (allZones.get(i)[1] == 0) {
             rect.setFill(Color.web("#b2b2b2"));
         } else {
-            Double diff = playerValue - allZoneAverages.get(i);
+            diff = playerValue - allZoneAverages.get(i);
             if (diff > 0.06) {
                 rect.setFill(Color.web("#fc2121"));
             } else if (diff < 0.06 && diff >= 0.04) {
@@ -2310,7 +2138,7 @@ public class SimpleController implements Initializable {
             Thread.currentThread().interrupt();
         } catch (Exception ex) {
             Thread.currentThread().interrupt();
-            ex.printStackTrace();
+            System.out.println("Error caught running resize threads");
         }
     }
 
@@ -2707,18 +2535,14 @@ public class SimpleController implements Initializable {
 
     private void populateUnchangingComboBoxes() throws IOException {
         ArrayList<String> tempList = new ArrayList();
-        tempList.add("Makes");
-        tempList.add("Misses");
+        Collections.addAll(tempList, "Makes", "Misses");
         shotsuccesscombo.setItems(FXCollections.observableArrayList(tempList));
         tempList = new ArrayList();
-        tempList.add("2PT");
-        tempList.add("3PT");
+        Collections.addAll(tempList, "2PT", "3PT");
         shotvaluecombo.setItems(FXCollections.observableArrayList(tempList));
-        tempList = new ArrayList();
         tempList = getShotTypesList();
         UserInputComboBox shotTypeComboUser = new UserInputComboBox(shottypescombo);
         shotTypeComboUser.getComboBox().setItems(FXCollections.observableArrayList(tempList));
-        tempList = new ArrayList();
         relevantTeamNameIDHashMap.put("Atlanta Hawks", 1610612737);
         relevantTeamNameIDHashMap.put("Boston Celtics", 1610612738);
         relevantTeamNameIDHashMap.put("Brooklyn Nets", 1610612751);
@@ -2773,21 +2597,12 @@ public class SimpleController implements Initializable {
         homeTeamComboUser.getComboBox().setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
         awayTeamComboUser.getComboBox().setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
         tempList = new ArrayList();
-        tempList.add("Restricted Area");
-        tempList.add("In The Paint (Non-RA)");
-        tempList.add("Mid-Range");
-        tempList.add("Right Corner 3");
-        tempList.add("Left Corner 3");
-        tempList.add("Above the Break 3");
-        tempList.add("Backcourt");
+        Collections.addAll(tempList, "Restricted Area", "In The Paint (Non-RA)", "Mid-Range",
+                "Left Corner 3", "Right Corner 3", "Above the Break 3", "Backcourt");
         courtareascombo.setItems(FXCollections.observableArrayList(tempList));
         tempList = new ArrayList();
-        tempList.add("Left");
-        tempList.add("Left-Center");
-        tempList.add("Center");
-        tempList.add("Right-Center");
-        tempList.add("Right");
-        tempList.add("Back Court");
+        Collections.addAll(tempList, "Left", "Left-Center", "Center",
+                "Right-Center", "Right", "Back Court");
         courtsidescombo.setItems(FXCollections.observableArrayList(tempList));
     }
 
@@ -2904,16 +2719,13 @@ public class SimpleController implements Initializable {
         for (Node each : advancedvboxinner.getChildren()) {
             if (each.getClass().equals(ComboBox.class)) {
                 final ComboBox cb = (ComboBox) each;
-                cb.valueProperty().addListener(new ChangeListener() {
-                    @Override
-                    public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                        try {
-                            if (cb.getValue() != null) {
-                                addHBoxToSelectionBox(cb.getId());
-                            }
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
+                cb.valueProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) -> {
+                    try {
+                        if (cb.getValue() != null) {
+                            addHBoxToSelectionBox(cb.getId());
                         }
+                    } catch (Exception ex) {
+                        System.out.println("Error caught adding to selection box");
                     }
                 });
                 cb.setOnMouseClicked((Event t) -> {
@@ -2951,16 +2763,13 @@ public class SimpleController implements Initializable {
                             });
 
                         });
-                        cb.valueProperty().addListener(new ChangeListener() {
-                            @Override
-                            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                                try {
-                                    if (cb.getValue() != null) {
-                                        addHBoxToSelectionBox(cb.getId());
-                                    }
-                                } catch (Exception ex) {
-                                    ex.printStackTrace();
+                        cb.valueProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) -> {
+                            try {
+                                if (cb.getValue() != null) {
+                                    addHBoxToSelectionBox(cb.getId());
                                 }
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
                             }
                         });
                     }
@@ -2990,55 +2799,25 @@ public class SimpleController implements Initializable {
 
     private void setEachViewTypeButtonOnClicked(int selector, Search currentSearch) {
         setViewTypeButtonStyle(selector);
-
         if (searchvbox.isVisible()) {
             try {
                 this.previousYear = this.yearcombo.getValue().toString();
                 this.previousPlayer = this.playercombo.getValue().toString();
                 this.previousSeason = this.seasoncombo.getValue().toString();
-                if (currentSimpleSearch.equals(Search.NONE)) {
-                    currentSimpleSearch = currentSearch;
-                } else {
-                    switch (selector) {
-                        case 0:
-                            traditional();
-                            break;
-                        case 1:
-                            grid();
-                            break;
-                        case 2:
-                            heat();
-                            break;
-                        case 3:
-                            zone();
-                            break;
-                    }
+                currentSimpleSearch = currentSearch;
+                if (!currentSimpleSearch.equals(Search.NONE)) {
+                    runSearch();
                 }
             } catch (NullPointerException ex) {
-                ex.printStackTrace();
                 this.errorlabel.setText("Please select one from each category");
                 this.errorlabel.setVisible(true);
             }
 
         } else {
             if (checkForEmptyAdvancedSearch()) {
-                if (currentAdvancedSearch.equals(Search.NONE)) {
-                    currentAdvancedSearch = currentSearch;
-                } else {
-                    switch (selector) {
-                        case 0:
-                            traditional();
-                            break;
-                        case 1:
-                            grid();
-                            break;
-                        case 2:
-                            heat();
-                            break;
-                        case 3:
-                            zone();
-                            break;
-                    }
+                currentAdvancedSearch = currentSearch;
+                if (!currentAdvancedSearch.equals(Search.NONE)) {
+                    runSearch();
                 }
             } else {
                 this.errorlabeladvanced.setText("Please include at least one search parameter");
@@ -3066,42 +2845,18 @@ public class SimpleController implements Initializable {
 
     private void setAllViewTypeButtonsOnMouseActions() {
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-        this.traditionalbutton.setOnMouseClicked((Event t) -> {
-            setEachViewTypeButtonOnClicked(0, Search.TRADITIONAL);
-        });
-        this.gridbutton.setOnMouseClicked((Event t) -> {
-            setEachViewTypeButtonOnClicked(1, Search.GRID);
-        });
-        this.heatmapbutton.setOnMouseClicked((Event t) -> {
-            setEachViewTypeButtonOnClicked(2, Search.HEAT);
-        });
-        this.zonebutton.setOnMouseClicked((Event t) -> {
-            setEachViewTypeButtonOnClicked(3, Search.ZONE);
-        });
-        this.traditionalbutton.setOnMouseEntered((Event t) -> {
-            setEachViewTypeButtonsOnMouseEntered(0, Search.TRADITIONAL);
-        });
-        this.traditionalbutton.setOnMouseExited((Event t) -> {
-            setEachViewTypeButtonsOnMouseExited(0, Search.TRADITIONAL);
-        });
-        this.gridbutton.setOnMouseEntered((Event t) -> {
-            setEachViewTypeButtonsOnMouseEntered(1, Search.GRID);
-        });
-        this.gridbutton.setOnMouseExited((Event t) -> {
-            setEachViewTypeButtonsOnMouseExited(1, Search.GRID);
-        });
-        this.heatmapbutton.setOnMouseEntered((Event t) -> {
-            setEachViewTypeButtonsOnMouseEntered(2, Search.HEAT);
-        });
-        this.heatmapbutton.setOnMouseExited((Event t) -> {
-            setEachViewTypeButtonsOnMouseExited(2, Search.HEAT);
-        });
-        this.zonebutton.setOnMouseEntered((Event t) -> {
-            setEachViewTypeButtonsOnMouseEntered(3, Search.ZONE);
-        });
-        this.zonebutton.setOnMouseExited((Event t) -> {
-            setEachViewTypeButtonsOnMouseExited(3, Search.ZONE);
-        });
+        this.traditionalbutton.setOnMouseClicked(t -> setEachViewTypeButtonOnClicked(0, Search.TRADITIONAL));
+        this.gridbutton.setOnMouseClicked(t -> setEachViewTypeButtonOnClicked(1, Search.GRID));
+        this.heatmapbutton.setOnMouseClicked(t -> setEachViewTypeButtonOnClicked(2, Search.HEAT));
+        this.zonebutton.setOnMouseClicked(t -> setEachViewTypeButtonOnClicked(3, Search.ZONE));
+        this.traditionalbutton.setOnMouseEntered(t -> setEachViewTypeButtonsOnMouseEntered(0, Search.TRADITIONAL));
+        this.traditionalbutton.setOnMouseExited(t -> setEachViewTypeButtonsOnMouseExited(0, Search.TRADITIONAL));
+        this.gridbutton.setOnMouseEntered(t -> setEachViewTypeButtonsOnMouseEntered(1, Search.GRID));
+        this.gridbutton.setOnMouseExited(t -> setEachViewTypeButtonsOnMouseExited(1, Search.GRID));
+        this.heatmapbutton.setOnMouseEntered(t -> setEachViewTypeButtonsOnMouseEntered(2, Search.HEAT));
+        this.heatmapbutton.setOnMouseExited(t -> setEachViewTypeButtonsOnMouseExited(2, Search.HEAT));
+        this.zonebutton.setOnMouseEntered(t -> setEachViewTypeButtonsOnMouseEntered(3, Search.ZONE));
+        this.zonebutton.setOnMouseExited(t -> setEachViewTypeButtonsOnMouseExited(3, Search.ZONE));
     }
 
     private void runSearch() {
