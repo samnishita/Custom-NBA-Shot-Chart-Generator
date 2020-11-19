@@ -43,6 +43,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
@@ -163,17 +164,19 @@ public class SimpleController implements Initializable {
     @FXML
     private BorderPane borderpane;
     @FXML
-    private VBox vbox, centralvbox;
+    private VBox vbox, centralvbox, progressvbox;
     @FXML
     private ImageView imageview;
     @FXML
-    private Label titlelabel, lastupdatedlabel, charttitle, dateaccuracy, updatelabel, namelabel;
+    private Label titlelabel, lastupdatedlabel, charttitle, dateaccuracy, updatelabel, namelabel, progresslabel;
     @FXML
     private HBox tophbox;
     @FXML
     private Line line;
     @FXML
     private Button simplelayoutbutton, advancedlayoutbutton, comparelayoutbutton;
+    @FXML
+    private ProgressIndicator progressindicator;
     //GridPanes
     @FXML
     private GridPane gridpane, topgridpane, imagegrid, shotgrid, shotgridadv;
@@ -183,7 +186,7 @@ public class SimpleController implements Initializable {
     @FXML
     private Button traditionalbutton, heatmapbutton, gridbutton, zonebutton;
     @FXML
-    private Rectangle gridbackground;
+    private Rectangle gridbackground, loadingoverlay;
     @FXML
     private Group group1, group2, group3, group5, group6, group10, group12, group14;
     @FXML
@@ -251,6 +254,8 @@ public class SimpleController implements Initializable {
         organizeZoneFXMLElements();
         initSizing();
         createServices();
+        endLoadingTransition();
+        progressvbox.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
         //Set Updates Box
         try {
             JSONArray jsonArrayInit = getInitData();
@@ -391,75 +396,6 @@ public class SimpleController implements Initializable {
         }
 
         return years;
-    }
-
-//    private JSONArray doSimpleSearch() throws SQLException, IOException {
-//        removeAllShotsFromView();
-//        return getSimpleShotData();
-//    }
-    private void plotTraditionalShots(JSONArray jsonArray) {
-
-        if (searchvbox.isVisible()) {
-            setShotGrid(jsonArray);
-        } else {
-            setShotGridAdvanced(jsonArray);
-        }
-        imageview.setImage(new Image("/images/newbackcourt.png"));
-        allShots = new LinkedHashMap();
-        Circle circle;
-        MissedShotIcon msi;
-        BigDecimal xBig;
-        BigDecimal yBig;
-        for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject eachShot = jsonArray.getJSONObject(i);
-            Shot shot = new Shot(eachShot.getInt("x"), eachShot.getInt("y"), eachShot.getInt("distance"), eachShot.getInt("make"), eachShot.getString("shottype"), eachShot.getString("playtype"));
-            xBig = BigDecimal.valueOf(eachShot.getInt("x"));
-            yBig = BigDecimal.valueOf(eachShot.getInt("y"));
-            if (eachShot.getInt("make") == 1) {
-                circle = new Circle(imageview.getLayoutBounds().getHeight() * SHOT_MADE_RADIUS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue());
-                circle.setFill(Color.TRANSPARENT);
-                circle.setTranslateX(xBig.intValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);
-                circle.setTranslateY(yBig.intValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2 - (185.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
-                circle.setStrokeWidth(imageview.getLayoutBounds().getHeight() * SHOT_LINE_THICKNESS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue());
-                circle.setStroke(Color.LIMEGREEN);
-                circle.setManaged(false);
-                allShots.put(shot, circle);
-            } else {
-                msi = new MissedShotIcon((xBig.intValue()) / 470,
-                        ((yBig.intValue() - 55) / 470),
-                        imageview.getLayoutBounds().getHeight(),
-                        SHOT_MISS_START_END.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue(),
-                        SHOT_LINE_THICKNESS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue(),
-                        imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2,
-                        imageview.localToParent(imageview.getBoundsInLocal()).getMinY());
-                msi.getLine1().setManaged(false);
-                msi.getLine2().setManaged(false);
-                allShots.put(shot, msi);
-            }
-        }
-        allShots.keySet().stream()
-                .filter((each) -> (each.getY() <= 410))
-                .forEachOrdered((each) -> {
-                    if (each.getMake() == 0) {
-                        MissedShotIcon msiTemp = (MissedShotIcon) allShots.get(each);
-                        msiTemp.getLine1().setManaged(false);
-                        msiTemp.getLine2().setManaged(false);
-                        msiTemp.getLine1().setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);// 50/470
-                        msiTemp.getLine2().setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);
-                        msiTemp.getLine1().setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2 - (180.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
-                        msiTemp.getLine2().setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2 - (180.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
-                        imagegrid.getChildren().add(msiTemp.getLine1());
-                        imagegrid.getChildren().add(msiTemp.getLine2());
-                    } else {
-                        imagegrid.getChildren().add((Circle) allShots.get(each));
-                    }
-                });
-        if (searchvbox.isVisible()) {
-            createThreadAndRun(currentSimpleSearch);
-        } else {
-            createThreadAndRun(currentAdvancedSearch);
-        }
-
     }
 
     private void resizeShots() {
@@ -662,254 +598,6 @@ public class SimpleController implements Initializable {
         return new JSONArray(Main.getServerResponse().readLine());
     }
 
-    private void plotGrid(JSONArray jsonArray) throws IOException {
-//            if (searchvbox.isVisible()) {
-//                setShotGrid(jsonArray);
-//            } else {
-//                setShotGridAdvanced(jsonArray);
-//            }
-//            Coordinate coord;
-//            coordAverages = new LinkedHashMap();
-//            for (int j = -55; j < 400; j = j + (int) SQUARE_SIZE_ORIG) {
-//                for (int i = -250; i < 250; i = i + (int) SQUARE_SIZE_ORIG) {
-//                    coord = new Coordinate(i, j);
-//                    ArrayList info = new ArrayList();
-//                    info.add(0.0);
-//                    info.add(0.0);
-//                    info.add(0.0);
-//                    coordAverages.put(coord, info);
-//                }
-//            }
-//            double factor = 0.007;
-//            shotCounter = 0;
-//            HashMap<String, BigDecimal> averages = null;
-//            try {
-//                averages = useGridAverages();
-//            } catch (IOException ex) {
-//                ex.printStackTrace();
-//            }
-//            allShots = new LinkedHashMap();
-//            JSONObject eachShot;
-//            for (int i = 0; i < jsonArray.length(); i++) {
-//                eachShot = jsonArray.getJSONObject(i);
-//                if (eachShot.getInt("y") >= 400) {
-//                    continue;
-//                }
-//                shotCounter++;
-//                for (Coordinate each : coordAverages.keySet()) {
-//                    if (eachShot.getInt("x") < each.getX() + 5 + SQUARE_SIZE_ORIG * 1.5 && eachShot.getInt("x") >= each.getX() + 5 - SQUARE_SIZE_ORIG * 1.5 && eachShot.getInt("y") < each.getY() + 5 + SQUARE_SIZE_ORIG * 1.5 && eachShot.getInt("y") >= each.getY() + 5 - SQUARE_SIZE_ORIG * 1.5) {
-//                        coordAverages.get(each).set(1, coordAverages.get(each).get(1) + 1);
-//                        if (eachShot.getInt("make") == 1) {
-//                            coordAverages.get(each).set(0, coordAverages.get(each).get(0) + 1);
-//                        }
-//                    }
-//                }
-//
-//            }
-//            for (Coordinate each : coordAverages.keySet()) {
-//                if (coordAverages.get(each).get(1) != 0) {
-//                    coordAverages.get(each).set(2, coordAverages.get(each).get(0) * 1.0 / coordAverages.get(each).get(1) * 1.0);
-//                }
-//            }
-//            idwGrid();
-//            min = 1;
-//            double minFactor = 0.00045;
-//            if (shotCounter * minFactor > 1) {
-//                min = shotCounter * minFactor;
-//            } else {
-//                factor = 4.1008 * Math.pow(shotCounter, -0.798);
-//            }
-//            maxShotsPerMaxSquare = (int) (factor * shotCounter);
-//            if (maxShotsPerMaxSquare == 0) {
-//                maxShotsPerMaxSquare = 1;
-//            }
-//            squareSize = imageview.getLayoutBounds().getWidth() / 50;
-//            allTiles = new LinkedList();
-//            String temp;
-//            double avg;
-//            for (Coordinate each2 : coordValue.keySet()) {
-//                Rectangle square = new Rectangle();
-//                if (coordAverages.get(each2).get(1) < maxShotsPerMaxSquare && coordAverages.get(each2).get(1) > min) {
-//                    square.setHeight((coordAverages.get(each2).get(1) / maxShotsPerMaxSquare * squareSize) * 0.9);
-//                    square.setWidth((coordAverages.get(each2).get(1) / maxShotsPerMaxSquare * squareSize) * 0.9);
-//                } else if (coordAverages.get(each2).get(1) >= maxShotsPerMaxSquare) {
-//                    square.setHeight(squareSize * 0.9);
-//                    square.setWidth(squareSize * 0.9);
-//                }
-//                temp = "(" + each2.getX() + "," + each2.getY() + ")";
-//                avg = averages.get(temp).doubleValue();
-//                if (coordValue.get(each2) > avg + 0.07) {
-//                    square.setFill(Color.web("#fc2121"));
-//                } else if (coordValue.get(each2) > avg + 0.05 && coordValue.get(each2) <= avg + 0.07) {
-//                    square.setFill(Color.web("#ff6363"));
-//                } else if (coordValue.get(each2) > avg + 0.015 && coordValue.get(each2) <= avg + 0.05) {
-//                    square.setFill(Color.web("#ff9c9c"));
-//                } else if (coordValue.get(each2) > avg - 0.015 && coordValue.get(each2) <= avg + 0.015) {
-//                    square.setFill(Color.WHITE);
-//                } else if (coordValue.get(each2) > avg - 0.05 && coordValue.get(each2) <= avg - 0.015) {
-//                    square.setFill(Color.web("#aed9ff"));
-//                } else if (coordValue.get(each2) > avg - 0.07 && coordValue.get(each2) <= avg - 0.05) {
-//                    square.setFill(Color.web("#8bc9ff"));
-//                } else {
-//                    square.setFill(Color.web("#7babff"));
-//                }
-//                square.setOpacity(0.85);
-//                square.setTranslateX((each2.getX() + 5) * imageview.getLayoutBounds().getHeight() / 470);
-//                square.setTranslateY(each2.getY() * imageview.getLayoutBounds().getHeight() / 470 - (175.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
-//                imagegrid.add(square, 0, 0);
-//                allTiles.add(square);
-//            }
-//            if (searchvbox.isVisible()) {
-//                createThreadAndRun(currentSimpleSearch);
-//            } else {
-//                createThreadAndRun(currentAdvancedSearch);
-//            }
-
-    }
-
-//    private void plotHeat(JSONArray jsonArray) throws IOException {
-//        if (searchvbox.isVisible()) {
-//            setShotGrid(jsonArray);
-//        } else {
-//            setShotGridAdvanced(jsonArray);
-//        }
-//
-//        this.coordAverages = new LinkedHashMap();
-//        Coordinate coord;
-//        for (int x = -250; x < 251; x++) {
-//            for (int y = -52; y < 400; y++) {
-//                coord = new Coordinate(x, y);
-//                ArrayList info = new ArrayList();
-//                info.add(0.0);
-//                info.add(0.0);
-//                info.add(0.0);
-//                coordAverages.put(coord, info);
-//            }
-//        }
-//        Coordinate tempCoord;
-//        JSONObject eachShot;
-//        shotCounter = 0;
-//        for (int i = 0; i < jsonArray.length(); i++) {
-//            eachShot = jsonArray.getJSONObject(i);
-//            if (eachShot.getInt("y") >= 400) {
-//                continue;
-//            }
-//            shotCounter++;
-//            tempCoord = new Coordinate(eachShot.getInt("x"), eachShot.getInt("y"));
-//            coordAverages.get(tempCoord).set(1, coordAverages.get(tempCoord).get(1) + 1);
-//            if (eachShot.getInt("make") == 1) {
-//                coordAverages.get(tempCoord).set(0, coordAverages.get(tempCoord).get(0) + 1);
-//            }
-//        }
-//        for (Coordinate each : coordAverages.keySet()) {
-//            if (coordAverages.get(each).get(1) != 0) {
-//                coordAverages.get(each).set(2, coordAverages.get(each).get(0) * 1.0 / coordAverages.get(each).get(1) * 1.0);
-//            }
-//
-//        }
-//        coordValue = new ConcurrentHashMap();
-//        try {
-//            ultraFineHeatMapThreader();
-//        } catch (InterruptedException ex) {
-//            System.out.println("Error caught calculating heat map");
-//        }
-//        double weight = 0.5;
-//        int radius = 25;
-//        RadialGradient rg1 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
-//            new Stop(0, Color.web("#bc53f8")),
-//            new Stop(weight, Color.TRANSPARENT)});
-//        RadialGradient rg2 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
-//            new Stop(0, Color.web("#dd76ff")),
-//            new Stop(weight, Color.TRANSPARENT)});
-//        RadialGradient rg3 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
-//            new Stop(0, Color.web("#e696fa")),
-//            new Stop(weight, Color.TRANSPARENT)});
-//        RadialGradient rg4 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
-//            new Stop(0, Color.web("#c4b8ff")),
-//            new Stop(weight, Color.TRANSPARENT)});
-//        RadialGradient rg5 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
-//            new Stop(0, Color.web("#6bb2f8")),
-//            new Stop(weight, Color.TRANSPARENT)});
-//        RadialGradient rg6 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
-//            new Stop(0, Color.web("#62c8ff")),
-//            new Stop(weight, Color.TRANSPARENT)});
-//        RadialGradient rg7 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
-//            new Stop(0, Color.web("#90ebff")),
-//            new Stop(weight, Color.TRANSPARENT)});
-//        ArrayList<Circle> circles1 = new ArrayList();
-//        ArrayList<Circle> circles2 = new ArrayList();
-//        ArrayList<Circle> circles3 = new ArrayList();
-//        ArrayList<Circle> circles4 = new ArrayList();
-//        ArrayList<Circle> circles5 = new ArrayList();
-//        ArrayList<Circle> circles6 = new ArrayList();
-//        ArrayList<Circle> circles7 = new ArrayList();
-//        double maxValue = 0.0;
-//        for (Coordinate each : coordValue.keySet()) {
-//            if (coordValue.get(each) > maxValue) {
-//                maxValue = coordValue.get(each);
-//            }
-//        }
-//        if (maxValue != 0) {
-//            maxValue = maxValue * (500 * 1.0 / shotCounter);
-//            maxCutoff = 0.00004 * shotCounter / maxValue + 0.3065;
-//            diff = maxCutoff / 7;
-//            allHeatCircles = new LinkedList();
-//            for (Coordinate each : coordValue.keySet()) {
-//                double value = coordValue.get(each);
-//                if (value <= maxValue * (maxCutoff - (diff * 6))) {
-//                    Circle circle = new Circle(0);
-//                    allHeatCircles.add(circle);
-//                } else if (value > maxValue * (maxCutoff - (diff * 6)) && value <= maxValue * (maxCutoff - (diff * 5))) {
-//                    Circle circle = new Circle(radius, rg1);
-//                    setCircle(circle, each.getX(), each.getY());
-//                    circles1.add(circle);
-//                    allHeatCircles.add(circle);
-//                } else if (value > maxValue * (maxCutoff - (diff * 5)) && value <= maxValue * (maxCutoff - (diff * 4))) {
-//                    Circle circle = new Circle(radius, rg2);
-//                    setCircle(circle, each.getX(), each.getY());
-//                    circles2.add(circle);
-//                    allHeatCircles.add(circle);
-//                } else if (value > maxValue * (maxCutoff - (diff * 4)) && value <= maxValue * (maxCutoff - (diff * 3))) {
-//                    Circle circle = new Circle(radius, rg3);
-//                    setCircle(circle, each.getX(), each.getY());
-//                    circles3.add(circle);
-//                    allHeatCircles.add(circle);
-//                } else if (value > maxValue * (maxCutoff - (diff * 3)) && value <= maxValue * (maxCutoff - (diff * 2))) {
-//                    Circle circle = new Circle(radius, rg4);
-//                    setCircle(circle, each.getX(), each.getY());
-//                    circles4.add(circle);
-//                    allHeatCircles.add(circle);
-//                } else if (value > maxValue * (maxCutoff - (diff * 2)) && value <= maxValue * (maxCutoff - (diff * 1))) {
-//                    Circle circle = new Circle(radius, rg5);
-//                    setCircle(circle, each.getX(), each.getY());
-//                    circles5.add(circle);
-//                    allHeatCircles.add(circle);
-//                } else if (value > maxValue * (maxCutoff - (diff * 1)) && value <= maxValue * maxCutoff) {
-//                    Circle circle = new Circle(radius, rg6);
-//                    setCircle(circle, each.getX(), each.getY());
-//                    circles6.add(circle);
-//                    allHeatCircles.add(circle);
-//                } else {
-//                    Circle circle = new Circle(radius, rg7);
-//                    setCircle(circle, each.getX(), each.getY());
-//                    circles7.add(circle);
-//                    allHeatCircles.add(circle);
-//                }
-//            }
-//        }
-//        circles1.forEach(circle -> imagegrid.getChildren().add(circle));
-//        circles2.forEach(circle -> imagegrid.getChildren().add(circle));
-//        circles3.forEach(circle -> imagegrid.getChildren().add(circle));
-//        circles4.forEach(circle -> imagegrid.getChildren().add(circle));
-//        circles5.forEach(circle -> imagegrid.getChildren().add(circle));
-//        circles6.forEach(circle -> imagegrid.getChildren().add(circle));
-//        circles7.forEach(circle -> imagegrid.getChildren().add(circle));
-//        if (searchvbox.isVisible()) {
-//            createThreadAndRun(currentSimpleSearch);
-//        } else {
-//            createThreadAndRun(currentAdvancedSearch);
-//        }
-//    }
     private void idwGrid() {
         coordValue = new ConcurrentHashMap();
         double predictedValue = 0;
@@ -1146,6 +834,11 @@ public class SimpleController implements Initializable {
             VBox.setMargin(playercombo, new Insets(20, 0, 0, 0));
             VBox.setMargin(seasoncombo, new Insets(20, 0, 0, 0));
             VBox.setMargin(searchbutton, new Insets(20, 0, 0, 0));
+            loadingoverlay.setWidth(width);
+            loadingoverlay.setHeight(height);
+            progresslabel.setStyle("-fx-font: " + height * 16.0 / 470 + "px \"Arial Black\";");
+            progressindicator.setPrefHeight(height*70.0/470);
+            progressindicator.setPrefWidth(height*70.0/470);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -1379,7 +1072,7 @@ public class SimpleController implements Initializable {
     private void removeAllShotsFromView() {
         ArrayList<Node> toRemove = new ArrayList();
         for (Node each : imagegrid.getChildren()) {
-            if (!each.equals(gridbackground) && !each.equals(rect11) && !each.equals(rect15) && (each.getClass().equals(Rectangle.class) || each.getClass().equals(Circle.class) || each.getClass().equals(Line.class))) {
+            if (!each.equals(gridbackground) && !each.equals(rect11) && !each.equals(rect15) && !each.equals(loadingoverlay) && (each.getClass().equals(Rectangle.class) || each.getClass().equals(Circle.class) || each.getClass().equals(Line.class))) {
                 toRemove.add(each);
             }
         }
@@ -1389,38 +1082,6 @@ public class SimpleController implements Initializable {
     }
 
     private void traditional() {
-//        if (searchvbox.isVisible()) {
-//            currentSimpleSearch = Search.TRADITIONAL;
-//            try {
-//                this.previousYear = this.yearcombo.getValue().toString();
-//                this.previousPlayer = this.playercombo.getValue().toString();
-//                this.previousSeason = this.seasoncombo.getValue().toString();
-//                removeAllShotsFromView();
-////                plotTraditionalShots(getSimpleShotData());
-//            } catch (NullPointerException ex) {
-//                this.errorlabel.setText("Please try again");
-//                this.errorlabel.setVisible(true);
-//            } catch (IOException ex) {
-//                System.out.println("Exception caught plotting traditional shots");
-//            }
-//
-//        } else {
-//            currentAdvancedSearch = Search.TRADITIONAL;
-//            resetView();
-//            try {
-//                removeAllShotsFromView();
-////                plotTraditionalShots(createAdvancedJSONOutput(currentAdvancedSearch));
-//            } catch (SQLException | IOException ex) {
-//                ex.printStackTrace();
-//            } catch (NullPointerException ex) {
-//                this.errorlabeladvanced.setText("Please try again");
-//                this.errorlabeladvanced.setVisible(true);
-//            } catch (Exception ex) {
-//                this.errorlabeladvanced.setText("Please try again");
-//                this.errorlabeladvanced.setVisible(true);
-//            }
-//
-//        }
         if (searchvbox.isVisible()) {
             currentSimpleSearch = Search.TRADITIONAL;
             try {
@@ -1434,43 +1095,12 @@ public class SimpleController implements Initializable {
         } else {
             currentAdvancedSearch = Search.TRADITIONAL;
         }
-        
         tradService.reset();
         tradService.start();
+        startLoadingTransition();
     }
 
     private void grid() {
-//        resetView();
-//        if (searchvbox.isVisible()) {
-//            currentSimpleSearch = Search.GRID;
-//            try {
-//                this.previousYear = this.yearcombo.getValue().toString();
-//                this.previousPlayer = this.playercombo.getValue().toString();
-//                this.previousSeason = this.seasoncombo.getValue().toString();
-//                removeAllShotsFromView();
-//                plotGrid(getSimpleShotData());
-//            } catch (NullPointerException ex) {
-//                this.errorlabel.setText("Please try again");
-//                this.errorlabel.setVisible(true);
-//            } catch (IOException ex) {
-//                ex.printStackTrace();
-//            }
-//        } else {
-//            currentAdvancedSearch = Search.GRID;
-//            try {
-//                removeAllShotsFromView();
-//                plotGrid(createAdvancedJSONOutput(currentAdvancedSearch));
-//            } catch (NullPointerException ex) {
-//                this.errorlabeladvanced.setText("Please try again");
-//                this.errorlabeladvanced.setVisible(true);
-//            } catch (IOException ex) {
-//                ex.printStackTrace();
-//            } catch (Exception ex) {
-//                this.errorlabeladvanced.setText("Please try again");
-//                this.errorlabeladvanced.setVisible(true);
-//            }
-//
-//        }
         if (searchvbox.isVisible()) {
             currentSimpleSearch = Search.GRID;
             try {
@@ -1487,53 +1117,19 @@ public class SimpleController implements Initializable {
 
         gridService.reset();
         gridService.start();
-
+        startLoadingTransition();
     }
 
     private void heat() {
-//        if (searchvbox.isVisible()) {
-//            currentSimpleSearch = Search.HEAT;
-//            try {
-//                this.previousYear = this.yearcombo.getValue().toString();
-//                this.previousPlayer = this.playercombo.getValue().toString();
-//                this.previousSeason = this.seasoncombo.getValue().toString();
-//                removeAllShotsFromView();
-//                heatService.start();
-////                plotHeat(getSimpleShotData());
-//            } catch (NullPointerException ex) {
-//                this.errorlabel.setText("Please try again");
-//                this.errorlabel.setVisible(true);
-////            } catch (IOException ex) {
-////                System.out.println("Error caught plotting heatmap");
-//            }
-//        } else {
-//            this.currentAdvancedSearch = Search.HEAT;
-//            try {
-//                removeAllShotsFromView();
-//                heatService.start();
-////                plotHeat(createAdvancedJSONOutput(currentAdvancedSearch));
-//            } catch (NullPointerException ex) {
-//                this.errorlabeladvanced.setText("Please try again");
-//                this.errorlabeladvanced.setVisible(true);
-//            } catch (IOException ex) {
-//                System.out.println("Error caught doing heat search");
-//            } catch (Exception ex) {
-//                ex.printStackTrace();
-//            }
-//
-//        }
         if (searchvbox.isVisible()) {
             currentSimpleSearch = Search.HEAT;
             try {
                 this.previousYear = this.yearcombo.getValue().toString();
                 this.previousPlayer = this.playercombo.getValue().toString();
                 this.previousSeason = this.seasoncombo.getValue().toString();
-//                plotHeat(getSimpleShotData());
             } catch (NullPointerException ex) {
                 this.errorlabel.setText("Please try again");
                 this.errorlabel.setVisible(true);
-//            } catch (IOException ex) {
-//                System.out.println("Error caught plotting heatmap");
             }
         } else {
             this.currentAdvancedSearch = Search.HEAT;
@@ -1541,6 +1137,7 @@ public class SimpleController implements Initializable {
 
         heatService.reset();
         heatService.start();
+        startLoadingTransition();
     }
 
     private void setCircle(Circle circle, int x, int y) {
@@ -1632,18 +1229,7 @@ public class SimpleController implements Initializable {
         }
         zoneService.reset();
         zoneService.start();
-
-    }
-
-    private void plotZone(JSONArray jsonArray) throws IOException {
-
-        resizeZone();
-        if (searchvbox.isVisible()) {
-            setShotGrid(jsonArray);
-        } else {
-            setShotGridAdvanced(jsonArray);
-        }
-
+        startLoadingTransition();
     }
 
     private JSONArray getZoneAveragesData() throws IOException {
@@ -1843,6 +1429,7 @@ public class SimpleController implements Initializable {
         gridlegendsize.setVisible(false);
         heatlegend.setVisible(false);
         zonelegend.setVisible(false);
+        endLoadingTransition();
         for (Node each : allZoneFXML) {
             each.setVisible(false);
         }
@@ -2910,10 +2497,12 @@ public class SimpleController implements Initializable {
         } else {
             createThreadAndRun(currentAdvancedSearch);
         }
+        endLoadingTransition();
         enableButtons();
     }
 
     private ConcurrentHashMap<Coordinate, Double> serviceTaskMethodsHeat(boolean isSearchVboxVisible) throws IOException {
+        Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
         try {
             Coordinate coord;
             coordAverages = new LinkedHashMap();
@@ -2934,6 +2523,7 @@ public class SimpleController implements Initializable {
                 jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
             }
             lastJsonArray = jsonArray;
+        Platform.runLater(() -> progresslabel.setText("Generating Heat Map"));
             Coordinate tempCoord;
             JSONObject eachShot;
             for (int i = 0; i < jsonArray.length(); i++) {
@@ -3034,6 +2624,8 @@ public class SimpleController implements Initializable {
         });
         tradService.setOnFailed(s -> {
             System.out.println("Failed");
+            endLoadingTransition();
+            enableButtons();
         });
         gridService = new Service() {
             @Override
@@ -3051,6 +2643,8 @@ public class SimpleController implements Initializable {
         });
         gridService.setOnFailed(s -> {
             System.out.println("Failed");
+            endLoadingTransition();
+            enableButtons();
         });
         heatService = new Service() {
             @Override
@@ -3068,6 +2662,8 @@ public class SimpleController implements Initializable {
         });
         heatService.setOnFailed(s -> {
             System.out.println("Failed");
+            endLoadingTransition();
+            enableButtons();
         });
         zoneService = new Service() {
             @Override
@@ -3085,10 +2681,14 @@ public class SimpleController implements Initializable {
         });
         zoneService.setOnFailed(s -> {
             System.out.println("Failed");
+            endLoadingTransition();
+            enableButtons();
         });
     }
 
     private LinkedHashMap<Shot, Object> serviceTaskMethodsTrad(boolean isSearchVboxVisible) throws IOException, Exception {
+        Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
+
         JSONArray jsonArray;
         try {
             if (isSearchVboxVisible) {
@@ -3096,6 +2696,8 @@ public class SimpleController implements Initializable {
             } else {
                 jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
             }
+            Platform.runLater(() -> progresslabel.setText("Generating Traditional Shot Map"));
+
             lastJsonArray = jsonArray;
             allShots = new LinkedHashMap();
             Circle circle;
@@ -3166,10 +2768,13 @@ public class SimpleController implements Initializable {
         } else {
             createThreadAndRun(currentAdvancedSearch);
         }
+        endLoadingTransition();
+
         enableButtons();
     }
 
     private ConcurrentHashMap<Coordinate, Double> serviceTaskMethodsGrid(boolean isSearchVboxVisible) throws IOException, Exception {
+        Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
         JSONArray jsonArray;
         if (isSearchVboxVisible) {
             jsonArray = getSimpleShotData();
@@ -3177,6 +2782,7 @@ public class SimpleController implements Initializable {
             jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
         }
         lastJsonArray = jsonArray;
+        Platform.runLater(() -> progresslabel.setText("Generating Grid"));
         Coordinate coord;
         coordAverages = new LinkedHashMap();
         for (int j = -55; j < 400; j = j + (int) SQUARE_SIZE_ORIG) {
@@ -3271,7 +2877,6 @@ public class SimpleController implements Initializable {
     }
 
     private void plotGridAfterServiceSucceeds(JSONArray jsonArray) {
-
         resetView();
         removeAllShotsFromView();
         gridbackground.setVisible(true);
@@ -3323,16 +2928,20 @@ public class SimpleController implements Initializable {
         } else {
             createThreadAndRun(currentAdvancedSearch);
         }
+        endLoadingTransition();
         enableButtons();
+
     }
 
     private HashMap<Integer, Double> serviceTaskMethodsZone(boolean isSearchVboxVisible) throws IOException, Exception {
+        Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
         JSONArray jsonArray;
         if (isSearchVboxVisible) {
             jsonArray = getSimpleShotData();
         } else {
             jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
         }
+        Platform.runLater(() -> progresslabel.setText("Generating Zones"));
         lastJsonArray = jsonArray;
         allZones = new HashMap();
         Double[] doubles;
@@ -3543,6 +3152,8 @@ public class SimpleController implements Initializable {
         } else {
             createThreadAndRun(currentAdvancedSearch);
         }
+        endLoadingTransition();
+
         enableButtons();
     }
 
@@ -3562,5 +3173,18 @@ public class SimpleController implements Initializable {
         simplelayoutbutton.setOpacity(1);
         advancedlayoutbutton.setDisable(false);
         advancedlayoutbutton.setOpacity(1);
+    }
+
+    private void startLoadingTransition() {
+        loadingoverlay.toFront();
+        loadingoverlay.setVisible(true);
+        progressvbox.setVisible(true);
+        progressvbox.toFront();
+        progressindicator.setVisible(true);
+    }
+
+    private void endLoadingTransition() {
+        loadingoverlay.setVisible(false);
+        progressvbox.setVisible(false);
     }
 }
