@@ -851,7 +851,7 @@ public class SimpleController implements Initializable {
             progressindicator.setPrefHeight(height * 70.0 / 470);
             progressindicator.setPrefWidth(height * 70.0 / 470);
         } catch (Exception ex) {
-            ex.printStackTrace();
+
         }
     }
 
@@ -2441,12 +2441,6 @@ public class SimpleController implements Initializable {
         circles5.forEach(circle -> imagegrid.getChildren().add(circle));
         circles6.forEach(circle -> imagegrid.getChildren().add(circle));
         circles7.forEach(circle -> imagegrid.getChildren().add(circle));
-
-        if (searchvbox.isVisible()) {
-//            createThreadAndRun(currentSimpleSearch);
-        } else {
-//            createThreadAndRun(currentAdvancedSearch);
-        }
         endLoadingTransition();
         enableButtons();
         end = System.nanoTime();
@@ -2460,7 +2454,7 @@ public class SimpleController implements Initializable {
             ArrayList info = new ArrayList();
             info.add(0.0);
             info.add(0.0);
-            info.add(0.0);;
+            info.add(0.0);
             for (int x = -250; x < 251; x++) {
                 for (int y = -52; y < 400; y++) {
                     coordAverages.put(new Coordinate(x, y), new ArrayList(info));
@@ -2473,6 +2467,7 @@ public class SimpleController implements Initializable {
                 jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
             }
             lastJsonArray = jsonArray;
+            shotCounter = 0;
             Platform.runLater(() -> progresslabel.setText("Generating Heat Map"));
             Coordinate tempCoord;
             JSONObject eachShot;
@@ -2495,8 +2490,10 @@ public class SimpleController implements Initializable {
             }
             coordValue = new ConcurrentHashMap();
             allUltraFineHeatThreads = new ArrayList();
-            int maxThreads = 6;
+            int maxThreads = 5;
             Thread thread;
+            final ArrayList<Coordinate> coordsList = new ArrayList(300000);
+            coordsList.addAll(coordAverages.keySet());
             for (int i = 0; i < maxThreads; i++) {
                 final int iFinal = i;
                 final int iMaxFinal = maxThreads;
@@ -2506,13 +2503,21 @@ public class SimpleController implements Initializable {
                     int p = 2;
                     int eachCounter = 0;
                     int iFinalThread = iFinal;
-                    for (Coordinate each : coordAverages.keySet()) {
-                        if (each.getY() >= (452 / iMaxFinal) * iFinalThread - 52 && each.getY() < (452 / iMaxFinal) * (iFinalThread + 1) - 52
-                                && each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0) {
+                    int maxSurroundingCoords = (int) Math.pow(MAX_DISTANCE_BETWEEN_NODES_HEAT * 2, 2);
+                    int surroundingCounter;
+//                    for (Coordinate each : coordAverages.keySet()) {
+                    for (Coordinate each : coordsList) {
+                        if (each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0 && each.getY() >= (452 / iMaxFinal) * iFinalThread - 52
+                                && each.getY() < (452 / iMaxFinal) * (iFinalThread + 1) - 52) {
                             aSum = 0;
                             bSum = 0;
-                            for (Coordinate each2 : coordAverages.keySet()) {
-                                if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
+                            surroundingCounter = 0;
+//                            for (Coordinate each2 : coordAverages.keySet()) {
+                            for (Coordinate each2 : coordsList) {
+                                if (surroundingCounter >= maxSurroundingCoords) {
+                                    break;
+                                } else if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
+                                    surroundingCounter++;
                                     aSum = aSum + ((coordAverages.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
                                     bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
                                     if (coordAverages.get(each2).get(1).intValue() != 0) {
@@ -2709,11 +2714,6 @@ public class SimpleController implements Initializable {
         } else {
             setShotGridAdvanced(jsonArray);
         }
-        if (searchvbox.isVisible()) {
-//            createThreadAndRun(currentSimpleSearch);
-        } else {
-//            createThreadAndRun(currentAdvancedSearch);
-        }
         endLoadingTransition();
 
         enableButtons();
@@ -2870,12 +2870,6 @@ public class SimpleController implements Initializable {
             setShotGridAdvanced(jsonArray);
         }
         allTiles.forEach(square -> imagegrid.add(square, 0, 0));
-
-        if (searchvbox.isVisible()) {
-//            createThreadAndRun(currentSimpleSearch);
-        } else {
-//            createThreadAndRun(currentAdvancedSearch);
-        }
         endLoadingTransition();
         enableButtons();
         end = System.nanoTime();
@@ -3099,11 +3093,6 @@ public class SimpleController implements Initializable {
         }
         zonelegend.setVisible(true);
         zonelegend.toFront();
-        if (searchvbox.isVisible()) {
-//            createThreadAndRun(currentSimpleSearch);
-        } else {
-//            createThreadAndRun(currentAdvancedSearch);
-        }
         endLoadingTransition();
         enableButtons();
     }
@@ -3229,30 +3218,6 @@ public class SimpleController implements Initializable {
         }
     }
 
-    private void createResizeThread() {
-        Thread thread = new Thread(() -> {
-            double height;
-            double tempHeight;
-            height = imageview.getLayoutBounds().getHeight();
-            while (1 == 1) {
-                try {
-                    tempHeight = imageview.getLayoutBounds().getHeight();
-                    if (tempHeight != height) {
-                        System.out.println("Resizing");
-                        resize();
-                        height = tempHeight;
-                    } else {
-                        System.out.println("Not Resizing");
-                    }
-                    Thread.sleep(250);
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
-        thread.start();
-    }
-
     private void createAlwaysRunningResizer() {
         Task task = new Task<Void>() {
             @Override
@@ -3261,7 +3226,6 @@ public class SimpleController implements Initializable {
                     Platform.runLater(() -> {
                         resize();
                     });
-                    System.out.println("Resizing");
                     Thread.sleep(100);
                 }
             }
