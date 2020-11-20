@@ -150,8 +150,8 @@ public class SimpleController implements Initializable {
     private double font = 0.0;
     private double fontGrid = 0.0;
     private LinkedList<Button> viewButtons = new LinkedList();
-    private Search currentSimpleSearch = Search.NONE;
-    private Search currentAdvancedSearch = Search.NONE;
+    private Search currentSimpleSearch = Search.TRADITIONAL;
+    private Search currentAdvancedSearch = Search.TRADITIONAL;
     private ArrayList<Label> simpleFGLabels = new ArrayList();
     private ArrayList<Label> advancedFGLabels = new ArrayList();
     private JSONArray lastJsonArray;
@@ -708,116 +708,125 @@ public class SimpleController implements Initializable {
         double width = imageview.localToParent(imageview.getBoundsInLocal()).getWidth();
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         fontGrid = new BigDecimal(STAT_GRID_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-        setViewTypeButtonStyle(10);
         try {
-            if (searchvbox.isVisible()) {
-                switch (currentSimpleSearch) {
-                    case TRADITIONAL:
-                        resizeShots();
-                        break;
-                    case GRID:
-                        resizeGrid();
-                        break;
-                    case HEAT:
-                        resizeHeat();
-                        break;
-                    case ZONE:
-                        resizeZone();
-                        break;
-                    default:
-                        traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent; ");
-
-                }
-                introlabel.setStyle("-fx-font: " + font * 1.5 + "px \"Serif\";");
-                yearcombo.setStyle("-fx-font: " + font + "px \"Serif\";");
-                playercombo.setStyle("-fx-font: " + font + "px \"Serif\";");
-                seasoncombo.setStyle("-fx-font: " + font + "px \"Serif\";");
-                searchbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
-                fg.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
-                fgfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                fgperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                twopoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
-                twopointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                twopointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                threepoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
-                threepointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                threepointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-//                createThreadAndRun(currentSimpleSearch);
-
-            } else {
-                switch (currentAdvancedSearch) {
-                    case TRADITIONAL:
-                        resizeShots();
-                        break;
-                    case GRID:
-                        resizeGrid();
-                        break;
-                    case HEAT:
-                        resizeHeat();
-                        break;
-                    case ZONE:
-                        resizeZone();
-                        break;
-                    default:
-                        traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent; ");
-
-                }
-                fgadv.setStyle("-fx-font: " + font * 2 + "px \"Tahoma Bold\";");
-                fgfracadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                fgpercadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                twopointadv.setStyle("-fx-font: " + font * 2 + "px \"Tahoma Bold\";");
-                twopointfracadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                twopointpercadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                threepointadv.setStyle("-fx-font: " + font * 2 + "px \"Tahoma Bold\";");
-                threepointfracadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                threepointpercadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                advancedintrolabel.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                seasonslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                seasonsbegincombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                seasondash.setStyle("-fx-font: " + font * 1.5 + "px \"Arial\";");
-                seasonsendcombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                shotdistancelabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                distancebegincombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                distancedash.setStyle("-fx-font: " + font * 1.5 + "px \"Arial\";");
-                distanceendcombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                playerslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                playercomboadvanced.setStyle("-fx-font: " + font + "px \"Arial\";");
-                seasontypeslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                seasontypescomboadvanced.setStyle("-fx-font: " + font + "px \"Arial\";");
-                shotsuccesslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                shotsuccesscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                shotvaluelabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                shotvaluecombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                shottypeslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                shottypescombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                teamslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                teamscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                hometeamslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                hometeamscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                awayteamslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                awayteamscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                courtareaslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                courtareascombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                courtsideslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                courtsidescombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                searchscrollpane.setMinHeight(advancedvbox.getLayoutBounds().getHeight() * 0.4);
-                searchscrollpane.setMaxHeight(advancedvbox.getLayoutBounds().getHeight() * 0.4);
-                HBox hbox;
-                Label label;
-                for (Node each : selectionvbox.getChildren()) {
-                    try {
-                        hbox = (HBox) each;
-                        for (Node eachInner : hbox.getChildren()) {
-                            if (eachInner.getClass().equals(Label.class)) {
-                                label = (Label) eachInner;
-                                label.setStyle("-fx-font: " + font * 0.85 + "px \"Arial\";");
-                            }
-                        }
-                    } catch (Exception ex) {
+            if (!loadingoverlay.isVisible()) {
+                if (searchvbox.isVisible()) {
+                    switch (currentSimpleSearch) {
+                        case TRADITIONAL:
+                            resizeShots();
+                            setViewTypeButtonStyle(0);
+                            break;
+                        case GRID:
+                            resizeGrid();
+                            setViewTypeButtonStyle(1);
+                            break;
+                        case HEAT:
+                            resizeHeat();
+                            setViewTypeButtonStyle(2);
+                            break;
+                        case ZONE:
+                            resizeZone();
+                            setViewTypeButtonStyle(3);
+                            break;
+                        default:
+                            traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent; ");
 
                     }
-                }
+                    introlabel.setStyle("-fx-font: " + font * 1.5 + "px \"Serif\";");
+                    yearcombo.setStyle("-fx-font: " + font + "px \"Serif\";");
+                    playercombo.setStyle("-fx-font: " + font + "px \"Serif\";");
+                    seasoncombo.setStyle("-fx-font: " + font + "px \"Serif\";");
+                    searchbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
+                    fg.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
+                    fgfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                    fgperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                    twopoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
+                    twopointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                    twopointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                    threepoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
+                    threepointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                    threepointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+//                createThreadAndRun(currentSimpleSearch);
+
+                } else {
+                    switch (currentAdvancedSearch) {
+                        case TRADITIONAL:
+                            resizeShots();
+                            setViewTypeButtonStyle(0);
+                            break;
+                        case GRID:
+                            resizeGrid();
+                            setViewTypeButtonStyle(1);
+                            break;
+                        case HEAT:
+                            resizeHeat();
+                            setViewTypeButtonStyle(2);
+                            break;
+                        case ZONE:
+                            resizeZone();
+                            setViewTypeButtonStyle(3);
+                            break;
+                        default:
+                            traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent; ");
+
+                    }
+                    fgadv.setStyle("-fx-font: " + font * 2 + "px \"Tahoma Bold\";");
+                    fgfracadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
+                    fgpercadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
+                    twopointadv.setStyle("-fx-font: " + font * 2 + "px \"Tahoma Bold\";");
+                    twopointfracadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
+                    twopointpercadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
+                    threepointadv.setStyle("-fx-font: " + font * 2 + "px \"Tahoma Bold\";");
+                    threepointfracadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
+                    threepointpercadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
+                    advancedintrolabel.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                    seasonslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    seasonsbegincombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    seasondash.setStyle("-fx-font: " + font * 1.5 + "px \"Arial\";");
+                    seasonsendcombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    shotdistancelabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    distancebegincombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    distancedash.setStyle("-fx-font: " + font * 1.5 + "px \"Arial\";");
+                    distanceendcombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    playerslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    playercomboadvanced.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    seasontypeslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    seasontypescomboadvanced.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    shotsuccesslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    shotsuccesscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    shotvaluelabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    shotvaluecombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    shottypeslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    shottypescombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    teamslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    teamscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    hometeamslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    hometeamscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    awayteamslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    awayteamscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    courtareaslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    courtareascombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    courtsideslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    courtsidescombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                    searchscrollpane.setMinHeight(advancedvbox.getLayoutBounds().getHeight() * 0.4);
+                    searchscrollpane.setMaxHeight(advancedvbox.getLayoutBounds().getHeight() * 0.4);
+                    HBox hbox;
+                    Label label;
+                    for (Node each : selectionvbox.getChildren()) {
+                        try {
+                            hbox = (HBox) each;
+                            for (Node eachInner : hbox.getChildren()) {
+                                if (eachInner.getClass().equals(Label.class)) {
+                                    label = (Label) eachInner;
+                                    label.setStyle("-fx-font: " + font * 0.85 + "px \"Arial\";");
+                                }
+                            }
+                        } catch (Exception ex) {
+
+                        }
+                    }
 //                createThreadAndRun(currentAdvancedSearch);
+                }
             }
             mask.setWidth(width);
             mask.setHeight(height);
@@ -2174,8 +2183,12 @@ public class SimpleController implements Initializable {
 
     private void setViewTypeButtonStyle(int selector) {
         for (int i = 0; i < viewButtons.size(); i++) {
-            if (i == selector) {
+            if (i == selector && viewButtons.get(i).isHover()) {
+                viewButtons.get(i).setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: true;");
+            } else if (i == selector && !viewButtons.get(i).isHover()) {
                 viewButtons.get(i).setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+            } else if (i != selector && viewButtons.get(i).isHover()) {
+                viewButtons.get(i).setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: true;");
             } else {
                 viewButtons.get(i).setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
             }
