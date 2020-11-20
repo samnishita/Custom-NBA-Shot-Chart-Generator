@@ -104,7 +104,7 @@ public class SimpleController implements Initializable {
     private ResourceBundle reader = null;
     private double squareSize = 10.0;
     private final double SQUARE_SIZE_ORIG = 10.0;
-    private LinkedHashMap<Coordinate, ArrayList<Double>> coordAverages;
+    private HashMap<Coordinate, ArrayList<Double>> coordAverages;
     private int maxShotsPerMaxSquare = 0;
     private ConcurrentHashMap<Coordinate, Double> coordValue;
     private final int OFFSET = 10;
@@ -159,6 +159,8 @@ public class SimpleController implements Initializable {
     private Service gridService;
     private Service heatService;
     private Service zoneService;
+    private long start;
+    private long end;
 
     //General Features
     @FXML
@@ -282,6 +284,13 @@ public class SimpleController implements Initializable {
         } catch (IOException ex) {
             System.out.println("Error caught in creation of nameHash");
         }
+        try {
+            Thread warmupThread = new Thread(() -> warmupHeat());
+            warmupThread.start();
+            System.out.println("Started Warmup");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         yearcombo.setItems(FXCollections.observableArrayList(makeYears()));
         this.yearcombo.setValue("2019-20");
         this.playercombo.setValue("Aaron Gordon");
@@ -337,6 +346,7 @@ public class SimpleController implements Initializable {
             simpleFGLabels.forEach(each -> each.setText("--"));
             imageview.setImage(new Image("/images/transparent.png"));
             changeButtonStyles();
+            allShots.clear();
         });
         this.advancedlayoutbutton.setOnMouseClicked(t -> {
             try {
@@ -353,6 +363,7 @@ public class SimpleController implements Initializable {
             advancedFGLabels.forEach(each -> each.setText("--"));
             imageview.setImage(new Image("/images/transparent.png"));
             changeButtonStyles();
+            allShots.clear();
         });
         this.searchbuttonadvanced.setOnMouseClicked(t -> {
             if (checkForEmptyAdvancedSearch()) {
@@ -362,7 +373,7 @@ public class SimpleController implements Initializable {
                 this.errorlabeladvanced.setVisible(true);
             }
         });
-
+        createAlwaysRunningResizer();
     }
 
     public BorderPane getBP() {
@@ -399,19 +410,19 @@ public class SimpleController implements Initializable {
     }
 
     private void resizeShots() {
-        font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-        setViewTypeButtonStyle(0);
-        double height = imageview.localToParent(imageview.getBoundsInLocal()).getHeight();
-        double scaledLineThickness = SHOT_LINE_THICKNESS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue();
-        double scaledLineLength = SHOT_MISS_START_END.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue();
-        double minX = imageview.localToParent(imageview.getBoundsInLocal()).getMinX();
-        double minY = imageview.localToParent(imageview.getBoundsInLocal()).getMinY();
-        double width = imageview.localToParent(imageview.getBoundsInLocal()).getWidth();
-        MissedShotIcon msi;
-        Circle circle;
-        Line line1;
-        Line line2;
         if (!allShots.keySet().isEmpty()) {
+            font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
+            setViewTypeButtonStyle(0);
+            double height = imageview.localToParent(imageview.getBoundsInLocal()).getHeight();
+            double scaledLineThickness = SHOT_LINE_THICKNESS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue();
+            double scaledLineLength = SHOT_MISS_START_END.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue();
+            double minX = imageview.localToParent(imageview.getBoundsInLocal()).getMinX();
+            double minY = imageview.localToParent(imageview.getBoundsInLocal()).getMinY();
+            double width = imageview.localToParent(imageview.getBoundsInLocal()).getWidth();
+            MissedShotIcon msi;
+            Circle circle;
+            Line line1;
+            Line line2;
             for (Shot each : allShots.keySet()) {
                 if (each.getMake() == 1) {
                     circle = (Circle) allShots.get(each);
@@ -483,13 +494,13 @@ public class SimpleController implements Initializable {
         JSONArray jsonArray = getInitAllPlayersData();
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject eachPlayer = jsonArray.getJSONObject(i);
-            this.activePlayers.put(eachPlayer.getInt("id"), eachPlayer.getString("firstname") + " " + eachPlayer.getString("lastname"));
+            this.activePlayers.put(eachPlayer.getInt("id"), (eachPlayer.getString("firstname") + " " + eachPlayer.getString("lastname")).trim());
         }
         HashMap<String, String> names = new HashMap();
         ArrayList<String> fixedNames = new ArrayList();
         for (int each : this.activePlayers.keySet()) {
-            names.put(activePlayers.get(each).replaceAll("[^A-Za-z0-9]", "").toLowerCase(), activePlayers.get(each));
-            fixedNames.add(activePlayers.get(each).replaceAll("[^A-Za-z0-9]", "").toLowerCase());
+            names.put(activePlayers.get(each).replaceAll("[^A-Za-z0-9]", "").toLowerCase().trim(), activePlayers.get(each));
+            fixedNames.add(activePlayers.get(each).replaceAll("[^A-Za-z0-9]", "").toLowerCase().trim());
         }
         Collections.sort(fixedNames);
         LinkedList<String> realNames = new LinkedList();
@@ -731,7 +742,7 @@ public class SimpleController implements Initializable {
                 threepoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
                 threepointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
                 threepointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                createThreadAndRun(currentSimpleSearch);
+//                createThreadAndRun(currentSimpleSearch);
 
             } else {
                 switch (currentAdvancedSearch) {
@@ -806,7 +817,7 @@ public class SimpleController implements Initializable {
 
                     }
                 }
-                createThreadAndRun(currentAdvancedSearch);
+//                createThreadAndRun(currentAdvancedSearch);
             }
             mask.setWidth(width);
             mask.setHeight(height);
@@ -837,8 +848,8 @@ public class SimpleController implements Initializable {
             loadingoverlay.setWidth(width);
             loadingoverlay.setHeight(height);
             progresslabel.setStyle("-fx-font: " + height * 16.0 / 470 + "px \"Arial Black\";");
-            progressindicator.setPrefHeight(height*70.0/470);
-            progressindicator.setPrefWidth(height*70.0/470);
+            progressindicator.setPrefHeight(height * 70.0 / 470);
+            progressindicator.setPrefWidth(height * 70.0 / 470);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -1497,7 +1508,8 @@ public class SimpleController implements Initializable {
 
     private void threadRunner(Search search) {
         try {
-            for (int i = 0; i < 2; i++) {
+
+            for (int i = 0; i < 3; i++) {
                 try {
                     Thread.sleep(300);
                     switch (search) {
@@ -1521,7 +1533,6 @@ public class SimpleController implements Initializable {
             Thread.currentThread().interrupt();
         } catch (Exception ex) {
             Thread.currentThread().interrupt();
-            ex.printStackTrace();
             System.out.println("Error caught running resize threads");
         }
     }
@@ -1567,7 +1578,7 @@ public class SimpleController implements Initializable {
             });
             allUltraFineHeatThreads.add(thread);
         }
-        long start = System.nanoTime();
+//        long start = System.nanoTime();
         allUltraFineHeatThreads.forEach(eachThread -> eachThread.start());
         boolean done = false;
         while (!done) {
@@ -1582,8 +1593,8 @@ public class SimpleController implements Initializable {
             }
 
         }
-        long end = System.nanoTime();
-        System.out.println("ultraFineThreader: " + (end - start) * 1.0 / 1000000000 + " seconds");
+//        long end = System.nanoTime();
+//        System.out.println("ultraFineThreader: " + (end - start) * 1.0 / 1000000000 + " seconds");
 
     }
 
@@ -2264,6 +2275,8 @@ public class SimpleController implements Initializable {
             searchbuttonadvanced.setDisable(true);
             searchbuttonadvanced.setOpacity(0.5);
         }
+        start = System.nanoTime();
+
         switch (tempSearch) {
             case TRADITIONAL:
                 traditional();
@@ -2282,9 +2295,6 @@ public class SimpleController implements Initializable {
                 break;
         }
 
-//            Platform.runLater(() -> {
-//
-//            });
     }
 
     private void changeButtonStyles() {
@@ -2311,66 +2321,6 @@ public class SimpleController implements Initializable {
                 setViewTypeButtonStyle(10);
                 break;
         }
-    }
-
-    private ConcurrentHashMap<Coordinate, Double> ultraFineHeatMapThreaderTask(LinkedHashMap<Coordinate, ArrayList<Double>> coordAveragesTemp, int offsetHeatTemp, int maxDist) throws InterruptedException {
-        ConcurrentHashMap<Coordinate, Double> coordValueTemp = new ConcurrentHashMap();
-        ArrayList<Thread> allUltraFineHeatThreadsTask = new ArrayList();
-        int maxThreads = 6;
-        Thread thread;
-        for (int i = 0; i < maxThreads; i++) {
-            final int iFinal = i;
-            final int iMaxFinal = maxThreads;
-            thread = new Thread(() -> {
-                double aSum = 0;
-                double bSum = 0;
-                int p = 2;
-                int eachCounter = 0;
-                int iFinalThread = iFinal;
-                for (Coordinate each : coordAveragesTemp.keySet()) {
-                    if (each.getY() >= (452 / iMaxFinal) * iFinalThread - 52 && each.getY() < (452 / iMaxFinal) * (iFinalThread + 1) - 52
-                            && each.getX() % offsetHeatTemp == 0 && each.getY() % offsetHeatTemp == 0) {
-                        aSum = 0;
-                        bSum = 0;
-                        for (Coordinate each2 : coordAveragesTemp.keySet()) {
-                            if (!each.equals(each2) && getDistance(each, each2) < maxDist) {
-                                aSum = aSum + ((coordAveragesTemp.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
-                                bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
-                                if (coordAveragesTemp.get(each2).get(1).intValue() != 0) {
-                                    eachCounter++;
-                                }
-                            }
-
-                        }
-                        if (eachCounter > 1) {
-                            coordValueTemp.put(each, aSum / bSum);
-                        } else {
-                            coordValueTemp.put(each, 0.0);
-                        }
-                    }
-
-                }
-
-            });
-            allUltraFineHeatThreadsTask.add(thread);
-        }
-        long start = System.nanoTime();
-        allUltraFineHeatThreadsTask.forEach(eachThread -> eachThread.start());
-        boolean done = false;
-        while (!done) {
-            try {
-                for (Thread eachThread : allUltraFineHeatThreadsTask) {
-                    eachThread.join();
-                }
-                done = true;
-            } catch (InterruptedException ex) {
-
-            }
-
-        }
-        long end = System.nanoTime();
-        System.out.println("ultraFineThreader: " + (end - start) * 1.0 / 1000000000 + " seconds");
-        return coordValueTemp;
     }
 
     private void plotHeatAfterServiceSucceeds(JSONArray jsonArray) {
@@ -2493,27 +2443,27 @@ public class SimpleController implements Initializable {
         circles7.forEach(circle -> imagegrid.getChildren().add(circle));
 
         if (searchvbox.isVisible()) {
-            createThreadAndRun(currentSimpleSearch);
+//            createThreadAndRun(currentSimpleSearch);
         } else {
-            createThreadAndRun(currentAdvancedSearch);
+//            createThreadAndRun(currentAdvancedSearch);
         }
         endLoadingTransition();
         enableButtons();
+        end = System.nanoTime();
+        System.out.println("HEAT: " + (end - start) * 1.0 / 1000000000 + " seconds");
     }
 
     private ConcurrentHashMap<Coordinate, Double> serviceTaskMethodsHeat(boolean isSearchVboxVisible) throws IOException {
         Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
         try {
-            Coordinate coord;
-            coordAverages = new LinkedHashMap();
+            coordAverages = new HashMap();
+            ArrayList info = new ArrayList();
+            info.add(0.0);
+            info.add(0.0);
+            info.add(0.0);;
             for (int x = -250; x < 251; x++) {
                 for (int y = -52; y < 400; y++) {
-                    coord = new Coordinate(x, y);
-                    ArrayList info = new ArrayList();
-                    info.add(0.0);
-                    info.add(0.0);
-                    info.add(0.0);
-                    coordAverages.put(coord, info);
+                    coordAverages.put(new Coordinate(x, y), new ArrayList(info));
                 }
             }
             JSONArray jsonArray;
@@ -2523,7 +2473,7 @@ public class SimpleController implements Initializable {
                 jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
             }
             lastJsonArray = jsonArray;
-        Platform.runLater(() -> progresslabel.setText("Generating Heat Map"));
+            Platform.runLater(() -> progresslabel.setText("Generating Heat Map"));
             Coordinate tempCoord;
             JSONObject eachShot;
             for (int i = 0; i < jsonArray.length(); i++) {
@@ -2542,7 +2492,6 @@ public class SimpleController implements Initializable {
                 if (coordAverages.get(each).get(1) != 0) {
                     coordAverages.get(each).set(2, coordAverages.get(each).get(0) * 1.0 / coordAverages.get(each).get(1) * 1.0);
                 }
-
             }
             coordValue = new ConcurrentHashMap();
             allUltraFineHeatThreads = new ArrayList();
@@ -2584,7 +2533,6 @@ public class SimpleController implements Initializable {
                 });
                 allUltraFineHeatThreads.add(thread);
             }
-            long start = System.nanoTime();
             allUltraFineHeatThreads.forEach(eachThread -> eachThread.start());
             boolean done = false;
             while (!done) {
@@ -2598,8 +2546,6 @@ public class SimpleController implements Initializable {
                 }
 
             }
-            long end = System.nanoTime();
-            System.out.println("ultraFineThreader: " + (end - start) * 1.0 / 1000000000 + " seconds");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -2764,13 +2710,15 @@ public class SimpleController implements Initializable {
             setShotGridAdvanced(jsonArray);
         }
         if (searchvbox.isVisible()) {
-            createThreadAndRun(currentSimpleSearch);
+//            createThreadAndRun(currentSimpleSearch);
         } else {
-            createThreadAndRun(currentAdvancedSearch);
+//            createThreadAndRun(currentAdvancedSearch);
         }
         endLoadingTransition();
 
         enableButtons();
+        end = System.nanoTime();
+        System.out.println("TRADITIONAL: " + (end - start) * 1.0 / 1000000000 + " seconds");
     }
 
     private ConcurrentHashMap<Coordinate, Double> serviceTaskMethodsGrid(boolean isSearchVboxVisible) throws IOException, Exception {
@@ -2924,13 +2872,14 @@ public class SimpleController implements Initializable {
         allTiles.forEach(square -> imagegrid.add(square, 0, 0));
 
         if (searchvbox.isVisible()) {
-            createThreadAndRun(currentSimpleSearch);
+//            createThreadAndRun(currentSimpleSearch);
         } else {
-            createThreadAndRun(currentAdvancedSearch);
+//            createThreadAndRun(currentAdvancedSearch);
         }
         endLoadingTransition();
         enableButtons();
-
+        end = System.nanoTime();
+        System.out.println("GRID: " + (end - start) * 1.0 / 1000000000 + " seconds");
     }
 
     private HashMap<Integer, Double> serviceTaskMethodsZone(boolean isSearchVboxVisible) throws IOException, Exception {
@@ -3091,6 +3040,9 @@ public class SimpleController implements Initializable {
             allZones.get(each)[2] = allZones.get(each)[0] * 1.0 / allZones.get(each)[1];
             playerZones.put(each, allZones.get(each)[2]);
         }
+        end = System.nanoTime();
+        System.out.println("ZONE: " + (end - start) * 1.0 / 1000000000 + " seconds");
+
         return playerZones;
     }
 
@@ -3148,12 +3100,11 @@ public class SimpleController implements Initializable {
         zonelegend.setVisible(true);
         zonelegend.toFront();
         if (searchvbox.isVisible()) {
-            createThreadAndRun(currentSimpleSearch);
+//            createThreadAndRun(currentSimpleSearch);
         } else {
-            createThreadAndRun(currentAdvancedSearch);
+//            createThreadAndRun(currentAdvancedSearch);
         }
         endLoadingTransition();
-
         enableButtons();
     }
 
@@ -3186,5 +3137,137 @@ public class SimpleController implements Initializable {
     private void endLoadingTransition() {
         loadingoverlay.setVisible(false);
         progressvbox.setVisible(false);
+    }
+
+    private void warmupHeat() {
+        Coordinate coord;
+        HashMap<Coordinate, ArrayList<Double>> coordAveragesTemp = new HashMap();
+        for (int x = -250; x < 251; x++) {
+            for (int y = -52; y < 400; y++) {
+                coord = new Coordinate(x, y);
+                ArrayList info = new ArrayList();
+                info.add(0.0);
+                info.add(0.0);
+                info.add(0.0);
+                coordAveragesTemp.put(coord, info);
+            }
+        }
+        JSONObject jsonObjOut = new JSONObject();
+        jsonObjOut.put("selector", "simpleheat");
+        jsonObjOut.put("year", "2019-20");
+        jsonObjOut.put("playername", nameHash.get("Aaron Gordon"));
+        jsonObjOut.put("seasontype", "Regular Season");
+        try {
+            Main.getPrintWriterOut().println(jsonObjOut.toString());
+            JSONArray jsonArray = new JSONArray(Main.getServerResponse().readLine());
+
+            Coordinate tempCoord;
+            JSONObject eachShot;
+            for (int i = 0; i < jsonArray.length(); i++) {
+                eachShot = jsonArray.getJSONObject(i);
+                if (eachShot.getInt("y") >= 400) {
+                    continue;
+                }
+                tempCoord = new Coordinate(eachShot.getInt("x"), eachShot.getInt("y"));
+                coordAveragesTemp.get(tempCoord).set(1, coordAveragesTemp.get(tempCoord).get(1) + 1);
+                if (eachShot.getInt("make") == 1) {
+                    coordAveragesTemp.get(tempCoord).set(0, coordAveragesTemp.get(tempCoord).get(0) + 1);
+                }
+            }
+            for (Coordinate each : coordAveragesTemp.keySet()) {
+                if (coordAveragesTemp.get(each).get(1) != 0) {
+                    coordAveragesTemp.get(each).set(2, coordAveragesTemp.get(each).get(0) * 1.0 / coordAveragesTemp.get(each).get(1) * 1.0);
+                }
+
+            }
+            int maxThreads = 4;
+            ArrayList<Thread> threads;
+            for (int iterations = 0; iterations < 1; iterations++) {
+                threads = new ArrayList();
+                Thread thread;
+                for (int i = 0; i < maxThreads; i++) {
+                    final int iFinal = i;
+                    final int iMaxFinal = maxThreads;
+                    thread = new Thread(() -> {
+                        double aSum = 0;
+                        double bSum = 0;
+                        int p = 2;
+                        int iFinalThread = iFinal;
+                        for (Coordinate each : coordAveragesTemp.keySet()) {
+                            if (each.getY() >= (452 / iMaxFinal) * iFinalThread - 52 && each.getY() < (452 / iMaxFinal) * (iFinalThread + 1) - 52
+                                    && each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0) {
+                                aSum = 0;
+                                bSum = 0;
+                                for (Coordinate each2 : coordAveragesTemp.keySet()) {
+                                    if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
+                                        aSum = aSum + ((coordAveragesTemp.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
+                                        bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    threads.add(thread);
+                }
+                threads.forEach(eachThread -> eachThread.start());
+                System.out.println("Threads Running");
+                boolean done = false;
+                while (!done) {
+                    try {
+                        for (Thread eachThread : threads) {
+                            eachThread.join();
+                        }
+                        done = true;
+                    } catch (InterruptedException ex) {
+
+                    }
+                }
+                System.out.println("Threads Finished");
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void createResizeThread() {
+        Thread thread = new Thread(() -> {
+            double height;
+            double tempHeight;
+            height = imageview.getLayoutBounds().getHeight();
+            while (1 == 1) {
+                try {
+                    tempHeight = imageview.getLayoutBounds().getHeight();
+                    if (tempHeight != height) {
+                        System.out.println("Resizing");
+                        resize();
+                        height = tempHeight;
+                    } else {
+                        System.out.println("Not Resizing");
+                    }
+                    Thread.sleep(250);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        thread.start();
+    }
+
+    private void createAlwaysRunningResizer() {
+        Task task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                while (true) {
+                    Platform.runLater(() -> {
+                        resize();
+                    });
+                    System.out.println("Resizing");
+                    Thread.sleep(100);
+                }
+            }
+        };
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
     }
 }
