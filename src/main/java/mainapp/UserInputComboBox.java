@@ -52,7 +52,6 @@ public class UserInputComboBox {
         }
         this.selection = selection;
         setOnAction();
-
     }
 
     private void searchForFirstInstance(String beginsWith) {
@@ -79,8 +78,9 @@ public class UserInputComboBox {
         });
         this.combobox.setOnMouseClicked((Event tIn) -> {
             System.out.println(this.combobox.getId() + " Clicked");
-//            ((ComboBoxListViewSkin) this.combobox.getSkin()).getListView().setOnMouseClicked((t) -> {
-            ((ComboBoxListViewSkin) this.combobox.getSkin()).getPopupContent().setOnMouseClicked((t) -> {
+            lv = ((ComboBoxListViewSkin) this.combobox.getSkin()).getListView();
+            lv.setOnMouseReleased(t -> {
+//            ((ComboBoxListViewSkin) this.combobox.getSkin()).getPopupContent().setOnMouseClicked((t) -> {
                 System.out.println(this.combobox.getId() + " listView Clicked");
                 try {
 //                index = ((ComboBoxListViewSkin) combobox.getSkin()).getListView().getSelectionModel().getSelectedIndex();
@@ -91,7 +91,14 @@ public class UserInputComboBox {
                         selection = (((ComboBoxListViewSkin) combobox.getSkin()).getListView().getSelectionModel().getSelectedItem().toString());
                         combobox.hide();
                     } else if (!combobox.getId().equals("playercombo") && this.hashSet == null) {
-                        this.selection = ((ComboBoxListViewSkin) combobox.getSkin()).getListView().getSelectionModel().getSelectedItem().toString();
+                        if (selection.equals("")) {
+                            Main.getSC().addHBoxToSelectionBox(combobox.getId(), selection);
+                            selection = (((ComboBoxListViewSkin) combobox.getSkin()).getListView().getSelectionModel().getSelectedItem().toString());
+                        } else {
+                            selection = (((ComboBoxListViewSkin) combobox.getSkin()).getListView().getSelectionModel().getSelectedItem().toString());
+                            Main.getSC().addHBoxToSelectionBox(combobox.getId(), selection);
+                        }
+                        combobox.hide();
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();

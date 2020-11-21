@@ -503,6 +503,7 @@ public class SimpleController implements Initializable {
     }
 
     private void setAdvancedPlayerComboBox() throws IOException {
+        System.out.println("Create playerComboUserAdvanced");
         playerComboUserAdvanced = new UserInputComboBox(playercomboadvanced, new HashSet<String>(), "");
         this.activePlayers = new HashMap();
         JSONArray jsonArray = getInitAllPlayersData();
