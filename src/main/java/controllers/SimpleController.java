@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
@@ -131,20 +132,20 @@ public class SimpleController implements Initializable {
     private Thread tHeat = new Thread();
     private Thread tZone = new Thread();
     private ArrayList<Thread> allUltraFineHeatThreads;
-    private String beginSeason = "";
-    private String endSeason = "";
-    private HashSet<String> allSelectedPlayers = new HashSet();
-    private HashSet<String> allSelectedSeasonTypes = new HashSet();
-    private String beginDistance = "";
-    private String endDistance = "";
-    private String shotSuccess = "";
-    private String shotValue = "";
-    private HashSet<String> allSelectedShotTypes = new HashSet();
-    private HashSet<String> allSelectedTeams = new HashSet();
-    private HashSet<String> allSelectedHomeTeams = new HashSet();
-    private HashSet<String> allSelectedAwayTeams = new HashSet();
-    private HashSet<String> allSelectedCourtAreas = new HashSet();
-    private HashSet<String> allSelectedCourtSides = new HashSet();
+//    private String beginSeason = "";
+//    private String endSeason = "";
+//    private HashSet<String> allSelectedPlayers = new HashSet();
+//    private HashSet<String> allSelectedSeasonTypes = new HashSet();
+//    private String beginDistance = "";
+//    private String endDistance = "";
+//    private String shotSuccess = "";
+//    private String shotValue = "";
+//    private HashSet<String> allSelectedShotTypes = new HashSet();
+//    private HashSet<String> allSelectedTeams = new HashSet();
+//    private HashSet<String> allSelectedHomeTeams = new HashSet();
+//    private HashSet<String> allSelectedAwayTeams = new HashSet();
+//    private HashSet<String> allSelectedCourtAreas = new HashSet();
+//    private HashSet<String> allSelectedCourtSides = new HashSet();
 //    private String currentSearchModeSelectionAdvanced = "";
     private LinkedHashMap<String, Integer> relevantTeamNameIDHashMap = new LinkedHashMap();
     private double font = 0.0;
@@ -161,6 +162,10 @@ public class SimpleController implements Initializable {
     private Service zoneService;
     private long start;
     private long end;
+    private UserInputComboBox playerComboUser, playerComboUserAdvanced, seasonsBeginComboUser, seasonsEndComboUser,
+            distanceBeginComboUser, distanceEndComboUser, shotSuccessComboUser, shotValueComboUser,
+            shotTypeComboUser, teamComboUser, homeTeamComboUser, awayTeamComboUser,
+            courtAreasComboUser, courtSidesComboUser, seasonTypesComboUser;
 
     //General Features
     @FXML
@@ -176,7 +181,7 @@ public class SimpleController implements Initializable {
     @FXML
     private Line line;
     @FXML
-    private Button simplelayoutbutton, advancedlayoutbutton, comparelayoutbutton;
+    private Button simplelayoutbutton, advancedlayoutbutton;
     @FXML
     private ProgressIndicator progressindicator;
     //GridPanes
@@ -297,6 +302,16 @@ public class SimpleController implements Initializable {
         this.seasoncombo.setValue("Regular Season");
         this.activePlayers = new HashMap();
         try {
+            playerComboUser = new UserInputComboBox(playercombo, null, "");
+//            playerComboUser.getComboBox().setOnMouseClicked((t) -> {
+//                System.out.println("PlayerComboUser Clicked");
+//                playerComboUser.getComboBox().getSelectionModel().select(previousPlayer);
+//                ((ComboBoxListViewSkin) playerComboUser.getComboBox().getSkin()).getListView().setOnMouseClicked((tt) -> {
+//                    previousPlayer = playerComboUser.getComboBox().getValue().toString();
+//                    System.out.println("Previous Player : " + previousPlayer);
+//                });
+//            });
+
             setPlayerComboBox();
             setSeasonsComboBox();
         } catch (IOException ex) {
@@ -313,7 +328,7 @@ public class SimpleController implements Initializable {
                 this.errorlabel.setVisible(true);
             }
         });
-        setAllViewTypeButtonsOnMouseActions();
+//        setAllViewTypeButtonsOnMouseActions();
         imageview.fitHeightProperty().addListener((ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) -> resize());
         imageview.fitWidthProperty().addListener((ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) -> resize());
         this.yearcombo.setOnAction(t -> {
@@ -323,7 +338,7 @@ public class SimpleController implements Initializable {
                 System.out.println("Error setting player combobox");
             }
         });
-        this.playercombo.setOnAction(t -> {
+        this.playercombo.valueProperty().addListener(t -> {
             try {
                 setSeasonsComboBox();
             } catch (IOException ex) {
@@ -455,7 +470,6 @@ public class SimpleController implements Initializable {
     }
 
     private void setPlayerComboBox() throws IOException {
-        UserInputComboBox playerComboUser = new UserInputComboBox(playercombo);
         this.activePlayers = new HashMap();
         JSONArray jsonArray = getActivePlayersData();
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -478,18 +492,18 @@ public class SimpleController implements Initializable {
             this.previousSeason = seasoncombo.getValue().toString();
         }
         playerComboUser.getComboBox().setItems(FXCollections.observableArrayList(realNames));
-        if (previousSeason != null && playercombo.getValue() != null && seasoncombo.getItems().contains(previousSeason)) {
+        if (previousSeason != null && playerComboUser.getComboBox().getValue() != null && seasoncombo.getItems().contains(previousSeason)) {
             this.seasoncombo.getSelectionModel().select(previousSeason);
         } else {
             this.seasoncombo.getSelectionModel().clearSelection();
         }
-        if (realNames.contains(previousPlayer)) {
-            this.playercombo.getSelectionModel().select(previousPlayer);
-        }
+//        if (realNames.contains(previousPlayer)) {
+//            playerComboUser.getComboBox().getSelectionModel().select(previousPlayer);
+//        }
     }
 
     private void setAdvancedPlayerComboBox() throws IOException {
-        UserInputComboBox playerComboUserAdvanced = new UserInputComboBox(playercomboadvanced);
+        playerComboUserAdvanced = new UserInputComboBox(playercomboadvanced, new HashSet<String>(), "");
         this.activePlayers = new HashMap();
         JSONArray jsonArray = getInitAllPlayersData();
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -546,8 +560,10 @@ public class SimpleController implements Initializable {
         seasons.add("Preseason");
         seasons.add("Regular Season");
         seasons.add("Playoffs");
-        seasontypescomboadvanced.setItems(FXCollections.observableArrayList(seasons));
-        seasontypescomboadvanced.getSelectionModel().clearSelection();
+        seasonTypesComboUser = new UserInputComboBox(seasontypescomboadvanced, new HashSet<String>(), "");
+        seasonTypesComboUser.getComboBox().setItems(FXCollections.observableArrayList(seasons));
+//        seasontypescomboadvanced.setItems(FXCollections.observableArrayList(seasons));
+//        seasontypescomboadvanced.getSelectionModel().clearSelection();
     }
 
     private JSONArray getInitData() throws IOException {
@@ -596,7 +612,6 @@ public class SimpleController implements Initializable {
         jsonObjOut.put("selector", "shottypes");
         Main.getPrintWriterOut().println(jsonObjOut.toString());
         return new JSONArray(Main.getServerResponse().readLine());
-
     }
 
     private JSONArray getSimpleShotData() throws IOException {
@@ -833,7 +848,6 @@ public class SimpleController implements Initializable {
             imagegrid.setClip(mask);
             this.simplelayoutbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
             this.advancedlayoutbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
-            this.comparelayoutbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
             titlelabel.setMinWidth(Region.USE_PREF_SIZE);
             titlelabel.setStyle("-fx-font: " + fontGrid * 3 + "px \"Serif\"; ");
             charttitle.setStyle("-fx-font: " + fontGrid * 1.15 + "px \"Arial Italic\";");
@@ -1368,10 +1382,8 @@ public class SimpleController implements Initializable {
         this.searchbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
         this.simplelayoutbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
         this.advancedlayoutbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
-        this.comparelayoutbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
         this.simplelayoutbutton.prefWidthProperty().bind(this.gridpane.widthProperty().divide(8));
         this.advancedlayoutbutton.prefWidthProperty().bind(this.gridpane.widthProperty().divide(8));
-        this.comparelayoutbutton.prefWidthProperty().bind(this.gridpane.widthProperty().divide(8));
 
         this.line.endXProperty().bind(this.gridpane.widthProperty());
         this.charttitle.setVisible(false);
@@ -1429,11 +1441,11 @@ public class SimpleController implements Initializable {
         advancedvboxinner.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
         searchscrollpane.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
         selectionscrollpane.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
-        try {
-            populateUnchangingComboBoxes();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+//        try {
+//            populateUnchangingComboBoxes();
+//        } catch (IOException ex) {
+//            ex.printStackTrace();
+//        }
         selectionvbox.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
         Stop[] stops = new Stop[]{new Stop(0, Color.BLACK), new Stop(1, Color.RED)};
         LinearGradient lg1 = new LinearGradient(0, 0, 1, 0, true, CycleMethod.NO_CYCLE, stops);
@@ -1608,8 +1620,12 @@ public class SimpleController implements Initializable {
     }
 
     private void initAdvanced() throws IOException {
-        seasonsbegincombo.setItems(FXCollections.observableArrayList(makeYears()));
-        seasonsendcombo.setItems(FXCollections.observableArrayList(makeYears()));
+        seasonsBeginComboUser = new UserInputComboBox(seasonsbegincombo, null, "");
+        seasonsBeginComboUser.getComboBox().setItems(FXCollections.observableArrayList(makeYears()));
+//        seasonsbegincombo.setItems(FXCollections.observableArrayList(makeYears()));
+        seasonsEndComboUser = new UserInputComboBox(seasonsendcombo, null, "");
+        seasonsEndComboUser.getComboBox().setItems(FXCollections.observableArrayList(makeYears()));
+//        seasonsendcombo.setItems(FXCollections.observableArrayList(makeYears()));
         setAdvancedPlayerComboBox();
         setAdvancedSeasonsComboBox();
         setShotDistanceCombo();
@@ -1620,99 +1636,105 @@ public class SimpleController implements Initializable {
         for (int i = 0; i < 90; i++) {
             distances.add(i);
         }
-        distancebegincombo.setItems(FXCollections.observableArrayList(distances));
-        distanceendcombo.setItems(FXCollections.observableArrayList(distances));
+        distanceBeginComboUser = new UserInputComboBox(distancebegincombo, null, "");
+        distanceBeginComboUser.getComboBox().setItems(FXCollections.observableArrayList(distances));
+        distanceEndComboUser = new UserInputComboBox(distanceendcombo, null, "");
+        distanceEndComboUser.getComboBox().setItems(FXCollections.observableArrayList(distances));
+
+//        distancebegincombo.setItems(FXCollections.observableArrayList(distances));
+//        distanceendcombo.setItems(FXCollections.observableArrayList(distances));
     }
 
-    private void addHBoxToSelectionBox(String selector) {
+    public void addHBoxToSelectionBox(String selector, String input) {
         switch (selector) {
             case "seasonsbegincombo":
-                singleSelectionHBoxCreationMethods(beginSeason, "Seasons after and including ", seasonsbegincombo);
-                beginSeason = seasonsbegincombo.getValue().toString();
+                singleSelectionHBoxCreationMethods(input, "Seasons after and including ", seasonsbegincombo);
+//                beginSeason = seasonsbegincombo.getValue().toString();
                 break;
             case "seasonsendcombo":
-                singleSelectionHBoxCreationMethods(endSeason, "Seasons before and including ", seasonsendcombo);
-                endSeason = seasonsendcombo.getValue().toString();
+                singleSelectionHBoxCreationMethods(input, "Seasons before and including ", seasonsendcombo);
+//                endSeason = seasonsendcombo.getValue().toString();
                 break;
             case "playercomboadvanced":
-                multipleSelectionHBoxCreationMethods(allSelectedPlayers, "Player: ", playercomboadvanced);
-                try {
-                    allSelectedPlayers.add(playercomboadvanced.getValue().toString());
-                } catch (Exception ex) {
-
-                }
+                System.out.println("addHBoxToSelectionBox");
+                multipleSelectionHBoxCreationMethods(playerComboUserAdvanced.getHashSet(), "Player: ", playercomboadvanced, input);
+//                try {
+//                    allSelectedPlayers.add(playercomboadvanced.getValue().toString());
+//                } catch (Exception ex) {
+//
+//                }
                 break;
             case "seasontypescomboadvanced":
-                multipleSelectionHBoxCreationMethods(allSelectedSeasonTypes, "Season Type: ", seasontypescomboadvanced);
-                try {
-                    allSelectedSeasonTypes.add(seasontypescomboadvanced.getValue().toString());
-                } catch (Exception ex) {
-
-                }
+                multipleSelectionHBoxCreationMethods(seasonTypesComboUser.getHashSet(), "Season Type: ", seasontypescomboadvanced, input);
+//                try {
+//                    seasonTypesComboUser.getHashSet().add(seasontypescomboadvanced.getValue().toString());
+//                } catch (Exception ex) {
+//                    
+//                }
                 break;
             case "distancebegincombo":
-                singleSelectionHBoxCreationMethods(beginDistance, "Minimum Distance: ", distancebegincombo);
-                beginDistance = distancebegincombo.getValue().toString();
+                singleSelectionHBoxCreationMethods(input, "Minimum Distance: ", distancebegincombo);
+//                distanceBeginComboUser.setSelection(selector); = distancebegincombo.getValue().toString();
                 break;
             case "distanceendcombo":
-                singleSelectionHBoxCreationMethods(endDistance, "Maximum Distance: ", distanceendcombo);
-                endDistance = distanceendcombo.getValue().toString();
+                singleSelectionHBoxCreationMethods(input, "Maximum Distance: ", distanceendcombo);
+//                endDistance = distanceendcombo.getValue().toString();
                 break;
             case "shotsuccesscombo":
-                singleSelectionHBoxCreationMethods(shotSuccess, "Shot Success: ", shotsuccesscombo);
-                shotSuccess = shotsuccesscombo.getValue().toString();
+                singleSelectionHBoxCreationMethods(input, "Shot Success: ", shotsuccesscombo);
+//                shotSuccess = shotsuccesscombo.getValue().toString();
                 break;
             case "shotvaluecombo":
-                singleSelectionHBoxCreationMethods(shotValue, "Shot Value: ", shotvaluecombo);
-                shotValue = shotvaluecombo.getValue().toString();
+                singleSelectionHBoxCreationMethods(input, "Shot Value: ", shotvaluecombo);
+//                shotValue = shotvaluecombo.getValue().toString();
                 break;
             case "shottypescombo":
-                multipleSelectionHBoxCreationMethods(allSelectedShotTypes, "Shot Type: ", shottypescombo);
-                try {
-                    allSelectedShotTypes.add(shottypescombo.getValue().toString());
-                } catch (Exception ex) {
-
-                }
+                multipleSelectionHBoxCreationMethods(shotTypeComboUser.getHashSet(), "Shot Type: ", shottypescombo, input);
+//                try {
+////                    allSelectedShotTypes.add(shottypescombo.getValue().toString());
+//                } catch (Exception ex) {
+//                    
+//                }
                 break;
             case "teamscombo":
-                multipleSelectionHBoxCreationMethods(allSelectedTeams, "Team: ", teamscombo);
-                try {
-                    allSelectedTeams.add(teamscombo.getValue().toString());
-                } catch (Exception ex) {
-
-                }
+                multipleSelectionHBoxCreationMethods(teamComboUser.getHashSet(), "Team: ", teamscombo, input);
+//                try {
+//                    allSelectedTeams.add(teamscombo.getValue().toString());
+//                } catch (Exception ex) {
+//                    
+//                }
                 break;
             case "hometeamscombo":
-                multipleSelectionHBoxCreationMethods(allSelectedHomeTeams, "Home Team: ", hometeamscombo);
-                try {
-                    allSelectedHomeTeams.add(hometeamscombo.getValue().toString());
-                } catch (Exception ex) {
-
-                }
+                multipleSelectionHBoxCreationMethods(homeTeamComboUser.getHashSet(), "Home Team: ", hometeamscombo, input);
+//                try {
+//                    allSelectedHomeTeams.add(hometeamscombo.getValue().toString());
+//                } catch (Exception ex) {
+//                    
+//                }
                 break;
             case "awayteamscombo":
-                multipleSelectionHBoxCreationMethods(allSelectedAwayTeams, "Away Team: ", awayteamscombo);
-                try {
-                    allSelectedAwayTeams.add(awayteamscombo.getValue().toString());
-                } catch (Exception ex) {
-
-                }
+                multipleSelectionHBoxCreationMethods(awayTeamComboUser.getHashSet(), "Away Team: ", awayteamscombo, input);
+//                try {
+//                    allSelectedAwayTeams.add(awayteamscombo.getValue().toString());
+//                } catch (Exception ex) {
+//                    
+//                }
                 break;
             case "courtareascombo":
-                multipleSelectionHBoxCreationMethods(allSelectedCourtAreas, "Court Area: ", courtareascombo);
-                try {
-                    allSelectedCourtAreas.add(courtareascombo.getValue().toString());
-                } catch (Exception ex) {
-
-                }
+                multipleSelectionHBoxCreationMethods(courtAreasComboUser.getHashSet(), "Court Area: ", courtareascombo, input);
+//                try {
+//                    allSelectedCourtAreas.add(courtareascombo.getValue().toString());
+//                } catch (Exception ex) {
+//                    
+//                }
                 break;
             case "courtsidescombo":
-                multipleSelectionHBoxCreationMethods(allSelectedCourtSides, "Court Side: ", courtsidescombo);
-                try {
-                    allSelectedCourtSides.add(courtsidescombo.getValue().toString());
-                } catch (Exception ex) {
-
-                }
+                multipleSelectionHBoxCreationMethods(courtSidesComboUser.getHashSet(), "Court Side: ", courtsidescombo, input);
+//                try {
+//                    allSelectedCourtSides.add(courtsidescombo.getValue().toString());
+//                } catch (Exception ex) {
+//                    
+//                }
                 break;
 
         }
@@ -1729,7 +1751,6 @@ public class SimpleController implements Initializable {
         HBox newHBox;
         Insets insets = new Insets(5, 5, 5, 5);
         Insets insetsHBox = new Insets(0, 0, 0, 20);
-
         if (!alreadySelected.equals("")) {
             for (Node each : selectionvbox.getChildren()) {
                 if (each.getClass().equals(HBox.class)) {
@@ -1741,6 +1762,7 @@ public class SimpleController implements Initializable {
                             tempLabel = (Label) innerEach;
                             if (tempLabel.getText().startsWith(labelPreText)) {
                                 labelToReplace = tempLabel;
+                                labelToReplace.setText(labelPreText + alreadySelected);
                                 deleteButton = tempButton;
                                 break;
                             }
@@ -1750,8 +1772,7 @@ public class SimpleController implements Initializable {
 
                 }
             }
-            alreadySelected = combo.getValue().toString();
-            labelToReplace.setText(labelPreText + alreadySelected);
+//            alreadySelected = combo.getValue().toString();
         } else {
             newHBox = new HBox();
             newHBox.setAlignment(Pos.CENTER_LEFT);
@@ -1793,18 +1814,18 @@ public class SimpleController implements Initializable {
     private void deleteButtonInner(String selector, HBox hbox, String preText) {
         switch (selector) {
             case "seasonsbegincombo":
-                beginSeason = "";
+                seasonsBeginComboUser.setSelection("");
                 seasonsbegincombo.getSelectionModel().clearSelection();
                 break;
             case "seasonsendcombo":
-                endSeason = "";
+                seasonsEndComboUser.setSelection("");
                 seasonsendcombo.getSelectionModel().clearSelection();
                 break;
             case "playercomboadvanced":
                 for (Node each : hbox.getChildren()) {
                     if (each.getClass().equals(Label.class)) {
                         Label label = (Label) each;
-                        allSelectedPlayers.remove(label.getText().replace(preText, ""));
+                        playerComboUserAdvanced.getHashSet().remove(label.getText().replace(preText, ""));
                         playercomboadvanced.getSelectionModel().clearSelection();
                     }
                 }
@@ -1813,32 +1834,32 @@ public class SimpleController implements Initializable {
                 for (Node each : hbox.getChildren()) {
                     if (each.getClass().equals(Label.class)) {
                         Label label = (Label) each;
-                        allSelectedSeasonTypes.remove(label.getText().replace(preText, ""));
+                        seasonTypesComboUser.getHashSet().remove(label.getText().replace(preText, ""));
                         seasontypescomboadvanced.getSelectionModel().clearSelection();
                     }
                 }
                 break;
             case "distancebegincombo":
-                beginDistance = "";
+                distanceBeginComboUser.setSelection("");
                 distancebegincombo.getSelectionModel().clearSelection();
                 break;
             case "distanceendcombo":
-                endDistance = "";
+                distanceEndComboUser.setSelection("");
                 distanceendcombo.getSelectionModel().clearSelection();
                 break;
             case "shotsuccesscombo":
-                shotSuccess = "";
+                shotSuccessComboUser.setSelection("");
                 shotsuccesscombo.getSelectionModel().clearSelection();
                 break;
             case "shotvaluecombo":
-                shotValue = "";
+                shotValueComboUser.setSelection("");
                 shotvaluecombo.getSelectionModel().clearSelection();
                 break;
             case "shottypescombo":
                 for (Node each : hbox.getChildren()) {
                     if (each.getClass().equals(Label.class)) {
                         Label label = (Label) each;
-                        allSelectedShotTypes.remove(label.getText().replace(preText, ""));
+                        shotTypeComboUser.getHashSet().remove(label.getText().replace(preText, ""));
                         shottypescombo.getSelectionModel().clearSelection();
                     }
                 }
@@ -1847,7 +1868,7 @@ public class SimpleController implements Initializable {
                 for (Node each : hbox.getChildren()) {
                     if (each.getClass().equals(Label.class)) {
                         Label label = (Label) each;
-                        allSelectedTeams.remove(label.getText().replace(preText, ""));
+                        teamComboUser.getHashSet().remove(label.getText().replace(preText, ""));
                         teamscombo.getSelectionModel().clearSelection();
                     }
                 }
@@ -1856,7 +1877,7 @@ public class SimpleController implements Initializable {
                 for (Node each : hbox.getChildren()) {
                     if (each.getClass().equals(Label.class)) {
                         Label label = (Label) each;
-                        allSelectedHomeTeams.remove(label.getText().replace(preText, ""));
+                        homeTeamComboUser.getHashSet().remove(label.getText().replace(preText, ""));
                         hometeamscombo.getSelectionModel().clearSelection();
                     }
                 }
@@ -1865,7 +1886,7 @@ public class SimpleController implements Initializable {
                 for (Node each : hbox.getChildren()) {
                     if (each.getClass().equals(Label.class)) {
                         Label label = (Label) each;
-                        allSelectedAwayTeams.remove(label.getText().replace(preText, ""));
+                        awayTeamComboUser.getHashSet().remove(label.getText().replace(preText, ""));
                         awayteamscombo.getSelectionModel().clearSelection();
                     }
                 }
@@ -1874,7 +1895,7 @@ public class SimpleController implements Initializable {
                 for (Node each : hbox.getChildren()) {
                     if (each.getClass().equals(Label.class)) {
                         Label label = (Label) each;
-                        allSelectedCourtAreas.remove(label.getText().replace(preText, ""));
+                        courtAreasComboUser.getHashSet().remove(label.getText().replace(preText, ""));
                         courtareascombo.getSelectionModel().clearSelection();
                     }
                 }
@@ -1883,7 +1904,7 @@ public class SimpleController implements Initializable {
                 for (Node each : hbox.getChildren()) {
                     if (each.getClass().equals(Label.class)) {
                         Label label = (Label) each;
-                        allSelectedCourtSides.remove(label.getText().replace(preText, ""));
+                        courtSidesComboUser.getHashSet().remove(label.getText().replace(preText, ""));
                         courtsidescombo.getSelectionModel().clearSelection();
                     }
                 }
@@ -1891,61 +1912,67 @@ public class SimpleController implements Initializable {
         }
     }
 
-    private void multipleSelectionHBoxCreationMethods(HashSet hashSet, String labelPreText, ComboBox combo) {
+//    private void multipleSelectionHBoxCreationMethods(HashSet hashSet, String labelPreText, ComboBox combo) {
+    private void multipleSelectionHBoxCreationMethods(HashSet hashSet, String labelPreText, ComboBox combo, String input) {
+        System.out.println("multipleSelectionHBoxCreationMethods");
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         Label label;
         Button deleteButton = null;
         HBox newHBox;
         Insets insets = new Insets(5, 5, 5, 5);
         Insets insetsHBox = new Insets(0, 0, 0, 20);
-        if (!hashSet.contains(combo.getValue().toString())) {
-            newHBox = new HBox();
-            newHBox.setAlignment(Pos.CENTER_LEFT);
-            newHBox.setMinHeight(25.0);
-            newHBox.setMaxHeight(25.0);
-            newHBox.setMinWidth(100.0);
-            newHBox.setPadding(insetsHBox);
+//        if (!hashSet.contains(combo.getValue().toString())) {
+        newHBox = new HBox();
+        newHBox.setAlignment(Pos.CENTER_LEFT);
+        newHBox.setMinHeight(25.0);
+        newHBox.setMaxHeight(25.0);
+        newHBox.setMinWidth(100.0);
+        newHBox.setPadding(insetsHBox);
 
-            final String SELECTED = combo.getId();
+        final String SELECTED = combo.getId();
 
-            deleteButton = new Button("X");
-            deleteButton.setStyle("-fx-text-fill: red;-fx-background-color: transparent;");
-            newHBox.getChildren().add(deleteButton);
-            final HBox HBOX = (HBox) deleteButton.getParent();
-            final Scene FINALSCENE = selectionvbox.getScene();
+        deleteButton = new Button("X");
+        deleteButton.setStyle("-fx-text-fill: red;-fx-background-color: transparent;");
+        newHBox.getChildren().add(deleteButton);
+        final HBox HBOX = (HBox) deleteButton.getParent();
+        final Scene FINALSCENE = selectionvbox.getScene();
 
-            deleteButton.setOnMouseClicked((Event t) -> {
-                deleteButtonInner(SELECTED, HBOX, labelPreText);
-                selectionvbox.getChildren().remove(newHBox);
-            });
-            deleteButton.setOnMouseEntered((MouseEvent t) -> {
-                FINALSCENE.setCursor(Cursor.HAND);
-            });
-            deleteButton.setOnMouseExited((MouseEvent t) -> {
-                FINALSCENE.setCursor(Cursor.DEFAULT);
-            });
-            deleteButton.prefHeightProperty().bind(newHBox.prefHeightProperty());
-            deleteButton.prefWidthProperty().bind(deleteButton.prefHeightProperty());
-            label = new Label();
-            label.setText(labelPreText + combo.getValue().toString());
-            label.setStyle("-fx-font: " + font * 0.85 + "px \"Arial\";");
-            label.setPadding(insets);
-            label.prefHeightProperty().bind(newHBox.prefHeightProperty());
-            label.setAlignment(Pos.CENTER_LEFT);
-            newHBox.getChildren().add(label);
-            selectionvbox.getChildren().add(newHBox);
-        }
+        deleteButton.setOnMouseClicked((Event t) -> {
+            deleteButtonInner(SELECTED, HBOX, labelPreText);
+            selectionvbox.getChildren().remove(newHBox);
+        });
+        deleteButton.setOnMouseEntered((MouseEvent t) -> {
+            FINALSCENE.setCursor(Cursor.HAND);
+        });
+        deleteButton.setOnMouseExited((MouseEvent t) -> {
+            FINALSCENE.setCursor(Cursor.DEFAULT);
+        });
+        deleteButton.prefHeightProperty().bind(newHBox.prefHeightProperty());
+        deleteButton.prefWidthProperty().bind(deleteButton.prefHeightProperty());
+        label = new Label();
+        label.setText(labelPreText + input);
+        label.setStyle("-fx-font: " + font * 0.85 + "px \"Arial\";");
+        label.setPadding(insets);
+        label.prefHeightProperty().bind(newHBox.prefHeightProperty());
+        label.setAlignment(Pos.CENTER_LEFT);
+        newHBox.getChildren().add(label);
+        selectionvbox.getChildren().add(newHBox);
+//        }
     }
 
-    private void populateUnchangingComboBoxes() throws IOException {
+    public void populateUnchangingComboBoxes() throws IOException {
         ArrayList<String> tempList = new ArrayList();
         Collections.addAll(tempList, "Makes", "Misses");
-        shotsuccesscombo.setItems(FXCollections.observableArrayList(tempList));
+        shotSuccessComboUser = new UserInputComboBox(shotsuccesscombo, null, "");
+        shotSuccessComboUser.getComboBox().setItems(FXCollections.observableArrayList(tempList));
+//        shotsuccesscombo.setItems(FXCollections.observableArrayList(tempList));
         tempList = new ArrayList();
         Collections.addAll(tempList, "2PT", "3PT");
-        shotvaluecombo.setItems(FXCollections.observableArrayList(tempList));
+        shotValueComboUser = new UserInputComboBox(shotvaluecombo, null, "");
+        shotValueComboUser.getComboBox().setItems(FXCollections.observableArrayList(tempList));
+//        shotvaluecombo.setItems(FXCollections.observableArrayList(tempList));
         tempList = getShotTypesList();
-        UserInputComboBox shotTypeComboUser = new UserInputComboBox(shottypescombo);
+        shotTypeComboUser = new UserInputComboBox(shottypescombo, new HashSet<String>(), "");
         shotTypeComboUser.getComboBox().setItems(FXCollections.observableArrayList(tempList));
         relevantTeamNameIDHashMap.put("Atlanta Hawks", 1610612737);
         relevantTeamNameIDHashMap.put("Boston Celtics", 1610612738);
@@ -1994,20 +2021,25 @@ public class SimpleController implements Initializable {
         relevantTeamNameIDHashMap.put("San Lorenzo", 12330);
         relevantTeamNameIDHashMap.put("Shanghai Sharks", 12329);
         relevantTeamNameIDHashMap.put("Sydney Kings", 15015);
-        UserInputComboBox teamComboUser = new UserInputComboBox(teamscombo);
-        UserInputComboBox homeTeamComboUser = new UserInputComboBox(hometeamscombo);
-        UserInputComboBox awayTeamComboUser = new UserInputComboBox(awayteamscombo);
+        teamComboUser = new UserInputComboBox(teamscombo, new HashSet<String>(), "");
+        homeTeamComboUser = new UserInputComboBox(hometeamscombo, new HashSet<String>(), "");
+        awayTeamComboUser = new UserInputComboBox(awayteamscombo, new HashSet<String>(), "");
         teamComboUser.getComboBox().setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
         homeTeamComboUser.getComboBox().setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
         awayTeamComboUser.getComboBox().setItems(FXCollections.observableArrayList(relevantTeamNameIDHashMap.keySet()));
         tempList = new ArrayList();
         Collections.addAll(tempList, "Restricted Area", "In The Paint (Non-RA)", "Mid-Range",
                 "Left Corner 3", "Right Corner 3", "Above the Break 3", "Backcourt");
-        courtareascombo.setItems(FXCollections.observableArrayList(tempList));
+        courtAreasComboUser = new UserInputComboBox(courtareascombo, new HashSet<String>(), "");
+        courtAreasComboUser.getComboBox().setItems(FXCollections.observableArrayList(tempList));
+//        courtareascombo.setItems(FXCollections.observableArrayList(tempList));
         tempList = new ArrayList();
         Collections.addAll(tempList, "Left", "Left-Center", "Center",
                 "Right-Center", "Right", "Back Court");
-        courtsidescombo.setItems(FXCollections.observableArrayList(tempList));
+        courtSidesComboUser = new UserInputComboBox(courtsidescombo, new HashSet<String>(), "");
+        courtSidesComboUser.getComboBox().setItems(FXCollections.observableArrayList(tempList));
+
+//        courtsidescombo.setItems(FXCollections.observableArrayList(tempList));
     }
 
     private ArrayList getShotTypesList() throws IOException {
@@ -2024,36 +2056,36 @@ public class SimpleController implements Initializable {
     private JSONArray createAdvancedJSONOutput(Search searchTypeSelector) throws IOException, Exception {
         JSONObject obj = new JSONObject();
         obj.put("selector", "advanced" + searchTypeSelector.toString().toLowerCase());
-        obj.put("beginSeason", beginSeason);
-        obj.put("endSeason", endSeason);
+        obj.put("beginSeason", seasonsBeginComboUser.getSelection());
+        obj.put("endSeason", seasonsEndComboUser.getSelection());
         ArrayList<Integer> allSelectedPlayerIDs = new ArrayList();
-        for (String each : allSelectedPlayers) {
+        for (String each : playerComboUserAdvanced.getHashSet()) {
             allSelectedPlayerIDs.add(Integer.parseInt(nameHash.get(each)[0]));
         }
         obj.put("allSelectedPlayers", allSelectedPlayerIDs);
-        obj.put("allSelectedSeasonTypes", allSelectedSeasonTypes);
-        obj.put("beginDistance", beginDistance);
-        obj.put("endDistance", endDistance);
-        obj.put("shotSuccess", shotSuccess);
-        obj.put("shotValue", shotValue);
-        obj.put("allSelectedShotTypes", allSelectedShotTypes);
+        obj.put("allSelectedSeasonTypes", seasonTypesComboUser.getHashSet());
+        obj.put("beginDistance", distanceBeginComboUser.getSelection());
+        obj.put("endDistance", distanceEndComboUser.getSelection());
+        obj.put("shotSuccess", shotSuccessComboUser.getSelection());
+        obj.put("shotValue", shotValueComboUser.getSelection());
+        obj.put("allSelectedShotTypes", shotTypeComboUser.getHashSet());
         ArrayList<Integer> teamIds = new ArrayList();
-        for (String each : allSelectedTeams) {
+        for (String each : teamComboUser.getHashSet()) {
             teamIds.add(relevantTeamNameIDHashMap.get(each));
         }
         obj.put("allSelectedTeams", teamIds);
         teamIds = new ArrayList();
-        for (String each : allSelectedHomeTeams) {
+        for (String each : homeTeamComboUser.getHashSet()) {
             teamIds.add(relevantTeamNameIDHashMap.get(each));
         }
         obj.put("allSelectedHomeTeams", teamIds);
         teamIds = new ArrayList();
-        for (String each : allSelectedAwayTeams) {
+        for (String each : awayTeamComboUser.getHashSet()) {
             teamIds.add(relevantTeamNameIDHashMap.get(each));
         }
         obj.put("allSelectedAwayTeams", teamIds);
-        obj.put("allSelectedCourtAreas", allSelectedCourtAreas);
-        obj.put("allSelectedCourtSides", allSelectedCourtSides);
+        obj.put("allSelectedCourtAreas", courtAreasComboUser.getHashSet());
+        obj.put("allSelectedCourtSides", courtSidesComboUser.getHashSet());
         Main.getPrintWriterOut().println(obj.toString());
         return new JSONArray(Main.getServerResponse().readLine());
     }
@@ -2122,22 +2154,34 @@ public class SimpleController implements Initializable {
         for (Node each : advancedvboxinner.getChildren()) {
             if (each.getClass().equals(ComboBox.class)) {
                 final ComboBox cb = (ComboBox) each;
-                cb.valueProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) -> {
-                    try {
-                        if (cb.getValue() != null) {
-                            addHBoxToSelectionBox(cb.getId());
-                        }
-                    } catch (Exception ex) {
-                        System.out.println("Error caught adding to selection box");
-                    }
-                });
-                cb.setOnMouseClicked((Event t) -> {
-                    ListView<?> lv = ((ComboBoxListViewSkin<?>) cb.getSkin()).getListView();
-                    lv.setOnMouseExited((Event tIn) -> {
-                        cb.hide();
-                    });
-
-                });
+//                cb.valueProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) -> {
+//                    try {
+//                        if (cb.getValue() != null) {
+//                            addHBoxToSelectionBox(cb.getId());
+//                        }
+//                    } catch (Exception ex) {
+//                        System.out.println("Error caught adding to selection box");
+//                    }
+//                });
+//                cb.setOnKeyPressed((KeyEvent e) -> {
+//                    if (((ComboBoxListViewSkin) cb.getSkin()).getPopupContent().isVisible() && e.getCode() == KeyCode.ENTER) {
+//                        System.out.println(e.getCode());
+//                        addHBoxToSelectionBox(cb.getId());
+//                    }
+//                });
+//                cb.setOnMouseClicked((Event t) -> {
+////                    ListView<?> lv = ((ComboBoxListViewSkin<?>) cb.getSkin()).getListView();
+//                    Node lv = ((ComboBoxListViewSkin<?>) cb.getSkin()).getPopupContent();
+//                    lv.setOnMouseExited((Event tIn) -> {
+//                        cb.hide();
+//                    });
+//                    lv.setOnKeyPressed((KeyEvent e) -> {
+//                        System.out.println(e.getCode());
+//                        if (e.getCode() == KeyCode.ENTER) {
+//                            addHBoxToSelectionBox(cb.getId());
+//                        }
+//                    });
+//                });
                 if (!cb.getId().equals("shotsuccesscombo") && !cb.getId().equals("shotvaluecombo")) {
                     ComboBoxListViewSkin<String> comboBoxListViewSkin = new ComboBoxListViewSkin<String>(cb) {
                         @Override
@@ -2159,22 +2203,22 @@ public class SimpleController implements Initializable {
                 for (Node eachHBoxNode : hbox.getChildren()) {
                     if (eachHBoxNode.getClass().equals(ComboBox.class)) {
                         final ComboBox cb = (ComboBox) eachHBoxNode;
-                        eachHBoxNode.setOnMouseClicked((Event t) -> {
-                            ListView<?> lv = ((ComboBoxListViewSkin<?>) cb.getSkin()).getListView();
-                            lv.setOnMouseExited((Event tIn) -> {
-                                cb.hide();
-                            });
-
-                        });
-                        cb.valueProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) -> {
-                            try {
-                                if (cb.getValue() != null) {
-                                    addHBoxToSelectionBox(cb.getId());
-                                }
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-                        });
+//                        eachHBoxNode.setOnMouseClicked((Event t) -> {
+//                            ListView<?> lv = ((ComboBoxListViewSkin<?>) cb.getSkin()).getListView();
+//                            lv.setOnMouseExited((Event tIn) -> {
+//                                cb.hide();
+//                            });
+//                            
+//                        });
+//                        cb.valueProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) -> {
+//                            try {
+//                                if (cb.getValue() != null) {
+//                                    addHBoxToSelectionBox(cb.getId());
+//                                }
+//                            } catch (Exception ex) {
+//                                ex.printStackTrace();
+//                            }
+//                        });
                     }
                 }
             }
@@ -2196,9 +2240,13 @@ public class SimpleController implements Initializable {
     }
 
     private boolean checkForEmptyAdvancedSearch() {
-        if (!beginSeason.equals("") || !endSeason.equals("") || !beginDistance.equals("") || !endDistance.equals("") || !shotSuccess.equals("") || !shotValue.equals("")
-                || !allSelectedPlayers.isEmpty() || !allSelectedSeasonTypes.isEmpty() || !allSelectedShotTypes.isEmpty() || !allSelectedTeams.isEmpty()
-                || !allSelectedHomeTeams.isEmpty() || !allSelectedAwayTeams.isEmpty() || !allSelectedCourtAreas.isEmpty() || !allSelectedCourtSides.isEmpty()) {
+        if (!seasonsBeginComboUser.getSelection().equals("") || !seasonsEndComboUser.getSelection().equals("")
+                || !distanceBeginComboUser.getSelection().equals("") || !distanceEndComboUser.getSelection().equals("")
+                || !shotSuccessComboUser.getSelection().equals("") || !shotValueComboUser.getSelection().equals("")
+                || !playerComboUserAdvanced.getHashSet().isEmpty() || !seasonTypesComboUser.getHashSet().isEmpty()
+                || !shotTypeComboUser.getHashSet().isEmpty() || !teamComboUser.getHashSet().isEmpty()
+                || !homeTeamComboUser.getHashSet().isEmpty() || !awayTeamComboUser.getHashSet().isEmpty()
+                || !courtSidesComboUser.getHashSet().isEmpty() || !courtAreasComboUser.getHashSet().isEmpty()) {
             return true;
         }
         return false;
@@ -2234,36 +2282,39 @@ public class SimpleController implements Initializable {
 
     }
 
-    private void setEachViewTypeButtonsOnMouseEntered(int selector, Search currentSearch) {
+    private void setEachViewTypeButtonsOnMouseEntered(int selector, Search currentSearch, Scene scene) {
         if ((searchvbox.isVisible() && currentSimpleSearch.equals(currentSearch)) || (advancedvbox.isVisible() && currentAdvancedSearch.equals(currentSearch))) {
             viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: true;");
         } else {
             viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: true;");
         }
+        scene.setCursor(Cursor.HAND);
     }
 
-    private void setEachViewTypeButtonsOnMouseExited(int selector, Search currentSearch) {
+    private void setEachViewTypeButtonsOnMouseExited(int selector, Search currentSearch, Scene scene) {
         if ((searchvbox.isVisible() && currentSimpleSearch.equals(currentSearch)) || (advancedvbox.isVisible() && currentAdvancedSearch.equals(currentSearch))) {
             viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: false;");
         } else {
             viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: false;");
         }
+        scene.setCursor(Cursor.DEFAULT);
     }
 
-    private void setAllViewTypeButtonsOnMouseActions() {
+    public void setAllViewTypeButtonsOnMouseActions() {
+        final Scene scene = selectionvbox.getScene();
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         this.traditionalbutton.setOnMouseClicked(t -> setEachViewTypeButtonOnClicked(0, Search.TRADITIONAL));
         this.gridbutton.setOnMouseClicked(t -> setEachViewTypeButtonOnClicked(1, Search.GRID));
         this.heatmapbutton.setOnMouseClicked(t -> setEachViewTypeButtonOnClicked(2, Search.HEAT));
         this.zonebutton.setOnMouseClicked(t -> setEachViewTypeButtonOnClicked(3, Search.ZONE));
-        this.traditionalbutton.setOnMouseEntered(t -> setEachViewTypeButtonsOnMouseEntered(0, Search.TRADITIONAL));
-        this.traditionalbutton.setOnMouseExited(t -> setEachViewTypeButtonsOnMouseExited(0, Search.TRADITIONAL));
-        this.gridbutton.setOnMouseEntered(t -> setEachViewTypeButtonsOnMouseEntered(1, Search.GRID));
-        this.gridbutton.setOnMouseExited(t -> setEachViewTypeButtonsOnMouseExited(1, Search.GRID));
-        this.heatmapbutton.setOnMouseEntered(t -> setEachViewTypeButtonsOnMouseEntered(2, Search.HEAT));
-        this.heatmapbutton.setOnMouseExited(t -> setEachViewTypeButtonsOnMouseExited(2, Search.HEAT));
-        this.zonebutton.setOnMouseEntered(t -> setEachViewTypeButtonsOnMouseEntered(3, Search.ZONE));
-        this.zonebutton.setOnMouseExited(t -> setEachViewTypeButtonsOnMouseExited(3, Search.ZONE));
+        this.traditionalbutton.setOnMouseEntered(t -> setEachViewTypeButtonsOnMouseEntered(0, Search.TRADITIONAL, scene));
+        this.traditionalbutton.setOnMouseExited(t -> setEachViewTypeButtonsOnMouseExited(0, Search.TRADITIONAL, scene));
+        this.gridbutton.setOnMouseEntered(t -> setEachViewTypeButtonsOnMouseEntered(1, Search.GRID, scene));
+        this.gridbutton.setOnMouseExited(t -> setEachViewTypeButtonsOnMouseExited(1, Search.GRID, scene));
+        this.heatmapbutton.setOnMouseEntered(t -> setEachViewTypeButtonsOnMouseEntered(2, Search.HEAT, scene));
+        this.heatmapbutton.setOnMouseExited(t -> setEachViewTypeButtonsOnMouseExited(2, Search.HEAT, scene));
+        this.zonebutton.setOnMouseEntered(t -> setEachViewTypeButtonsOnMouseEntered(3, Search.ZONE, scene));
+        this.zonebutton.setOnMouseExited(t -> setEachViewTypeButtonsOnMouseExited(3, Search.ZONE, scene));
     }
 
     private void runSearch() {

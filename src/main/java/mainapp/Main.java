@@ -45,7 +45,7 @@ import org.json.JSONObject;
 public class Main extends Application {
 
     private FXMLLoader loader;
-    private SimpleController sc;
+    private static SimpleController sc;
     private String hostName;
     private int portNumber;
     private ResourceBundle reader = null;
@@ -56,39 +56,45 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        reader = ResourceBundle.getBundle("dbconfig");
-        hostName = reader.getString("server.host");
-        portNumber = Integer.parseInt(reader.getString("server.port"));
         try {
-            socket = new Socket(hostName, portNumber);
-            out = new PrintWriter(socket.getOutputStream(), true);
-        } catch (UnknownHostException e) {
-            System.err.println("Don't know about host " + hostName);
-        } catch (IOException e) {
-            System.err.println("Couldn't get I/O for the connection to "
-                    + hostName);
-        }
-        loader = new FXMLLoader(getClass().getResource("/fxml/simplegrid.fxml"));
-        Parent root = (Parent) loader.load();
-        scene = new Scene(root);
-        scene.getStylesheets().add("/css/transparent-text-area.css");
-        stage.setScene(scene);
-        stage.setTitle("Dynamic NBA Shot Charts");
-        stage.setMinHeight(750.0 / 1.1);
-        stage.setMinWidth(900.0 / 1.1);
+            reader = ResourceBundle.getBundle("dbconfig");
+            hostName = reader.getString("server.host");
+            portNumber = Integer.parseInt(reader.getString("server.port"));
+            try {
+                socket = new Socket(hostName, portNumber);
+                out = new PrintWriter(socket.getOutputStream(), true);
+            } catch (UnknownHostException e) {
+                System.err.println("Don't know about host " + hostName);
+            } catch (IOException e) {
+                System.err.println("Couldn't get I/O for the connection to "
+                        + hostName);
+            }
+            loader = new FXMLLoader(getClass().getResource("/fxml/simplegrid.fxml"));
+            Parent root = (Parent) loader.load();
+            scene = new Scene(root);
+            scene.getStylesheets().add("/css/transparent-text-area.css");
+            stage.setScene(scene);
+            stage.setTitle("Dynamic NBA Shot Charts");
+            stage.setMinHeight(750.0 / 1.1);
+            stage.setMinWidth(900.0 / 1.1);
 
-        stage.show();
-        sc = loader.getController();
-        GridPane gp = sc.getGridPane();
-        VBox vbox = sc.getVBox();
-        vbox.maxWidthProperty().bind(scene.widthProperty());
-        vbox.maxHeightProperty().bind(scene.heightProperty());
-        gp.maxHeightProperty().bind(vbox.maxHeightProperty().multiply(0.9));
-        gp.maxWidthProperty().bind(vbox.maxWidthProperty());
-        ImageView iv = sc.getIV();
-        iv.fitWidthProperty().bind(scene.widthProperty().divide(900.0 / 500));
-        iv.fitHeightProperty().bind(scene.heightProperty().divide(750.0 / 470));
-        iv.setPreserveRatio(true);
+            stage.show();
+            sc = loader.getController();
+            GridPane gp = sc.getGridPane();
+            VBox vbox = sc.getVBox();
+            vbox.maxWidthProperty().bind(scene.widthProperty());
+            vbox.maxHeightProperty().bind(scene.heightProperty());
+            gp.maxHeightProperty().bind(vbox.maxHeightProperty().multiply(0.9));
+            gp.maxWidthProperty().bind(vbox.maxWidthProperty());
+            ImageView iv = sc.getIV();
+            iv.fitWidthProperty().bind(scene.widthProperty().divide(900.0 / 500));
+            iv.fitHeightProperty().bind(scene.heightProperty().divide(750.0 / 470));
+            iv.setPreserveRatio(true);
+            sc.setAllViewTypeButtonsOnMouseActions();
+            sc.populateUnchangingComboBoxes();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {
@@ -113,5 +119,9 @@ public class Main extends Application {
     @Override
     public void stop() {
         System.exit(0);
+    }
+
+    public static SimpleController getSC() {
+        return sc;
     }
 }
