@@ -503,7 +503,6 @@ public class SimpleController implements Initializable {
     }
 
     private void setAdvancedPlayerComboBox() throws IOException {
-        System.out.println("Create playerComboUserAdvanced");
         playerComboUserAdvanced = new UserInputComboBox(playercomboadvanced, new HashSet<String>(), "");
         this.activePlayers = new HashMap();
         JSONArray jsonArray = getInitAllPlayersData();
@@ -726,8 +725,8 @@ public class SimpleController implements Initializable {
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         fontGrid = new BigDecimal(STAT_GRID_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         try {
-            if (!loadingoverlay.isVisible()) {
-                if (searchvbox.isVisible()) {
+            if (searchvbox.isVisible()) {
+                if (!loadingoverlay.isVisible()) {
                     switch (currentSimpleSearch) {
                         case TRADITIONAL:
                             resizeShots();
@@ -747,25 +746,41 @@ public class SimpleController implements Initializable {
                             break;
                         default:
                             traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent; ");
-
                     }
-                    introlabel.setStyle("-fx-font: " + font * 1.5 + "px \"Serif\";");
-                    yearcombo.setStyle("-fx-font: " + font + "px \"Serif\";");
-                    playercombo.setStyle("-fx-font: " + font + "px \"Serif\";");
-                    seasoncombo.setStyle("-fx-font: " + font + "px \"Serif\";");
-                    searchbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
-                    fg.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
-                    fgfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                    fgperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                    twopoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
-                    twopointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                    twopointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                    threepoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
-                    threepointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                    threepointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-//                createThreadAndRun(currentSimpleSearch);
-
                 } else {
+                    switch (currentAdvancedSearch) {
+                        case TRADITIONAL:
+                            setViewTypeButtonStyle(0);
+                            break;
+                        case GRID:
+                            setViewTypeButtonStyle(1);
+                            break;
+                        case HEAT:
+                            setViewTypeButtonStyle(2);
+                            break;
+                        case ZONE:
+                            setViewTypeButtonStyle(3);
+                            break;
+                        default:
+                            traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent; ");
+                    }
+                }
+                introlabel.setStyle("-fx-font: " + font * 1.5 + "px \"Serif\";");
+                yearcombo.setStyle("-fx-font: " + font + "px \"Serif\";");
+                playercombo.setStyle("-fx-font: " + font + "px \"Serif\";");
+                seasoncombo.setStyle("-fx-font: " + font + "px \"Serif\";");
+                searchbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
+                fg.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
+                fgfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                fgperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                twopoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
+                twopointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                twopointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                threepoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
+                threepointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                threepointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+            } else {
+                if (!loadingoverlay.isVisible()) {
                     switch (currentAdvancedSearch) {
                         case TRADITIONAL:
                             resizeShots();
@@ -785,64 +800,79 @@ public class SimpleController implements Initializable {
                             break;
                         default:
                             traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent; ");
-
                     }
-                    fgadv.setStyle("-fx-font: " + font * 2 + "px \"Tahoma Bold\";");
-                    fgfracadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                    fgpercadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                    twopointadv.setStyle("-fx-font: " + font * 2 + "px \"Tahoma Bold\";");
-                    twopointfracadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                    twopointpercadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                    threepointadv.setStyle("-fx-font: " + font * 2 + "px \"Tahoma Bold\";");
-                    threepointfracadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                    threepointpercadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                    advancedintrolabel.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                    seasonslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    seasonsbegincombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    seasondash.setStyle("-fx-font: " + font * 1.5 + "px \"Arial\";");
-                    seasonsendcombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    shotdistancelabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    distancebegincombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    distancedash.setStyle("-fx-font: " + font * 1.5 + "px \"Arial\";");
-                    distanceendcombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    playerslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    playercomboadvanced.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    seasontypeslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    seasontypescomboadvanced.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    shotsuccesslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    shotsuccesscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    shotvaluelabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    shotvaluecombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    shottypeslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    shottypescombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    teamslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    teamscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    hometeamslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    hometeamscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    awayteamslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    awayteamscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    courtareaslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    courtareascombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    courtsideslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    courtsidescombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                    searchscrollpane.setMinHeight(advancedvbox.getLayoutBounds().getHeight() * 0.4);
-                    searchscrollpane.setMaxHeight(advancedvbox.getLayoutBounds().getHeight() * 0.4);
-                    HBox hbox;
-                    Label label;
-                    for (Node each : selectionvbox.getChildren()) {
-                        try {
-                            hbox = (HBox) each;
-                            for (Node eachInner : hbox.getChildren()) {
-                                if (eachInner.getClass().equals(Label.class)) {
-                                    label = (Label) eachInner;
-                                    label.setStyle("-fx-font: " + font * 0.85 + "px \"Arial\";");
-                                }
+                } else {
+                    switch (currentAdvancedSearch) {
+                        case TRADITIONAL:
+                            setViewTypeButtonStyle(0);
+                            break;
+                        case GRID:
+                            setViewTypeButtonStyle(1);
+                            break;
+                        case HEAT:
+                            setViewTypeButtonStyle(2);
+                            break;
+                        case ZONE:
+                            setViewTypeButtonStyle(3);
+                            break;
+                        default:
+                            traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent; ");
+                    }
+                }
+                fgadv.setStyle("-fx-font: " + font * 2 + "px \"Tahoma Bold\";");
+                fgfracadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
+                fgpercadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
+                twopointadv.setStyle("-fx-font: " + font * 2 + "px \"Tahoma Bold\";");
+                twopointfracadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
+                twopointpercadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
+                threepointadv.setStyle("-fx-font: " + font * 2 + "px \"Tahoma Bold\";");
+                threepointfracadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
+                threepointpercadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
+                advancedintrolabel.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                seasonslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                seasonsbegincombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                seasondash.setStyle("-fx-font: " + font * 1.5 + "px \"Arial\";");
+                seasonsendcombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                shotdistancelabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                distancebegincombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                distancedash.setStyle("-fx-font: " + font * 1.5 + "px \"Arial\";");
+                distanceendcombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                playerslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                playercomboadvanced.setStyle("-fx-font: " + font + "px \"Arial\";");
+                seasontypeslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                seasontypescomboadvanced.setStyle("-fx-font: " + font + "px \"Arial\";");
+                shotsuccesslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                shotsuccesscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                shotvaluelabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                shotvaluecombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                shottypeslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                shottypescombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                teamslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                teamscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                hometeamslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                hometeamscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                awayteamslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                awayteamscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                courtareaslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                courtareascombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                courtsideslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
+                courtsidescombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                searchscrollpane.setMinHeight(advancedvbox.getLayoutBounds().getHeight() * 0.4);
+                searchscrollpane.setMaxHeight(advancedvbox.getLayoutBounds().getHeight() * 0.4);
+                HBox hbox;
+                Label label;
+                for (Node each : selectionvbox.getChildren()) {
+                    try {
+                        hbox = (HBox) each;
+                        for (Node eachInner : hbox.getChildren()) {
+                            if (eachInner.getClass().equals(Label.class)) {
+                                label = (Label) eachInner;
+                                label.setStyle("-fx-font: " + font * 0.85 + "px \"Arial\";");
                             }
-                        } catch (Exception ex) {
-
                         }
+                    } catch (Exception ex) {
+
                     }
-//                createThreadAndRun(currentAdvancedSearch);
                 }
             }
             mask.setWidth(width);
@@ -1658,7 +1688,6 @@ public class SimpleController implements Initializable {
 //                endSeason = seasonsendcombo.getValue().toString();
                 break;
             case "playercomboadvanced":
-                System.out.println("addHBoxToSelectionBox");
                 multipleSelectionHBoxCreationMethods(playerComboUserAdvanced.getHashSet(), "Player: ", playercomboadvanced, input);
 //                try {
 //                    allSelectedPlayers.add(playercomboadvanced.getValue().toString());
@@ -1916,7 +1945,6 @@ public class SimpleController implements Initializable {
 
 //    private void multipleSelectionHBoxCreationMethods(HashSet hashSet, String labelPreText, ComboBox combo) {
     private void multipleSelectionHBoxCreationMethods(HashSet hashSet, String labelPreText, ComboBox combo, String input) {
-        System.out.println("multipleSelectionHBoxCreationMethods");
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         Label label;
         Button deleteButton = null;
@@ -2108,13 +2136,13 @@ public class SimpleController implements Initializable {
         int count2pTotal = 0;
         int count3pMade = 0;
         int count3pTotal = 0;
-        int max=0;
-        if (currentAdvancedSearch==Search.TRADITIONAL){
-            max=7500;
-        }else{
-            max=50000;
+        int max = 0;
+        if (currentAdvancedSearch == Search.TRADITIONAL) {
+            max = 7500;
+        } else {
+            max = 50000;
         }
-        if (jsonArray.length()<max){
+        if (jsonArray.length() < max) {
             max = jsonArray.length();
         }
         for (int i = 0; i < max; i++) {
@@ -2712,7 +2740,7 @@ public class SimpleController implements Initializable {
             BigDecimal xBig;
             BigDecimal yBig;
             int max = 7500;
-            if (jsonArray.length()<7500){
+            if (jsonArray.length() < 7500) {
                 max = jsonArray.length();
             }
             for (int i = 0; i < max; i++) {
@@ -3288,94 +3316,19 @@ public class SimpleController implements Initializable {
         } else if (!previousSimpleSearchJSON.getString("year").equals(this.yearcombo.getValue().toString())
                 || !previousSimpleSearchJSON.get("playername").equals(nameHash.get(this.playercombo.getValue().toString()))
                 || !previousSimpleSearchJSON.getString("seasontype").equals(this.seasoncombo.getValue().toString())) {
-            System.out.println("Not same search");
             return false;
         }
-        System.out.println("Same search");
         return true;
-        /*
-                 jsonObjOut.put("selector", "simple" + currentSimpleSearch.toString().toLowerCase());
-        jsonObjOut.put("year", this.yearcombo.getValue().toString());
-        jsonObjOut.put("playername", nameHash.get(this.playercombo.getValue().toString()));
-        jsonObjOut.put("seasontype", this.seasoncombo.getValue().toString());
-         */
     }
 
     private boolean checkForSameAdvancedSearch() {
-//        playerComboUserAdvanced.getHashSet().forEach((each) -> allPlayers.add(Integer.parseInt(nameHash.get(each)[0])));
-//        JSONArray teamIds = new JSONArray();
-//        teamComboUser.getHashSet().forEach((each) -> teamIds.put(relevantTeamNameIDHashMap.get(each)));
-//        JSONArray homeTeamIds = new JSONArray();
-//        homeTeamComboUser.getHashSet().forEach((each) -> homeTeamIds.put(relevantTeamNameIDHashMap.get(each)));
-//        JSONArray awayTeamIds = new JSONArray();
-//        awayTeamComboUser.getHashSet().forEach((each) -> awayTeamIds.put(relevantTeamNameIDHashMap.get(each)));
         if (previousAdvancedSearchJSON == null) {
             return false;
         } else {
-            JSONObject tempJSON = createTempJsonOutput();
-            if (!tempJSON.toString().equals(previousAdvancedSearchJSON.toString())){
-                System.out.println(tempJSON.toString());
-                System.out.println(previousAdvancedSearchJSON.toString());
-                System.out.println("Returned False");
+            if (!createTempJsonOutput().toString().equals(previousAdvancedSearchJSON.toString())) {
                 return false;
-            } else{
-                System.out.println("Returned True");
             }
-//            HashSet<String> allPlayers = new HashSet();
-//            JSONArray arrayPlayers = (JSONArray) previousAdvancedSearchJSON.get("allSelectedPlayers");
-//            for (int i = 0; i < arrayPlayers.length(); i++) {
-//                allPlayers.add(((nameHash.get((String) ((arrayPlayers.get(i)[1]).trim()) + " " + (nameHash.get((String) arrayPlayers.get(i))[2]).trim()).trim());
-//            }
-//            if (!previousAdvancedSearchJSON.getString("beginSeason").equals(seasonsBeginComboUser.getSelection())
-//                    || !previousAdvancedSearchJSON.getString("endSeason").equals(seasonsEndComboUser.getSelection())
-//                    || !allPlayers.equals(playerComboUserAdvanced.getHashSet())
-//                    || !previousAdvancedSearchJSON.get("allSelectedSeasonTypes").equals(seasonTypesComboUser.getHashSet())
-//                    || !previousAdvancedSearchJSON.getString("beginDistance").equals(distanceBeginComboUser.getSelection())
-//                    || !previousAdvancedSearchJSON.getString("endDistance").equals(distanceEndComboUser.getSelection())
-//                    || !previousAdvancedSearchJSON.getString("shotSuccess").equals(shotSuccessComboUser.getSelection())
-//                    || !previousAdvancedSearchJSON.getString("shotValue").equals(shotValueComboUser.getSelection())
-//                    || !previousAdvancedSearchJSON.get("allSelectedShotTypes").equals(shotTypeComboUser.getHashSet())
-//                    || !previousAdvancedSearchJSON.get("allSelectedTeams").equals(teamIds)
-//                    || !previousAdvancedSearchJSON.get("allSelectedHomeTeams").equals(homeTeamIds)
-//                    || !previousAdvancedSearchJSON.get("allSelectedAwayTeams").equals(awayTeamIds)
-//                    || !previousAdvancedSearchJSON.get("allSelectedCourtAreas").equals(courtAreasComboUser.getHashSet())
-//                    || !previousAdvancedSearchJSON.get("allSelectedCourtSides").equals(courtSidesComboUser.getHashSet())) {
-//                System.out.println(previousAdvancedSearchJSON.getString("beginSeason").equals(seasonsBeginComboUser.getSelection()));
-//                System.out.println(previousAdvancedSearchJSON.getString("endSeason").equals(seasonsEndComboUser.getSelection()));
-//                System.out.println(allPlayers.equals(playerComboUserAdvanced.getHashSet()));
-////                System.out.println(previousAdvancedSearchJSON.get("allSelectedPlayers"));
-////                System.out.println(previousAdvancedSearchJSON.get("allSelectedPlayers").getClass());
-//                System.out.println(allPlayers);
-//                System.out.println(allPlayers.getClass());
-//                System.out.println(playerComboUserAdvanced.getHashSet());
-//                System.out.println(playerComboUserAdvanced.getHashSet().getClass());
-//                System.out.println(previousAdvancedSearchJSON.get("allSelectedSeasonTypes").equals(seasonTypesComboUser.getHashSet())
-//                );
-//                System.out.println(previousAdvancedSearchJSON.getString("beginDistance").equals(distanceBeginComboUser.getSelection())
-//                );
-//                System.out.println(previousAdvancedSearchJSON.getString("endDistance").equals(distanceEndComboUser.getSelection())
-//                );
-//                System.out.println(previousAdvancedSearchJSON.getString("shotSuccess").equals(shotSuccessComboUser.getSelection())
-//                );
-//                System.out.println(previousAdvancedSearchJSON.getString("shotValue").equals(shotValueComboUser.getSelection())
-//                );
-//                System.out.println(previousAdvancedSearchJSON.get("allSelectedShotTypes").equals(shotTypeComboUser.getHashSet())
-//                );
-//                System.out.println(previousAdvancedSearchJSON.get("allSelectedTeams").equals(teamIds)
-//                );
-//                System.out.println(previousAdvancedSearchJSON.get("allSelectedHomeTeams").equals(homeTeamIds)
-//                );
-//                System.out.println(previousAdvancedSearchJSON.get("allSelectedAwayTeams").equals(awayTeamIds)
-//                );
-//                System.out.println(previousAdvancedSearchJSON.get("allSelectedCourtAreas").equals(courtAreasComboUser.getHashSet())
-//                );
-//                System.out.println(previousAdvancedSearchJSON.get("allSelectedCourtSides").equals(courtSidesComboUser.getHashSet())
-//                );
-//
-//                return false;
-//            }
         }
-        System.out.println("Same search");
         return true;
     }
 
@@ -3384,19 +3337,15 @@ public class SimpleController implements Initializable {
             if (searchvbox.isVisible()) {
                 if (!checkForSameSimpleSearch()) {
                     previousSimpleSearchResults = getSimpleShotData();
-                    System.out.println("Got new");
                     return previousSimpleSearchResults;
                 } else {
-                    System.out.println("Using previous");
                     return previousSimpleSearchResults;
                 }
             } else {
                 if (!checkForSameAdvancedSearch()) {
                     previousAdvancedSearchResults = createAdvancedJSONOutput(currentAdvancedSearch);
-                    System.out.println("Got new");
                     return previousAdvancedSearchResults;
                 } else {
-                    System.out.println("Using previous");
                     return previousAdvancedSearchResults;
                 }
             }
