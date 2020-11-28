@@ -120,8 +120,7 @@ public class SimpleController implements Initializable {
     private final int MAX_DISTANCE_BETWEEN_NODES_HEAT = 30;
     private LinkedList<Circle> allHeatCircles;
     private ArrayList<Node> allZoneFXML = new ArrayList();
-    private LinkedList<Label> allLabels;
-    private LinkedList<Label> allPercentLabels;
+    private LinkedList<Label> allLabels, allPercentLabels;
     private LinkedList<Node> allShapes;
     private HashMap<Integer, Double[]> allZones;
     private HashMap<Integer, Double> allZoneAverages;
@@ -289,13 +288,13 @@ public class SimpleController implements Initializable {
         } catch (IOException ex) {
             System.out.println("Error caught in creation of nameHash");
         }
-        try {
-            Thread warmupThread = new Thread(() -> warmupHeat());
-            warmupThread.start();
-            System.out.println("Started Warmup");
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+//        try {
+//            Thread warmupThread = new Thread(() -> warmupHeat());
+//            warmupThread.start();
+//            System.out.println("Started Warmup");
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
         yearcombo.setItems(FXCollections.observableArrayList(makeYears()));
         this.yearcombo.setValue("2019-20");
         this.playercombo.setValue("Aaron Gordon");
@@ -1092,49 +1091,6 @@ public class SimpleController implements Initializable {
         zonelegendlowerlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
         zonelegendupperlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
     }
-
-    private void createThreadAndRun(Search selector) {
-        Search givenSearch = selector;
-        switch (givenSearch) {
-            case TRADITIONAL:
-                if (tTrad.isAlive()) {
-                    tTrad.interrupt();
-                }
-                tTrad = new Thread(() -> {
-                    Platform.runLater(() -> threadRunner(givenSearch));
-                });
-                tTrad.start();
-                break;
-            case GRID:
-                if (tGrid.isAlive()) {
-                    tGrid.interrupt();
-                }
-                tGrid = new Thread(() -> {
-                    Platform.runLater(() -> threadRunner(givenSearch));
-                });
-                tGrid.start();
-                break;
-            case HEAT:
-                if (tHeat.isAlive()) {
-                    tHeat.interrupt();
-                }
-                tHeat = new Thread(() -> {
-                    Platform.runLater(() -> threadRunner(givenSearch));
-                });
-                tHeat.start();
-                break;
-            case ZONE:
-                if (tZone.isAlive()) {
-                    tZone.interrupt();
-                }
-                tZone = new Thread(() -> {
-                    Platform.runLater(() -> threadRunner(givenSearch));
-                });
-                tZone.start();
-                break;
-        }
-    }
-
     private void removeAllShotsFromView() {
         ArrayList<Node> toRemove = new ArrayList();
         for (Node each : imagegrid.getChildren()) {
@@ -1328,7 +1284,6 @@ public class SimpleController implements Initializable {
             shape.setFill(Color.web("#b2b2b2"));
         } else {
             Double diff = playerValue - allZoneAverages.get(i);
-
             if (diff > 0.06) {
                 shape.setFill(Color.web("#fc2121"));
             } else if (diff < 0.06 && diff >= 0.04) {
@@ -1375,7 +1330,6 @@ public class SimpleController implements Initializable {
             arc.setFill(Color.web("#b2b2b2"));
         } else {
             Double diff = playerValue - allZoneAverages.get(i);
-
             if (diff > 0.06) {
                 arc.setFill(Color.web("#fc2121"));
             } else if (diff < 0.06 && diff >= 0.04) {
@@ -1468,16 +1422,10 @@ public class SimpleController implements Initializable {
         courtsideslabel.prefWidthProperty().bind(advancedvboxinner.widthProperty().multiply(0.9));
         courtsidescombo.prefWidthProperty().bind(advancedvboxinner.widthProperty().multiply(0.66));
         imageview.setImage(new Image("/images/newtransparent.png"));
-
         advancedvbox.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
         advancedvboxinner.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
         searchscrollpane.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
         selectionscrollpane.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
-//        try {
-//            populateUnchangingComboBoxes();
-//        } catch (IOException ex) {
-//            ex.printStackTrace();
-//        }
         selectionvbox.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
         Stop[] stops = new Stop[]{new Stop(0, Color.BLACK), new Stop(1, Color.RED)};
         LinearGradient lg1 = new LinearGradient(0, 0, 1, 0, true, CycleMethod.NO_CYCLE, stops);
@@ -1559,105 +1507,11 @@ public class SimpleController implements Initializable {
 
     }
 
-    private void threadRunner(Search search) {
-        try {
-
-            for (int i = 0; i < 3; i++) {
-                try {
-                    Thread.sleep(300);
-                    switch (search) {
-                        case TRADITIONAL:
-                            resizeShots();
-                            break;
-                        case GRID:
-                            resizeGrid();
-                            break;
-                        case HEAT:
-                            resizeHeat();
-                            break;
-                        case ZONE:
-                            resizeZone();
-                            break;
-                    }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-            Thread.currentThread().interrupt();
-        } catch (Exception ex) {
-            Thread.currentThread().interrupt();
-            System.out.println("Error caught running resize threads");
-        }
-    }
-
-    private void ultraFineHeatMapThreader() throws InterruptedException {
-        allUltraFineHeatThreads = new ArrayList();
-//        offsetHeat = 10;
-        int maxThreads = 6;
-        Thread thread;
-        for (int i = 0; i < maxThreads; i++) {
-            final int iFinal = i;
-            final int iMaxFinal = maxThreads;
-            thread = new Thread(() -> {
-                double aSum = 0;
-                double bSum = 0;
-                int p = 2;
-                int eachCounter = 0;
-                int iFinalThread = iFinal;
-                for (Coordinate each : coordAverages.keySet()) {
-                    if (each.getY() >= (452 / iMaxFinal) * iFinalThread - 52 && each.getY() < (452 / iMaxFinal) * (iFinalThread + 1) - 52
-                            && each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0) {
-                        aSum = 0;
-                        bSum = 0;
-                        for (Coordinate each2 : coordAverages.keySet()) {
-                            if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
-                                aSum = aSum + ((coordAverages.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
-                                bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
-                                if (coordAverages.get(each2).get(1).intValue() != 0) {
-                                    eachCounter++;
-                                }
-                            }
-
-                        }
-                        if (eachCounter > 1) {
-                            coordValue.put(each, aSum / bSum);
-                        } else {
-                            coordValue.put(each, 0.0);
-                        }
-                    }
-
-                }
-
-            });
-            allUltraFineHeatThreads.add(thread);
-        }
-//        long start = System.nanoTime();
-        allUltraFineHeatThreads.forEach(eachThread -> eachThread.start());
-        boolean done = false;
-        while (!done) {
-            try {
-                for (Thread eachThread : allUltraFineHeatThreads) {
-                    eachThread.join();
-                }
-//                Thread.sleep(1000);
-                done = true;
-            } catch (InterruptedException ex) {
-
-            }
-
-        }
-//        long end = System.nanoTime();
-//        System.out.println("ultraFineThreader: " + (end - start) * 1.0 / 1000000000 + " seconds");
-
-    }
-
     private void initAdvanced() throws IOException {
         seasonsBeginComboUser = new UserInputComboBox(seasonsbegincombo, null, "");
         seasonsBeginComboUser.getComboBox().setItems(FXCollections.observableArrayList(makeYears()));
-//        seasonsbegincombo.setItems(FXCollections.observableArrayList(makeYears()));
         seasonsEndComboUser = new UserInputComboBox(seasonsendcombo, null, "");
         seasonsEndComboUser.getComboBox().setItems(FXCollections.observableArrayList(makeYears()));
-//        seasonsendcombo.setItems(FXCollections.observableArrayList(makeYears()));
         setAdvancedPlayerComboBox();
         setAdvancedSeasonsComboBox();
         setShotDistanceCombo();
@@ -1672,112 +1526,61 @@ public class SimpleController implements Initializable {
         distanceBeginComboUser.getComboBox().setItems(FXCollections.observableArrayList(distances));
         distanceEndComboUser = new UserInputComboBox(distanceendcombo, null, "");
         distanceEndComboUser.getComboBox().setItems(FXCollections.observableArrayList(distances));
-
-//        distancebegincombo.setItems(FXCollections.observableArrayList(distances));
-//        distanceendcombo.setItems(FXCollections.observableArrayList(distances));
     }
 
     public void addHBoxToSelectionBox(String selector, String input) {
         switch (selector) {
             case "seasonsbegincombo":
                 singleSelectionHBoxCreationMethods(input, "Seasons after and including ", seasonsbegincombo);
-//                beginSeason = seasonsbegincombo.getValue().toString();
                 break;
             case "seasonsendcombo":
                 singleSelectionHBoxCreationMethods(input, "Seasons before and including ", seasonsendcombo);
-//                endSeason = seasonsendcombo.getValue().toString();
                 break;
             case "playercomboadvanced":
                 multipleSelectionHBoxCreationMethods(playerComboUserAdvanced.getHashSet(), "Player: ", playercomboadvanced, input);
-//                try {
-//                    allSelectedPlayers.add(playercomboadvanced.getValue().toString());
-//                } catch (Exception ex) {
-//
-//                }
                 break;
             case "seasontypescomboadvanced":
                 multipleSelectionHBoxCreationMethods(seasonTypesComboUser.getHashSet(), "Season Type: ", seasontypescomboadvanced, input);
-//                try {
-//                    seasonTypesComboUser.getHashSet().add(seasontypescomboadvanced.getValue().toString());
-//                } catch (Exception ex) {
-//                    
-//                }
                 break;
             case "distancebegincombo":
                 singleSelectionHBoxCreationMethods(input, "Minimum Distance: ", distancebegincombo);
-//                distanceBeginComboUser.setSelection(selector); = distancebegincombo.getValue().toString();
                 break;
             case "distanceendcombo":
                 singleSelectionHBoxCreationMethods(input, "Maximum Distance: ", distanceendcombo);
-//                endDistance = distanceendcombo.getValue().toString();
                 break;
             case "shotsuccesscombo":
                 singleSelectionHBoxCreationMethods(input, "Shot Success: ", shotsuccesscombo);
-//                shotSuccess = shotsuccesscombo.getValue().toString();
                 break;
             case "shotvaluecombo":
                 singleSelectionHBoxCreationMethods(input, "Shot Value: ", shotvaluecombo);
-//                shotValue = shotvaluecombo.getValue().toString();
                 break;
             case "shottypescombo":
                 multipleSelectionHBoxCreationMethods(shotTypeComboUser.getHashSet(), "Shot Type: ", shottypescombo, input);
-//                try {
-////                    allSelectedShotTypes.add(shottypescombo.getValue().toString());
-//                } catch (Exception ex) {
-//                    
-//                }
                 break;
             case "teamscombo":
                 multipleSelectionHBoxCreationMethods(teamComboUser.getHashSet(), "Team: ", teamscombo, input);
-//                try {
-//                    allSelectedTeams.add(teamscombo.getValue().toString());
-//                } catch (Exception ex) {
-//                    
-//                }
                 break;
             case "hometeamscombo":
                 multipleSelectionHBoxCreationMethods(homeTeamComboUser.getHashSet(), "Home Team: ", hometeamscombo, input);
-//                try {
-//                    allSelectedHomeTeams.add(hometeamscombo.getValue().toString());
-//                } catch (Exception ex) {
-//                    
-//                }
                 break;
             case "awayteamscombo":
                 multipleSelectionHBoxCreationMethods(awayTeamComboUser.getHashSet(), "Away Team: ", awayteamscombo, input);
-//                try {
-//                    allSelectedAwayTeams.add(awayteamscombo.getValue().toString());
-//                } catch (Exception ex) {
-//                    
-//                }
                 break;
             case "courtareascombo":
                 multipleSelectionHBoxCreationMethods(courtAreasComboUser.getHashSet(), "Court Area: ", courtareascombo, input);
-//                try {
-//                    allSelectedCourtAreas.add(courtareascombo.getValue().toString());
-//                } catch (Exception ex) {
-//                    
-//                }
                 break;
             case "courtsidescombo":
                 multipleSelectionHBoxCreationMethods(courtSidesComboUser.getHashSet(), "Court Side: ", courtsidescombo, input);
-//                try {
-//                    allSelectedCourtSides.add(courtsidescombo.getValue().toString());
-//                } catch (Exception ex) {
-//                    
-//                }
                 break;
-
         }
     }
 
     private void singleSelectionHBoxCreationMethods(String alreadySelected, String labelPreText, ComboBox combo) {
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         Label tempLabel;
-        Label labelToReplace = null;
+        Label labelToReplace ;
         Label label;
-        Button deleteButton = null;
-        Button tempButton = null;
+        Button deleteButton ;
         HBox tempHBox;
         HBox newHBox;
         Insets insets = new Insets(5, 5, 5, 5);
@@ -1787,23 +1590,17 @@ public class SimpleController implements Initializable {
                 if (each.getClass().equals(HBox.class)) {
                     tempHBox = (HBox) each;
                     for (Node innerEach : tempHBox.getChildren()) {
-                        if (innerEach.getClass().equals(Button.class)) {
-                            tempButton = (Button) innerEach;
-                        } else {
+                        if (!innerEach.getClass().equals(Button.class)) {
                             tempLabel = (Label) innerEach;
                             if (tempLabel.getText().startsWith(labelPreText)) {
                                 labelToReplace = tempLabel;
                                 labelToReplace.setText(labelPreText + alreadySelected);
-                                deleteButton = tempButton;
                                 break;
                             }
                         }
-
                     }
-
                 }
             }
-//            alreadySelected = combo.getValue().toString();
         } else {
             newHBox = new HBox();
             newHBox.setAlignment(Pos.CENTER_LEFT);
@@ -1811,7 +1608,6 @@ public class SimpleController implements Initializable {
             newHBox.setMaxHeight(25.0);
             newHBox.setMinWidth(100.0);
             newHBox.setPadding(insetsHBox);
-
             final String SELECTED = combo.getId();
             deleteButton = new Button("X");
             deleteButton.setStyle("-fx-text-fill: red;-fx-background-color: transparent; ");
@@ -1822,12 +1618,8 @@ public class SimpleController implements Initializable {
                 deleteButtonInner(SELECTED, HBOX, labelPreText);
                 selectionvbox.getChildren().remove(newHBox);
             });
-            deleteButton.setOnMouseEntered((MouseEvent t) -> {
-                FINALSCENE.setCursor(Cursor.HAND);
-            });
-            deleteButton.setOnMouseExited((MouseEvent t) -> {
-                FINALSCENE.setCursor(Cursor.DEFAULT);
-            });
+            deleteButton.setOnMouseEntered(t -> FINALSCENE.setCursor(Cursor.HAND));
+            deleteButton.setOnMouseExited(t -> FINALSCENE.setCursor(Cursor.DEFAULT));
             deleteButton.prefHeightProperty().bind(newHBox.prefHeightProperty());
             deleteButton.prefWidthProperty().bind(deleteButton.prefHeightProperty());
             alreadySelected = combo.getValue().toString();
@@ -1943,43 +1735,31 @@ public class SimpleController implements Initializable {
         }
     }
 
-//    private void multipleSelectionHBoxCreationMethods(HashSet hashSet, String labelPreText, ComboBox combo) {
     private void multipleSelectionHBoxCreationMethods(HashSet hashSet, String labelPreText, ComboBox combo, String input) {
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-        Label label;
-        Button deleteButton = null;
-        HBox newHBox;
         Insets insets = new Insets(5, 5, 5, 5);
         Insets insetsHBox = new Insets(0, 0, 0, 20);
-//        if (!hashSet.contains(combo.getValue().toString())) {
-        newHBox = new HBox();
+        HBox newHBox = new HBox();
         newHBox.setAlignment(Pos.CENTER_LEFT);
         newHBox.setMinHeight(25.0);
         newHBox.setMaxHeight(25.0);
         newHBox.setMinWidth(100.0);
         newHBox.setPadding(insetsHBox);
-
         final String SELECTED = combo.getId();
-
-        deleteButton = new Button("X");
+        Button deleteButton = new Button("X");
         deleteButton.setStyle("-fx-text-fill: red;-fx-background-color: transparent;");
         newHBox.getChildren().add(deleteButton);
         final HBox HBOX = (HBox) deleteButton.getParent();
         final Scene FINALSCENE = selectionvbox.getScene();
-
-        deleteButton.setOnMouseClicked((Event t) -> {
+        deleteButton.setOnMouseClicked(t -> {
             deleteButtonInner(SELECTED, HBOX, labelPreText);
             selectionvbox.getChildren().remove(newHBox);
         });
-        deleteButton.setOnMouseEntered((MouseEvent t) -> {
-            FINALSCENE.setCursor(Cursor.HAND);
-        });
-        deleteButton.setOnMouseExited((MouseEvent t) -> {
-            FINALSCENE.setCursor(Cursor.DEFAULT);
-        });
+        deleteButton.setOnMouseEntered(t -> FINALSCENE.setCursor(Cursor.HAND));
+        deleteButton.setOnMouseExited(t -> FINALSCENE.setCursor(Cursor.DEFAULT));
         deleteButton.prefHeightProperty().bind(newHBox.prefHeightProperty());
         deleteButton.prefWidthProperty().bind(deleteButton.prefHeightProperty());
-        label = new Label();
+        Label label = new Label();
         label.setText(labelPreText + input);
         label.setStyle("-fx-font: " + font * 0.85 + "px \"Arial\";");
         label.setPadding(insets);
@@ -1987,7 +1767,6 @@ public class SimpleController implements Initializable {
         label.setAlignment(Pos.CENTER_LEFT);
         newHBox.getChildren().add(label);
         selectionvbox.getChildren().add(newHBox);
-//        }
     }
 
     public void populateUnchangingComboBoxes() throws IOException {
@@ -1995,12 +1774,10 @@ public class SimpleController implements Initializable {
         Collections.addAll(tempList, "Makes", "Misses");
         shotSuccessComboUser = new UserInputComboBox(shotsuccesscombo, null, "");
         shotSuccessComboUser.getComboBox().setItems(FXCollections.observableArrayList(tempList));
-//        shotsuccesscombo.setItems(FXCollections.observableArrayList(tempList));
         tempList = new ArrayList();
         Collections.addAll(tempList, "2PT", "3PT");
         shotValueComboUser = new UserInputComboBox(shotvaluecombo, null, "");
         shotValueComboUser.getComboBox().setItems(FXCollections.observableArrayList(tempList));
-//        shotvaluecombo.setItems(FXCollections.observableArrayList(tempList));
         tempList = getShotTypesList();
         shotTypeComboUser = new UserInputComboBox(shottypescombo, new HashSet<String>(), "");
         shotTypeComboUser.getComboBox().setItems(FXCollections.observableArrayList(tempList));
@@ -2062,14 +1839,11 @@ public class SimpleController implements Initializable {
                 "Left Corner 3", "Right Corner 3", "Above the Break 3", "Backcourt");
         courtAreasComboUser = new UserInputComboBox(courtareascombo, new HashSet<String>(), "");
         courtAreasComboUser.getComboBox().setItems(FXCollections.observableArrayList(tempList));
-//        courtareascombo.setItems(FXCollections.observableArrayList(tempList));
         tempList = new ArrayList();
         Collections.addAll(tempList, "Left", "Left-Center", "Center",
                 "Right-Center", "Right", "Back Court");
         courtSidesComboUser = new UserInputComboBox(courtsidescombo, new HashSet<String>(), "");
         courtSidesComboUser.getComboBox().setItems(FXCollections.observableArrayList(tempList));
-
-//        courtsidescombo.setItems(FXCollections.observableArrayList(tempList));
     }
 
     private ArrayList getShotTypesList() throws IOException {
@@ -2084,40 +1858,9 @@ public class SimpleController implements Initializable {
     }
 
     private JSONArray createAdvancedJSONOutput(Search searchTypeSelector) throws IOException, Exception {
-        JSONObject obj = createTempJsonOutput();
-//        JSONObject obj = new JSONObject();
-//        obj.put("beginSeason", seasonsBeginComboUser.getSelection());
-//        obj.put("endSeason", seasonsEndComboUser.getSelection());
-//        ArrayList<Integer> allSelectedPlayerIDs = new ArrayList();
-//        for (String each : playerComboUserAdvanced.getHashSet()) {
-//            allSelectedPlayerIDs.add(Integer.parseInt(nameHash.get(each)[0]));
-//        }
-//        obj.put("allSelectedPlayers", allSelectedPlayerIDs);
-//        obj.put("allSelectedSeasonTypes", seasonTypesComboUser.getHashSet());
-//        obj.put("beginDistance", distanceBeginComboUser.getSelection());
-//        obj.put("endDistance", distanceEndComboUser.getSelection());
-//        obj.put("shotSuccess", shotSuccessComboUser.getSelection());
-//        obj.put("shotValue", shotValueComboUser.getSelection());
-//        obj.put("allSelectedShotTypes", shotTypeComboUser.getHashSet());
-//        ArrayList<Integer> teamIds = new ArrayList();
-//        for (String each : teamComboUser.getHashSet()) {
-//            teamIds.add(relevantTeamNameIDHashMap.get(each));
-//        }
-//        obj.put("allSelectedTeams", teamIds);
-//        teamIds = new ArrayList();
-//        for (String each : homeTeamComboUser.getHashSet()) {
-//            teamIds.add(relevantTeamNameIDHashMap.get(each));
-//        }
-//        obj.put("allSelectedHomeTeams", teamIds);
-//        teamIds = new ArrayList();
-//        for (String each : awayTeamComboUser.getHashSet()) {
-//            teamIds.add(relevantTeamNameIDHashMap.get(each));
-//        }
-//        obj.put("allSelectedAwayTeams", teamIds);
-//        obj.put("allSelectedCourtAreas", courtAreasComboUser.getHashSet());
-//        obj.put("allSelectedCourtSides", courtSidesComboUser.getHashSet());
+        JSONObject obj = createJsonObjectOutput();
         previousAdvancedSearchJSON = obj;
-        JSONObject newObj = createTempJsonOutput();
+        JSONObject newObj = createJsonObjectOutput();
         newObj.put("selector", "advanced" + searchTypeSelector.toString().toLowerCase());
         Main.getPrintWriterOut().println(newObj.toString());
         return new JSONArray(Main.getServerResponse().readLine());
@@ -2605,14 +2348,12 @@ public class SimpleController implements Initializable {
                     int iFinalThread = iFinal;
                     int maxSurroundingCoords = (int) Math.pow(MAX_DISTANCE_BETWEEN_NODES_HEAT * 2, 2);
                     int surroundingCounter;
-//                    for (Coordinate each : coordAverages.keySet()) {
                     for (Coordinate each : coordsList) {
                         if (each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0 && each.getY() >= (452 / iMaxFinal) * iFinalThread - 52
                                 && each.getY() < (452 / iMaxFinal) * (iFinalThread + 1) - 52) {
                             aSum = 0;
                             bSum = 0;
                             surroundingCounter = 0;
-//                            for (Coordinate each2 : coordAverages.keySet()) {
                             for (Coordinate each2 : coordsList) {
                                 if (surroundingCounter >= maxSurroundingCoords) {
                                     break;
@@ -3203,95 +2944,95 @@ public class SimpleController implements Initializable {
         progressvbox.setVisible(false);
     }
 
-    private void warmupHeat() {
-        Coordinate coord;
-        HashMap<Coordinate, ArrayList<Double>> coordAveragesTemp = new HashMap();
-        for (int x = -250; x < 251; x++) {
-            for (int y = -52; y < 400; y++) {
-                coord = new Coordinate(x, y);
-                ArrayList info = new ArrayList();
-                info.add(0.0);
-                info.add(0.0);
-                info.add(0.0);
-                coordAveragesTemp.put(coord, info);
-            }
-        }
-        JSONObject jsonObjOut = new JSONObject();
-        jsonObjOut.put("selector", "simpleheat");
-        jsonObjOut.put("year", "2019-20");
-        jsonObjOut.put("playername", nameHash.get("Aaron Gordon"));
-        jsonObjOut.put("seasontype", "Regular Season");
-        try {
-            Main.getPrintWriterOut().println(jsonObjOut.toString());
-            JSONArray jsonArray = new JSONArray(Main.getServerResponse().readLine());
-
-            Coordinate tempCoord;
-            JSONObject eachShot;
-            for (int i = 0; i < jsonArray.length(); i++) {
-                eachShot = jsonArray.getJSONObject(i);
-                if (eachShot.getInt("y") >= 400) {
-                    continue;
-                }
-                tempCoord = new Coordinate(eachShot.getInt("x"), eachShot.getInt("y"));
-                coordAveragesTemp.get(tempCoord).set(1, coordAveragesTemp.get(tempCoord).get(1) + 1);
-                if (eachShot.getInt("make") == 1) {
-                    coordAveragesTemp.get(tempCoord).set(0, coordAveragesTemp.get(tempCoord).get(0) + 1);
-                }
-            }
-            for (Coordinate each : coordAveragesTemp.keySet()) {
-                if (coordAveragesTemp.get(each).get(1) != 0) {
-                    coordAveragesTemp.get(each).set(2, coordAveragesTemp.get(each).get(0) * 1.0 / coordAveragesTemp.get(each).get(1) * 1.0);
-                }
-
-            }
-            int maxThreads = 4;
-            ArrayList<Thread> threads;
-            for (int iterations = 0; iterations < 1; iterations++) {
-                threads = new ArrayList();
-                Thread thread;
-                for (int i = 0; i < maxThreads; i++) {
-                    final int iFinal = i;
-                    final int iMaxFinal = maxThreads;
-                    thread = new Thread(() -> {
-                        double aSum = 0;
-                        double bSum = 0;
-                        int p = 2;
-                        int iFinalThread = iFinal;
-                        for (Coordinate each : coordAveragesTemp.keySet()) {
-                            if (each.getY() >= (452 / iMaxFinal) * iFinalThread - 52 && each.getY() < (452 / iMaxFinal) * (iFinalThread + 1) - 52
-                                    && each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0) {
-                                aSum = 0;
-                                bSum = 0;
-                                for (Coordinate each2 : coordAveragesTemp.keySet()) {
-                                    if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
-                                        aSum = aSum + ((coordAveragesTemp.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
-                                        bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
-                                    }
-                                }
-                            }
-                        }
-                    });
-                    threads.add(thread);
-                }
-                threads.forEach(eachThread -> eachThread.start());
-                System.out.println("Threads Running");
-                boolean done = false;
-                while (!done) {
-                    try {
-                        for (Thread eachThread : threads) {
-                            eachThread.join();
-                        }
-                        done = true;
-                    } catch (InterruptedException ex) {
-
-                    }
-                }
-                System.out.println("Threads Finished");
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
+//    private void warmupHeat() {
+//        Coordinate coord;
+//        HashMap<Coordinate, ArrayList<Double>> coordAveragesTemp = new HashMap();
+//        for (int x = -250; x < 251; x++) {
+//            for (int y = -52; y < 400; y++) {
+//                coord = new Coordinate(x, y);
+//                ArrayList info = new ArrayList();
+//                info.add(0.0);
+//                info.add(0.0);
+//                info.add(0.0);
+//                coordAveragesTemp.put(coord, info);
+//            }
+//        }
+//        JSONObject jsonObjOut = new JSONObject();
+//        jsonObjOut.put("selector", "simpleheat");
+//        jsonObjOut.put("year", "2019-20");
+//        jsonObjOut.put("playername", nameHash.get("Aaron Gordon"));
+//        jsonObjOut.put("seasontype", "Regular Season");
+//        try {
+//            Main.getPrintWriterOut().println(jsonObjOut.toString());
+//            JSONArray jsonArray = new JSONArray(Main.getServerResponse().readLine());
+//
+//            Coordinate tempCoord;
+//            JSONObject eachShot;
+//            for (int i = 0; i < jsonArray.length(); i++) {
+//                eachShot = jsonArray.getJSONObject(i);
+//                if (eachShot.getInt("y") >= 400) {
+//                    continue;
+//                }
+//                tempCoord = new Coordinate(eachShot.getInt("x"), eachShot.getInt("y"));
+//                coordAveragesTemp.get(tempCoord).set(1, coordAveragesTemp.get(tempCoord).get(1) + 1);
+//                if (eachShot.getInt("make") == 1) {
+//                    coordAveragesTemp.get(tempCoord).set(0, coordAveragesTemp.get(tempCoord).get(0) + 1);
+//                }
+//            }
+//            for (Coordinate each : coordAveragesTemp.keySet()) {
+//                if (coordAveragesTemp.get(each).get(1) != 0) {
+//                    coordAveragesTemp.get(each).set(2, coordAveragesTemp.get(each).get(0) * 1.0 / coordAveragesTemp.get(each).get(1) * 1.0);
+//                }
+//
+//            }
+//            int maxThreads = 4;
+//            ArrayList<Thread> threads;
+//            for (int iterations = 0; iterations < 1; iterations++) {
+//                threads = new ArrayList();
+//                Thread thread;
+//                for (int i = 0; i < maxThreads; i++) {
+//                    final int iFinal = i;
+//                    final int iMaxFinal = maxThreads;
+//                    thread = new Thread(() -> {
+//                        double aSum = 0;
+//                        double bSum = 0;
+//                        int p = 2;
+//                        int iFinalThread = iFinal;
+//                        for (Coordinate each : coordAveragesTemp.keySet()) {
+//                            if (each.getY() >= (452 / iMaxFinal) * iFinalThread - 52 && each.getY() < (452 / iMaxFinal) * (iFinalThread + 1) - 52
+//                                    && each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0) {
+//                                aSum = 0;
+//                                bSum = 0;
+//                                for (Coordinate each2 : coordAveragesTemp.keySet()) {
+//                                    if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
+//                                        aSum = aSum + ((coordAveragesTemp.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
+//                                        bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    });
+//                    threads.add(thread);
+//                }
+//                threads.forEach(eachThread -> eachThread.start());
+//                System.out.println("Threads Running");
+//                boolean done = false;
+//                while (!done) {
+//                    try {
+//                        for (Thread eachThread : threads) {
+//                            eachThread.join();
+//                        }
+//                        done = true;
+//                    } catch (InterruptedException ex) {
+//
+//                    }
+//                }
+//                System.out.println("Threads Finished");
+//            }
+//        } catch (IOException ex) {
+//            ex.printStackTrace();
+//        }
+//    }
 
     private void createAlwaysRunningResizer() {
         Task task = new Task<Void>() {
@@ -3325,7 +3066,7 @@ public class SimpleController implements Initializable {
         if (previousAdvancedSearchJSON == null) {
             return false;
         } else {
-            if (!createTempJsonOutput().toString().equals(previousAdvancedSearchJSON.toString())) {
+            if (!createJsonObjectOutput().toString().equals(previousAdvancedSearchJSON.toString())) {
                 return false;
             }
         }
@@ -3356,7 +3097,7 @@ public class SimpleController implements Initializable {
         return null;
     }
 
-    private JSONObject createTempJsonOutput() {
+    private JSONObject createJsonObjectOutput() {
         JSONObject obj = new JSONObject();
         obj.put("beginSeason", seasonsBeginComboUser.getSelection());
         obj.put("endSeason", seasonsEndComboUser.getSelection());
