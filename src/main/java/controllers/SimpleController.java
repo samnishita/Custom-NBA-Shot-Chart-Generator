@@ -112,7 +112,6 @@ public class SimpleController implements Initializable {
     private final int maxDistanceBetweenNodes = 20;
     private LinkedList<Rectangle> allTiles;
     private double min;
-//    private String currentSearchModeSelection = "";
     private int shotCounter = 0;
     private double maxCutoff = 0.0;
     private double diff = maxCutoff / 10;
@@ -126,26 +125,7 @@ public class SimpleController implements Initializable {
     private HashMap<Integer, Double> allZoneAverages;
     private DecimalFormat df = new DecimalFormat("##.#");
     private Rectangle mask;
-    private Thread tTrad = new Thread();
-    private Thread tGrid = new Thread();
-    private Thread tHeat = new Thread();
-    private Thread tZone = new Thread();
     private ArrayList<Thread> allUltraFineHeatThreads;
-//    private String beginSeason = "";
-//    private String endSeason = "";
-//    private HashSet<String> allSelectedPlayers = new HashSet();
-//    private HashSet<String> allSelectedSeasonTypes = new HashSet();
-//    private String beginDistance = "";
-//    private String endDistance = "";
-//    private String shotSuccess = "";
-//    private String shotValue = "";
-//    private HashSet<String> allSelectedShotTypes = new HashSet();
-//    private HashSet<String> allSelectedTeams = new HashSet();
-//    private HashSet<String> allSelectedHomeTeams = new HashSet();
-//    private HashSet<String> allSelectedAwayTeams = new HashSet();
-//    private HashSet<String> allSelectedCourtAreas = new HashSet();
-//    private HashSet<String> allSelectedCourtSides = new HashSet();
-//    private String currentSearchModeSelectionAdvanced = "";
     private LinkedHashMap<String, Integer> relevantTeamNameIDHashMap = new LinkedHashMap();
     private double font = 0.0;
     private double fontGrid = 0.0;
@@ -154,11 +134,7 @@ public class SimpleController implements Initializable {
     private Search currentAdvancedSearch = Search.TRADITIONAL;
     private ArrayList<Label> simpleFGLabels = new ArrayList();
     private ArrayList<Label> advancedFGLabels = new ArrayList();
-//    private JSONArray lastJsonArray;
-    private Service tradService;
-    private Service gridService;
-    private Service heatService;
-    private Service zoneService;
+    private Service tradService, gridService, heatService, zoneService;
     private long start, end;
     private UserInputComboBox playerComboUser, playerComboUserAdvanced, seasonsBeginComboUser, seasonsEndComboUser,
             distanceBeginComboUser, distanceEndComboUser, shotSuccessComboUser, shotValueComboUser,
@@ -288,13 +264,6 @@ public class SimpleController implements Initializable {
         } catch (IOException ex) {
             System.out.println("Error caught in creation of nameHash");
         }
-//        try {
-//            Thread warmupThread = new Thread(() -> warmupHeat());
-//            warmupThread.start();
-//            System.out.println("Started Warmup");
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
         yearcombo.setItems(FXCollections.observableArrayList(makeYears()));
         this.yearcombo.setValue("2019-20");
         this.playercombo.setValue("Aaron Gordon");
@@ -302,15 +271,6 @@ public class SimpleController implements Initializable {
         this.activePlayers = new HashMap();
         try {
             playerComboUser = new UserInputComboBox(playercombo, null, "");
-//            playerComboUser.getComboBox().setOnMouseClicked((t) -> {
-//                System.out.println("PlayerComboUser Clicked");
-//                playerComboUser.getComboBox().getSelectionModel().select(previousPlayer);
-//                ((ComboBoxListViewSkin) playerComboUser.getComboBox().getSkin()).getListView().setOnMouseClicked((tt) -> {
-//                    previousPlayer = playerComboUser.getComboBox().getValue().toString();
-//                    System.out.println("Previous Player : " + previousPlayer);
-//                });
-//            });
-
             setPlayerComboBox();
             setSeasonsComboBox();
         } catch (IOException ex) {
@@ -327,7 +287,6 @@ public class SimpleController implements Initializable {
                 this.errorlabel.setVisible(true);
             }
         });
-//        setAllViewTypeButtonsOnMouseActions();
         imageview.fitHeightProperty().addListener((ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) -> resize());
         imageview.fitWidthProperty().addListener((ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) -> resize());
         this.yearcombo.setOnAction(t -> {
@@ -747,7 +706,7 @@ public class SimpleController implements Initializable {
                             traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent; ");
                     }
                 } else {
-                    switch (currentAdvancedSearch) {
+                    switch (currentSimpleSearch) {
                         case TRADITIONAL:
                             setViewTypeButtonStyle(0);
                             break;
@@ -1091,6 +1050,7 @@ public class SimpleController implements Initializable {
         zonelegendlowerlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
         zonelegendupperlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
     }
+
     private void removeAllShotsFromView() {
         ArrayList<Node> toRemove = new ArrayList();
         for (Node each : imagegrid.getChildren()) {
@@ -1578,9 +1538,9 @@ public class SimpleController implements Initializable {
     private void singleSelectionHBoxCreationMethods(String alreadySelected, String labelPreText, ComboBox combo) {
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         Label tempLabel;
-        Label labelToReplace ;
+        Label labelToReplace;
         Label label;
-        Button deleteButton ;
+        Button deleteButton;
         HBox tempHBox;
         HBox newHBox;
         Insets insets = new Insets(5, 5, 5, 5);
@@ -1930,43 +1890,15 @@ public class SimpleController implements Initializable {
 
     private void createResponsiveComboBoxes() {
         ComboBoxListViewSkin<String> comboBoxListViewSkinPlayer = new ComboBoxListViewSkin(playercombo);
-        comboBoxListViewSkinPlayer.getPopupContent().addEventFilter(KeyEvent.ANY, (event) -> {
-            if (event.getCode().equals(KeyCode.SPACE)) {
-                event.consume();
-            }
-        });
+//        comboBoxListViewSkinPlayer.getPopupContent().addEventFilter(KeyEvent.ANY, (event) -> {
+//            if (event.getCode().equals(KeyCode.SPACE)) {
+//                event.consume();
+//            }
+//        });
         playercombo.setSkin(comboBoxListViewSkinPlayer);
         for (Node each : advancedvboxinner.getChildren()) {
             if (each.getClass().equals(ComboBox.class)) {
                 final ComboBox cb = (ComboBox) each;
-//                cb.valueProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) -> {
-//                    try {
-//                        if (cb.getValue() != null) {
-//                            addHBoxToSelectionBox(cb.getId());
-//                        }
-//                    } catch (Exception ex) {
-//                        System.out.println("Error caught adding to selection box");
-//                    }
-//                });
-//                cb.setOnKeyPressed((KeyEvent e) -> {
-//                    if (((ComboBoxListViewSkin) cb.getSkin()).getPopupContent().isVisible() && e.getCode() == KeyCode.ENTER) {
-//                        System.out.println(e.getCode());
-//                        addHBoxToSelectionBox(cb.getId());
-//                    }
-//                });
-//                cb.setOnMouseClicked((Event t) -> {
-////                    ListView<?> lv = ((ComboBoxListViewSkin<?>) cb.getSkin()).getListView();
-//                    Node lv = ((ComboBoxListViewSkin<?>) cb.getSkin()).getPopupContent();
-//                    lv.setOnMouseExited((Event tIn) -> {
-//                        cb.hide();
-//                    });
-//                    lv.setOnKeyPressed((KeyEvent e) -> {
-//                        System.out.println(e.getCode());
-//                        if (e.getCode() == KeyCode.ENTER) {
-//                            addHBoxToSelectionBox(cb.getId());
-//                        }
-//                    });
-//                });
                 if (!cb.getId().equals("shotsuccesscombo") && !cb.getId().equals("shotvaluecombo")) {
                     ComboBoxListViewSkin<String> comboBoxListViewSkin = new ComboBoxListViewSkin<String>(cb) {
                         @Override
@@ -1974,39 +1906,24 @@ public class SimpleController implements Initializable {
                             return false;
                         }
                     };
-                    comboBoxListViewSkin.getPopupContent().addEventFilter(KeyEvent.ANY, (event) -> {
-                        if (event.getCode().equals(KeyCode.SPACE)) {
-                            event.consume();
-                        }
-                    });
+//                    comboBoxListViewSkin.getPopupContent().addEventFilter(KeyEvent.ANY, (event) -> {
+//                        if (event.getCode().equals(KeyCode.SPACE)) {
+//                            event.consume();
+//                        }
+//                    });
                     cb.setSkin(comboBoxListViewSkin);
 
                 }
 
-            } else if (each.getClass().equals(HBox.class)) {
-                HBox hbox = (HBox) each;
-                for (Node eachHBoxNode : hbox.getChildren()) {
-                    if (eachHBoxNode.getClass().equals(ComboBox.class)) {
-                        final ComboBox cb = (ComboBox) eachHBoxNode;
-//                        eachHBoxNode.setOnMouseClicked((Event t) -> {
-//                            ListView<?> lv = ((ComboBoxListViewSkin<?>) cb.getSkin()).getListView();
-//                            lv.setOnMouseExited((Event tIn) -> {
-//                                cb.hide();
-//                            });
-//                            
-//                        });
-//                        cb.valueProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) -> {
-//                            try {
-//                                if (cb.getValue() != null) {
-//                                    addHBoxToSelectionBox(cb.getId());
-//                                }
-//                            } catch (Exception ex) {
-//                                ex.printStackTrace();
-//                            }
-//                        });
-                    }
-                }
-            }
+            } 
+//                else if (each.getClass().equals(HBox.class)) {
+//                HBox hbox = (HBox) each;
+//                for (Node eachHBoxNode : hbox.getChildren()) {
+//                    if (eachHBoxNode.getClass().equals(ComboBox.class)) {
+//                        final ComboBox cb = (ComboBox) eachHBoxNode;
+//                    }
+//                }
+//            }
         }
     }
 
@@ -2944,104 +2861,12 @@ public class SimpleController implements Initializable {
         progressvbox.setVisible(false);
     }
 
-//    private void warmupHeat() {
-//        Coordinate coord;
-//        HashMap<Coordinate, ArrayList<Double>> coordAveragesTemp = new HashMap();
-//        for (int x = -250; x < 251; x++) {
-//            for (int y = -52; y < 400; y++) {
-//                coord = new Coordinate(x, y);
-//                ArrayList info = new ArrayList();
-//                info.add(0.0);
-//                info.add(0.0);
-//                info.add(0.0);
-//                coordAveragesTemp.put(coord, info);
-//            }
-//        }
-//        JSONObject jsonObjOut = new JSONObject();
-//        jsonObjOut.put("selector", "simpleheat");
-//        jsonObjOut.put("year", "2019-20");
-//        jsonObjOut.put("playername", nameHash.get("Aaron Gordon"));
-//        jsonObjOut.put("seasontype", "Regular Season");
-//        try {
-//            Main.getPrintWriterOut().println(jsonObjOut.toString());
-//            JSONArray jsonArray = new JSONArray(Main.getServerResponse().readLine());
-//
-//            Coordinate tempCoord;
-//            JSONObject eachShot;
-//            for (int i = 0; i < jsonArray.length(); i++) {
-//                eachShot = jsonArray.getJSONObject(i);
-//                if (eachShot.getInt("y") >= 400) {
-//                    continue;
-//                }
-//                tempCoord = new Coordinate(eachShot.getInt("x"), eachShot.getInt("y"));
-//                coordAveragesTemp.get(tempCoord).set(1, coordAveragesTemp.get(tempCoord).get(1) + 1);
-//                if (eachShot.getInt("make") == 1) {
-//                    coordAveragesTemp.get(tempCoord).set(0, coordAveragesTemp.get(tempCoord).get(0) + 1);
-//                }
-//            }
-//            for (Coordinate each : coordAveragesTemp.keySet()) {
-//                if (coordAveragesTemp.get(each).get(1) != 0) {
-//                    coordAveragesTemp.get(each).set(2, coordAveragesTemp.get(each).get(0) * 1.0 / coordAveragesTemp.get(each).get(1) * 1.0);
-//                }
-//
-//            }
-//            int maxThreads = 4;
-//            ArrayList<Thread> threads;
-//            for (int iterations = 0; iterations < 1; iterations++) {
-//                threads = new ArrayList();
-//                Thread thread;
-//                for (int i = 0; i < maxThreads; i++) {
-//                    final int iFinal = i;
-//                    final int iMaxFinal = maxThreads;
-//                    thread = new Thread(() -> {
-//                        double aSum = 0;
-//                        double bSum = 0;
-//                        int p = 2;
-//                        int iFinalThread = iFinal;
-//                        for (Coordinate each : coordAveragesTemp.keySet()) {
-//                            if (each.getY() >= (452 / iMaxFinal) * iFinalThread - 52 && each.getY() < (452 / iMaxFinal) * (iFinalThread + 1) - 52
-//                                    && each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0) {
-//                                aSum = 0;
-//                                bSum = 0;
-//                                for (Coordinate each2 : coordAveragesTemp.keySet()) {
-//                                    if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
-//                                        aSum = aSum + ((coordAveragesTemp.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
-//                                        bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    });
-//                    threads.add(thread);
-//                }
-//                threads.forEach(eachThread -> eachThread.start());
-//                System.out.println("Threads Running");
-//                boolean done = false;
-//                while (!done) {
-//                    try {
-//                        for (Thread eachThread : threads) {
-//                            eachThread.join();
-//                        }
-//                        done = true;
-//                    } catch (InterruptedException ex) {
-//
-//                    }
-//                }
-//                System.out.println("Threads Finished");
-//            }
-//        } catch (IOException ex) {
-//            ex.printStackTrace();
-//        }
-//    }
-
     private void createAlwaysRunningResizer() {
         Task task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
                 while (true) {
-                    Platform.runLater(() -> {
-                        resize();
-                    });
+                    Platform.runLater(() -> resize());
                     Thread.sleep(100);
                 }
             }
@@ -3078,17 +2903,14 @@ public class SimpleController implements Initializable {
             if (searchvbox.isVisible()) {
                 if (!checkForSameSimpleSearch()) {
                     previousSimpleSearchResults = getSimpleShotData();
-                    return previousSimpleSearchResults;
-                } else {
-                    return previousSimpleSearchResults;
                 }
+                return previousSimpleSearchResults;
+
             } else {
                 if (!checkForSameAdvancedSearch()) {
                     previousAdvancedSearchResults = createAdvancedJSONOutput(currentAdvancedSearch);
-                    return previousAdvancedSearchResults;
-                } else {
-                    return previousAdvancedSearchResults;
                 }
+                return previousAdvancedSearchResults;
             }
         } catch (Exception ex) {
             System.out.println("Exception caught in chooseJSONArray");
