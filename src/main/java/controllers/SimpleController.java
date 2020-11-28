@@ -142,6 +142,7 @@ public class SimpleController implements Initializable {
             courtAreasComboUser, courtSidesComboUser, seasonTypesComboUser;
     private JSONObject previousSimpleSearchJSON, previousAdvancedSearchJSON;
     private JSONArray previousSimpleSearchResults, previousAdvancedSearchResults;
+    private boolean alreadyInitializedAdv = false;
     //General Features
     @FXML
     private BorderPane borderpane;
@@ -322,10 +323,13 @@ public class SimpleController implements Initializable {
             allShots.clear();
         });
         this.advancedlayoutbutton.setOnMouseClicked(t -> {
-            try {
-                initAdvanced();
-            } catch (IOException ex) {
-                System.out.println("Error caught initializing advanced");
+            if (!alreadyInitializedAdv) {
+                try {
+                    initAdvanced();
+                    alreadyInitializedAdv = true;
+                } catch (IOException ex) {
+                    System.out.println("Error caught initializing advanced");
+                }
             }
             this.charttitle.setVisible(false);
             searchvbox.setVisible(false);
@@ -1584,6 +1588,10 @@ public class SimpleController implements Initializable {
             deleteButton.setAlignment(Pos.CENTER);
             deleteButton.setPadding(insets);
             deleteButton.setOnMouseClicked((Event t) -> {
+                deleteButton.setOnMouseEntered(t2 -> {
+                    FINALSCENE.setCursor(Cursor.DEFAULT);
+                    deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;-fx-underline: true;");
+                });
                 deleteButtonInner(SELECTED, HBOX, labelPreText);
                 selectionvbox.getChildren().remove(newHBox);
             });
@@ -1730,6 +1738,10 @@ public class SimpleController implements Initializable {
         final Scene FINALSCENE = selectionvbox.getScene();
         deleteButton.setPadding(insets);
         deleteButton.setOnMouseClicked(t -> {
+            deleteButton.setOnMouseEntered(t2 -> {
+                FINALSCENE.setCursor(Cursor.DEFAULT);
+                deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;-fx-underline: true;");
+            });
             deleteButtonInner(SELECTED, HBOX, labelPreText);
             selectionvbox.getChildren().remove(newHBox);
         });
@@ -2218,6 +2230,7 @@ public class SimpleController implements Initializable {
     }
 
     private ConcurrentHashMap<Coordinate, Double> serviceTaskMethodsHeat(boolean isSearchVboxVisible) throws IOException {
+        Platform.runLater(() -> errorlabeladvanced.setVisible(isSearchVboxVisible));
         Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
         try {
             coordAverages = new HashMap();
@@ -2392,6 +2405,7 @@ public class SimpleController implements Initializable {
     }
 
     private LinkedHashMap<Shot, Object> serviceTaskMethodsTrad(boolean isSearchVboxVisible) throws IOException, Exception {
+        Platform.runLater(() -> errorlabeladvanced.setVisible(isSearchVboxVisible));
         Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
         try {
             JSONArray jsonArray = chooseJSONArray();
@@ -2473,6 +2487,7 @@ public class SimpleController implements Initializable {
 
     private ConcurrentHashMap<Coordinate, Double> serviceTaskMethodsGrid(boolean isSearchVboxVisible) throws IOException, Exception {
         Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
+        Platform.runLater(() -> errorlabeladvanced.setVisible(isSearchVboxVisible));
         JSONArray jsonArray = chooseJSONArray();
         Platform.runLater(() -> progresslabel.setText("Generating Grid"));
         Coordinate coord;
@@ -2621,6 +2636,7 @@ public class SimpleController implements Initializable {
     }
 
     private HashMap<Integer, Double> serviceTaskMethodsZone(boolean isSearchVboxVisible) throws IOException, Exception {
+        Platform.runLater(() -> errorlabeladvanced.setVisible(isSearchVboxVisible));
         Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
         JSONArray jsonArray = chooseJSONArray();
         Platform.runLater(() -> progresslabel.setText("Generating Zones"));
