@@ -520,8 +520,6 @@ public class SimpleController implements Initializable {
         seasons.add("Playoffs");
         seasonTypesComboUser = new UserInputComboBox(seasontypescomboadvanced, new HashSet<String>(), "");
         seasonTypesComboUser.getComboBox().setItems(FXCollections.observableArrayList(seasons));
-//        seasontypescomboadvanced.setItems(FXCollections.observableArrayList(seasons));
-//        seasontypescomboadvanced.getSelectionModel().clearSelection();
     }
 
     private JSONArray getInitData() throws IOException {
@@ -819,13 +817,21 @@ public class SimpleController implements Initializable {
                 searchscrollpane.setMaxHeight(advancedvbox.getLayoutBounds().getHeight() * 0.4);
                 HBox hbox;
                 Label label;
+                Button button;
                 for (Node each : selectionvbox.getChildren()) {
                     try {
                         hbox = (HBox) each;
                         for (Node eachInner : hbox.getChildren()) {
                             if (eachInner.getClass().equals(Label.class)) {
                                 label = (Label) eachInner;
-                                label.setStyle("-fx-font: " + font * 0.85 + "px \"Arial\";");
+                                label.setStyle("-fx-font: " + font * 0.9 + "px \"Arial\";");
+                            } else if (eachInner.getClass().equals(Button.class)) {
+                                button = (Button) eachInner;
+                                if (button.isHover()) {
+                                    button.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;-fx-underline: true;");
+                                } else {
+                                    button.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;");
+                                }
                             }
                         }
                     } catch (Exception ex) {
@@ -1570,22 +1576,31 @@ public class SimpleController implements Initializable {
             newHBox.setPadding(insetsHBox);
             final String SELECTED = combo.getId();
             deleteButton = new Button("X");
-            deleteButton.setStyle("-fx-text-fill: red;-fx-background-color: transparent; ");
+            deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;");
             newHBox.getChildren().add(deleteButton);
             final HBox HBOX = (HBox) deleteButton.getParent();
             final Scene FINALSCENE = selectionvbox.getScene();
+            deleteButton.setPrefSize(35.0, 35.0);
+            deleteButton.setAlignment(Pos.CENTER);
+            deleteButton.setPadding(insets);
             deleteButton.setOnMouseClicked((Event t) -> {
                 deleteButtonInner(SELECTED, HBOX, labelPreText);
                 selectionvbox.getChildren().remove(newHBox);
             });
-            deleteButton.setOnMouseEntered(t -> FINALSCENE.setCursor(Cursor.HAND));
-            deleteButton.setOnMouseExited(t -> FINALSCENE.setCursor(Cursor.DEFAULT));
+            deleteButton.setOnMouseEntered(t -> {
+                FINALSCENE.setCursor(Cursor.HAND);
+                deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;-fx-underline: true;");
+            });
+            deleteButton.setOnMouseExited(t -> {
+                deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;");
+                FINALSCENE.setCursor(Cursor.DEFAULT);
+            });
             deleteButton.prefHeightProperty().bind(newHBox.prefHeightProperty());
             deleteButton.prefWidthProperty().bind(deleteButton.prefHeightProperty());
             alreadySelected = combo.getValue().toString();
             label = new Label();
             label.setText(labelPreText + alreadySelected);
-            label.setStyle("-fx-font: " + font * 0.85 + "px \"Arial\";");
+            label.setStyle("-fx-font: " + font * 0.9 + "px \"Arial\";");
             label.setPadding(insets);
             label.prefHeightProperty().bind(newHBox.prefHeightProperty());
             label.setAlignment(Pos.CENTER_LEFT);
@@ -1707,21 +1722,30 @@ public class SimpleController implements Initializable {
         newHBox.setPadding(insetsHBox);
         final String SELECTED = combo.getId();
         Button deleteButton = new Button("X");
-        deleteButton.setStyle("-fx-text-fill: red;-fx-background-color: transparent;");
+        deleteButton.setPrefSize(35.0, 35.0);
+        deleteButton.setAlignment(Pos.CENTER);
+        deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;");
         newHBox.getChildren().add(deleteButton);
         final HBox HBOX = (HBox) deleteButton.getParent();
         final Scene FINALSCENE = selectionvbox.getScene();
+        deleteButton.setPadding(insets);
         deleteButton.setOnMouseClicked(t -> {
             deleteButtonInner(SELECTED, HBOX, labelPreText);
             selectionvbox.getChildren().remove(newHBox);
         });
-        deleteButton.setOnMouseEntered(t -> FINALSCENE.setCursor(Cursor.HAND));
-        deleteButton.setOnMouseExited(t -> FINALSCENE.setCursor(Cursor.DEFAULT));
+        deleteButton.setOnMouseEntered(t -> {
+            FINALSCENE.setCursor(Cursor.HAND);
+            deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;-fx-underline: true;");
+        });
+        deleteButton.setOnMouseExited(t -> {
+            deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;");
+            FINALSCENE.setCursor(Cursor.DEFAULT);
+        });
         deleteButton.prefHeightProperty().bind(newHBox.prefHeightProperty());
         deleteButton.prefWidthProperty().bind(deleteButton.prefHeightProperty());
         Label label = new Label();
         label.setText(labelPreText + input);
-        label.setStyle("-fx-font: " + font * 0.85 + "px \"Arial\";");
+        label.setStyle("-fx-font: " + font * 0.9 + "px \"Arial\";");
         label.setPadding(insets);
         label.prefHeightProperty().bind(newHBox.prefHeightProperty());
         label.setAlignment(Pos.CENTER_LEFT);
@@ -1890,11 +1914,6 @@ public class SimpleController implements Initializable {
 
     private void createResponsiveComboBoxes() {
         ComboBoxListViewSkin<String> comboBoxListViewSkinPlayer = new ComboBoxListViewSkin(playercombo);
-//        comboBoxListViewSkinPlayer.getPopupContent().addEventFilter(KeyEvent.ANY, (event) -> {
-//            if (event.getCode().equals(KeyCode.SPACE)) {
-//                event.consume();
-//            }
-//        });
         playercombo.setSkin(comboBoxListViewSkinPlayer);
         for (Node each : advancedvboxinner.getChildren()) {
             if (each.getClass().equals(ComboBox.class)) {
@@ -1906,24 +1925,9 @@ public class SimpleController implements Initializable {
                             return false;
                         }
                     };
-//                    comboBoxListViewSkin.getPopupContent().addEventFilter(KeyEvent.ANY, (event) -> {
-//                        if (event.getCode().equals(KeyCode.SPACE)) {
-//                            event.consume();
-//                        }
-//                    });
                     cb.setSkin(comboBoxListViewSkin);
-
                 }
-
-            } 
-//                else if (each.getClass().equals(HBox.class)) {
-//                HBox hbox = (HBox) each;
-//                for (Node eachHBoxNode : hbox.getChildren()) {
-//                    if (eachHBoxNode.getClass().equals(ComboBox.class)) {
-//                        final ComboBox cb = (ComboBox) eachHBoxNode;
-//                    }
-//                }
-//            }
+            }
         }
     }
 
