@@ -155,18 +155,18 @@ public class SimpleController implements Initializable {
     private Search currentAdvancedSearch = Search.TRADITIONAL;
     private ArrayList<Label> simpleFGLabels = new ArrayList();
     private ArrayList<Label> advancedFGLabels = new ArrayList();
-    private JSONArray lastJsonArray;
+//    private JSONArray lastJsonArray;
     private Service tradService;
     private Service gridService;
     private Service heatService;
     private Service zoneService;
-    private long start;
-    private long end;
+    private long start, end;
     private UserInputComboBox playerComboUser, playerComboUserAdvanced, seasonsBeginComboUser, seasonsEndComboUser,
             distanceBeginComboUser, distanceEndComboUser, shotSuccessComboUser, shotValueComboUser,
             shotTypeComboUser, teamComboUser, homeTeamComboUser, awayTeamComboUser,
             courtAreasComboUser, courtSidesComboUser, seasonTypesComboUser;
-
+    private JSONObject previousSimpleSearchJSON, previousAdvancedSearchJSON;
+    private JSONArray previousSimpleSearchResults, previousAdvancedSearchResults;
     //General Features
     @FXML
     private BorderPane borderpane;
@@ -621,6 +621,7 @@ public class SimpleController implements Initializable {
         jsonObjOut.put("year", this.yearcombo.getValue().toString());
         jsonObjOut.put("playername", nameHash.get(this.playercombo.getValue().toString()));
         jsonObjOut.put("seasontype", this.seasoncombo.getValue().toString());
+        previousSimpleSearchJSON = jsonObjOut;
         Main.getPrintWriterOut().println(jsonObjOut.toString());
         return new JSONArray(Main.getServerResponse().readLine());
     }
@@ -2055,39 +2056,42 @@ public class SimpleController implements Initializable {
     }
 
     private JSONArray createAdvancedJSONOutput(Search searchTypeSelector) throws IOException, Exception {
-        JSONObject obj = new JSONObject();
-        obj.put("selector", "advanced" + searchTypeSelector.toString().toLowerCase());
-        obj.put("beginSeason", seasonsBeginComboUser.getSelection());
-        obj.put("endSeason", seasonsEndComboUser.getSelection());
-        ArrayList<Integer> allSelectedPlayerIDs = new ArrayList();
-        for (String each : playerComboUserAdvanced.getHashSet()) {
-            allSelectedPlayerIDs.add(Integer.parseInt(nameHash.get(each)[0]));
-        }
-        obj.put("allSelectedPlayers", allSelectedPlayerIDs);
-        obj.put("allSelectedSeasonTypes", seasonTypesComboUser.getHashSet());
-        obj.put("beginDistance", distanceBeginComboUser.getSelection());
-        obj.put("endDistance", distanceEndComboUser.getSelection());
-        obj.put("shotSuccess", shotSuccessComboUser.getSelection());
-        obj.put("shotValue", shotValueComboUser.getSelection());
-        obj.put("allSelectedShotTypes", shotTypeComboUser.getHashSet());
-        ArrayList<Integer> teamIds = new ArrayList();
-        for (String each : teamComboUser.getHashSet()) {
-            teamIds.add(relevantTeamNameIDHashMap.get(each));
-        }
-        obj.put("allSelectedTeams", teamIds);
-        teamIds = new ArrayList();
-        for (String each : homeTeamComboUser.getHashSet()) {
-            teamIds.add(relevantTeamNameIDHashMap.get(each));
-        }
-        obj.put("allSelectedHomeTeams", teamIds);
-        teamIds = new ArrayList();
-        for (String each : awayTeamComboUser.getHashSet()) {
-            teamIds.add(relevantTeamNameIDHashMap.get(each));
-        }
-        obj.put("allSelectedAwayTeams", teamIds);
-        obj.put("allSelectedCourtAreas", courtAreasComboUser.getHashSet());
-        obj.put("allSelectedCourtSides", courtSidesComboUser.getHashSet());
-        Main.getPrintWriterOut().println(obj.toString());
+        JSONObject obj = createTempJsonOutput();
+//        JSONObject obj = new JSONObject();
+//        obj.put("beginSeason", seasonsBeginComboUser.getSelection());
+//        obj.put("endSeason", seasonsEndComboUser.getSelection());
+//        ArrayList<Integer> allSelectedPlayerIDs = new ArrayList();
+//        for (String each : playerComboUserAdvanced.getHashSet()) {
+//            allSelectedPlayerIDs.add(Integer.parseInt(nameHash.get(each)[0]));
+//        }
+//        obj.put("allSelectedPlayers", allSelectedPlayerIDs);
+//        obj.put("allSelectedSeasonTypes", seasonTypesComboUser.getHashSet());
+//        obj.put("beginDistance", distanceBeginComboUser.getSelection());
+//        obj.put("endDistance", distanceEndComboUser.getSelection());
+//        obj.put("shotSuccess", shotSuccessComboUser.getSelection());
+//        obj.put("shotValue", shotValueComboUser.getSelection());
+//        obj.put("allSelectedShotTypes", shotTypeComboUser.getHashSet());
+//        ArrayList<Integer> teamIds = new ArrayList();
+//        for (String each : teamComboUser.getHashSet()) {
+//            teamIds.add(relevantTeamNameIDHashMap.get(each));
+//        }
+//        obj.put("allSelectedTeams", teamIds);
+//        teamIds = new ArrayList();
+//        for (String each : homeTeamComboUser.getHashSet()) {
+//            teamIds.add(relevantTeamNameIDHashMap.get(each));
+//        }
+//        obj.put("allSelectedHomeTeams", teamIds);
+//        teamIds = new ArrayList();
+//        for (String each : awayTeamComboUser.getHashSet()) {
+//            teamIds.add(relevantTeamNameIDHashMap.get(each));
+//        }
+//        obj.put("allSelectedAwayTeams", teamIds);
+//        obj.put("allSelectedCourtAreas", courtAreasComboUser.getHashSet());
+//        obj.put("allSelectedCourtSides", courtSidesComboUser.getHashSet());
+        previousAdvancedSearchJSON = obj;
+        JSONObject newObj = createTempJsonOutput();
+        newObj.put("selector", "advanced" + searchTypeSelector.toString().toLowerCase());
+        Main.getPrintWriterOut().println(newObj.toString());
         return new JSONArray(Main.getServerResponse().readLine());
     }
 
@@ -2104,7 +2108,16 @@ public class SimpleController implements Initializable {
         int count2pTotal = 0;
         int count3pMade = 0;
         int count3pTotal = 0;
-        for (int i = 0; i < jsonArray.length(); i++) {
+        int max=0;
+        if (currentAdvancedSearch==Search.TRADITIONAL){
+            max=7500;
+        }else{
+            max=50000;
+        }
+        if (jsonArray.length()<max){
+            max = jsonArray.length();
+        }
+        for (int i = 0; i < max; i++) {
             JSONObject eachShot = jsonArray.getJSONObject(i);
             if (eachShot.getString("shottype").equals("3PT Field Goal")) {
                 count3pTotal++;
@@ -2388,7 +2401,7 @@ public class SimpleController implements Initializable {
         }
     }
 
-    private void plotHeatAfterServiceSucceeds(JSONArray jsonArray) {
+    private void plotHeatAfterServiceSucceeds() {
         resetView();
         removeAllShotsFromView();
         heatlegend.setVisible(true);
@@ -2410,9 +2423,9 @@ public class SimpleController implements Initializable {
         heatlegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
 
         if (searchvbox.isVisible()) {
-            setShotGrid(jsonArray);
+            setShotGrid(previousSimpleSearchResults);
         } else {
-            setShotGridAdvanced(jsonArray);
+            setShotGridAdvanced(previousAdvancedSearchResults);
         }
 
         double weight = 0.5;
@@ -2525,13 +2538,7 @@ public class SimpleController implements Initializable {
                     coordAverages.put(new Coordinate(x, y), new ArrayList(info));
                 }
             }
-            JSONArray jsonArray;
-            if (isSearchVboxVisible) {
-                jsonArray = getSimpleShotData();
-            } else {
-                jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
-            }
-            lastJsonArray = jsonArray;
+            JSONArray jsonArray = chooseJSONArray();
             shotCounter = 0;
             Platform.runLater(() -> progresslabel.setText("Generating Heat Map"));
             Coordinate tempCoord;
@@ -2635,9 +2642,7 @@ public class SimpleController implements Initializable {
                 };
             }
         };
-        tradService.setOnSucceeded(s -> {
-            plotTradAfterServiceSucceeds(lastJsonArray);
-        });
+        tradService.setOnSucceeded(s -> plotTradAfterServiceSucceeds());
         tradService.setOnFailed(s -> {
             System.out.println("Failed");
             endLoadingTransition();
@@ -2654,9 +2659,7 @@ public class SimpleController implements Initializable {
                 };
             }
         };
-        gridService.setOnSucceeded(s -> {
-            plotGridAfterServiceSucceeds(lastJsonArray);
-        });
+        gridService.setOnSucceeded(s -> plotGridAfterServiceSucceeds());
         gridService.setOnFailed(s -> {
             System.out.println("Failed");
             endLoadingTransition();
@@ -2673,9 +2676,7 @@ public class SimpleController implements Initializable {
                 };
             }
         };
-        heatService.setOnSucceeded(s -> {
-            plotHeatAfterServiceSucceeds(lastJsonArray);
-        });
+        heatService.setOnSucceeded(s -> plotHeatAfterServiceSucceeds());
         heatService.setOnFailed(s -> {
             System.out.println("Failed");
             endLoadingTransition();
@@ -2692,9 +2693,7 @@ public class SimpleController implements Initializable {
                 };
             }
         };
-        zoneService.setOnSucceeded(s -> {
-            plotZoneAfterServiceSucceeds(lastJsonArray, (HashMap<Integer, Double>) zoneService.getValue());
-        });
+        zoneService.setOnSucceeded(s -> plotZoneAfterServiceSucceeds((HashMap<Integer, Double>) zoneService.getValue()));
         zoneService.setOnFailed(s -> {
             System.out.println("Failed");
             endLoadingTransition();
@@ -2704,23 +2703,19 @@ public class SimpleController implements Initializable {
 
     private LinkedHashMap<Shot, Object> serviceTaskMethodsTrad(boolean isSearchVboxVisible) throws IOException, Exception {
         Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
-
-        JSONArray jsonArray;
         try {
-            if (isSearchVboxVisible) {
-                jsonArray = getSimpleShotData();
-            } else {
-                jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
-            }
+            JSONArray jsonArray = chooseJSONArray();
             Platform.runLater(() -> progresslabel.setText("Generating Traditional Shot Map"));
-
-            lastJsonArray = jsonArray;
             allShots = new LinkedHashMap();
             Circle circle;
             MissedShotIcon msi;
             BigDecimal xBig;
             BigDecimal yBig;
-            for (int i = 0; i < jsonArray.length(); i++) {
+            int max = 7500;
+            if (jsonArray.length()<7500){
+                max = jsonArray.length();
+            }
+            for (int i = 0; i < max; i++) {
                 JSONObject eachShot = jsonArray.getJSONObject(i);
                 Shot shot = new Shot(eachShot.getInt("x"), eachShot.getInt("y"), eachShot.getInt("distance"), eachShot.getInt("make"), eachShot.getString("shottype"), eachShot.getString("playtype"));
                 xBig = BigDecimal.valueOf(eachShot.getInt("x"));
@@ -2753,7 +2748,7 @@ public class SimpleController implements Initializable {
         return allShots;
     }
 
-    private void plotTradAfterServiceSucceeds(JSONArray jsonArray) {
+    private void plotTradAfterServiceSucceeds() {
         resetView();
         removeAllShotsFromView();
         imageview.setImage(new Image("/images/newbackcourt.png"));
@@ -2775,9 +2770,9 @@ public class SimpleController implements Initializable {
                     }
                 });
         if (searchvbox.isVisible()) {
-            setShotGrid(jsonArray);
+            setShotGrid(previousSimpleSearchResults);
         } else {
-            setShotGridAdvanced(jsonArray);
+            setShotGridAdvanced(previousAdvancedSearchResults);
         }
         endLoadingTransition();
 
@@ -2788,13 +2783,7 @@ public class SimpleController implements Initializable {
 
     private ConcurrentHashMap<Coordinate, Double> serviceTaskMethodsGrid(boolean isSearchVboxVisible) throws IOException, Exception {
         Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
-        JSONArray jsonArray;
-        if (isSearchVboxVisible) {
-            jsonArray = getSimpleShotData();
-        } else {
-            jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
-        }
-        lastJsonArray = jsonArray;
+        JSONArray jsonArray = chooseJSONArray();
         Platform.runLater(() -> progresslabel.setText("Generating Grid"));
         Coordinate coord;
         coordAverages = new LinkedHashMap();
@@ -2889,7 +2878,7 @@ public class SimpleController implements Initializable {
         return coordValue;
     }
 
-    private void plotGridAfterServiceSucceeds(JSONArray jsonArray) {
+    private void plotGridAfterServiceSucceeds() {
         resetView();
         removeAllShotsFromView();
         gridbackground.setVisible(true);
@@ -2930,9 +2919,9 @@ public class SimpleController implements Initializable {
         gridsizelegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
         imageview.setImage(new Image("/images/transparent.png"));
         if (searchvbox.isVisible()) {
-            setShotGrid(jsonArray);
+            setShotGrid(previousSimpleSearchResults);
         } else {
-            setShotGridAdvanced(jsonArray);
+            setShotGridAdvanced(previousAdvancedSearchResults);
         }
         allTiles.forEach(square -> imagegrid.add(square, 0, 0));
         endLoadingTransition();
@@ -2943,14 +2932,8 @@ public class SimpleController implements Initializable {
 
     private HashMap<Integer, Double> serviceTaskMethodsZone(boolean isSearchVboxVisible) throws IOException, Exception {
         Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
-        JSONArray jsonArray;
-        if (isSearchVboxVisible) {
-            jsonArray = getSimpleShotData();
-        } else {
-            jsonArray = createAdvancedJSONOutput(currentAdvancedSearch);
-        }
+        JSONArray jsonArray = chooseJSONArray();
         Platform.runLater(() -> progresslabel.setText("Generating Zones"));
-        lastJsonArray = jsonArray;
         allZones = new HashMap();
         Double[] doubles;
         for (int i = 1; i < 16; i++) {
@@ -3105,11 +3088,10 @@ public class SimpleController implements Initializable {
         return playerZones;
     }
 
-    private void plotZoneAfterServiceSucceeds(JSONArray jsonArray, HashMap<Integer, Double> playerZones) {
+    private void plotZoneAfterServiceSucceeds(HashMap<Integer, Double> playerZones) {
         resizeZone();
         resetView();
         removeAllShotsFromView();
-
         imageview.setImage(new Image("/images/transparent.png"));
         for (Node each : allShapes) {
             each.setVisible(true);
@@ -3124,9 +3106,9 @@ public class SimpleController implements Initializable {
             allPercentLabels.get(i).setVisible(true);
         }
         if (searchvbox.isVisible()) {
-            setShotGrid(jsonArray);
+            setShotGrid(previousSimpleSearchResults);
         } else {
-            setShotGridAdvanced(jsonArray);
+            setShotGridAdvanced(previousAdvancedSearchResults);
         }
         Shape tempShape;
         Rectangle tempRect;
@@ -3298,5 +3280,165 @@ public class SimpleController implements Initializable {
         Thread thread = new Thread(task);
         thread.setDaemon(true);
         thread.start();
+    }
+
+    private boolean checkForSameSimpleSearch() {
+        if (previousSimpleSearchJSON == null) {
+            return false;
+        } else if (!previousSimpleSearchJSON.getString("year").equals(this.yearcombo.getValue().toString())
+                || !previousSimpleSearchJSON.get("playername").equals(nameHash.get(this.playercombo.getValue().toString()))
+                || !previousSimpleSearchJSON.getString("seasontype").equals(this.seasoncombo.getValue().toString())) {
+            System.out.println("Not same search");
+            return false;
+        }
+        System.out.println("Same search");
+        return true;
+        /*
+                 jsonObjOut.put("selector", "simple" + currentSimpleSearch.toString().toLowerCase());
+        jsonObjOut.put("year", this.yearcombo.getValue().toString());
+        jsonObjOut.put("playername", nameHash.get(this.playercombo.getValue().toString()));
+        jsonObjOut.put("seasontype", this.seasoncombo.getValue().toString());
+         */
+    }
+
+    private boolean checkForSameAdvancedSearch() {
+//        playerComboUserAdvanced.getHashSet().forEach((each) -> allPlayers.add(Integer.parseInt(nameHash.get(each)[0])));
+//        JSONArray teamIds = new JSONArray();
+//        teamComboUser.getHashSet().forEach((each) -> teamIds.put(relevantTeamNameIDHashMap.get(each)));
+//        JSONArray homeTeamIds = new JSONArray();
+//        homeTeamComboUser.getHashSet().forEach((each) -> homeTeamIds.put(relevantTeamNameIDHashMap.get(each)));
+//        JSONArray awayTeamIds = new JSONArray();
+//        awayTeamComboUser.getHashSet().forEach((each) -> awayTeamIds.put(relevantTeamNameIDHashMap.get(each)));
+        if (previousAdvancedSearchJSON == null) {
+            return false;
+        } else {
+            JSONObject tempJSON = createTempJsonOutput();
+            if (!tempJSON.toString().equals(previousAdvancedSearchJSON.toString())){
+                System.out.println(tempJSON.toString());
+                System.out.println(previousAdvancedSearchJSON.toString());
+                System.out.println("Returned False");
+                return false;
+            } else{
+                System.out.println("Returned True");
+            }
+//            HashSet<String> allPlayers = new HashSet();
+//            JSONArray arrayPlayers = (JSONArray) previousAdvancedSearchJSON.get("allSelectedPlayers");
+//            for (int i = 0; i < arrayPlayers.length(); i++) {
+//                allPlayers.add(((nameHash.get((String) ((arrayPlayers.get(i)[1]).trim()) + " " + (nameHash.get((String) arrayPlayers.get(i))[2]).trim()).trim());
+//            }
+//            if (!previousAdvancedSearchJSON.getString("beginSeason").equals(seasonsBeginComboUser.getSelection())
+//                    || !previousAdvancedSearchJSON.getString("endSeason").equals(seasonsEndComboUser.getSelection())
+//                    || !allPlayers.equals(playerComboUserAdvanced.getHashSet())
+//                    || !previousAdvancedSearchJSON.get("allSelectedSeasonTypes").equals(seasonTypesComboUser.getHashSet())
+//                    || !previousAdvancedSearchJSON.getString("beginDistance").equals(distanceBeginComboUser.getSelection())
+//                    || !previousAdvancedSearchJSON.getString("endDistance").equals(distanceEndComboUser.getSelection())
+//                    || !previousAdvancedSearchJSON.getString("shotSuccess").equals(shotSuccessComboUser.getSelection())
+//                    || !previousAdvancedSearchJSON.getString("shotValue").equals(shotValueComboUser.getSelection())
+//                    || !previousAdvancedSearchJSON.get("allSelectedShotTypes").equals(shotTypeComboUser.getHashSet())
+//                    || !previousAdvancedSearchJSON.get("allSelectedTeams").equals(teamIds)
+//                    || !previousAdvancedSearchJSON.get("allSelectedHomeTeams").equals(homeTeamIds)
+//                    || !previousAdvancedSearchJSON.get("allSelectedAwayTeams").equals(awayTeamIds)
+//                    || !previousAdvancedSearchJSON.get("allSelectedCourtAreas").equals(courtAreasComboUser.getHashSet())
+//                    || !previousAdvancedSearchJSON.get("allSelectedCourtSides").equals(courtSidesComboUser.getHashSet())) {
+//                System.out.println(previousAdvancedSearchJSON.getString("beginSeason").equals(seasonsBeginComboUser.getSelection()));
+//                System.out.println(previousAdvancedSearchJSON.getString("endSeason").equals(seasonsEndComboUser.getSelection()));
+//                System.out.println(allPlayers.equals(playerComboUserAdvanced.getHashSet()));
+////                System.out.println(previousAdvancedSearchJSON.get("allSelectedPlayers"));
+////                System.out.println(previousAdvancedSearchJSON.get("allSelectedPlayers").getClass());
+//                System.out.println(allPlayers);
+//                System.out.println(allPlayers.getClass());
+//                System.out.println(playerComboUserAdvanced.getHashSet());
+//                System.out.println(playerComboUserAdvanced.getHashSet().getClass());
+//                System.out.println(previousAdvancedSearchJSON.get("allSelectedSeasonTypes").equals(seasonTypesComboUser.getHashSet())
+//                );
+//                System.out.println(previousAdvancedSearchJSON.getString("beginDistance").equals(distanceBeginComboUser.getSelection())
+//                );
+//                System.out.println(previousAdvancedSearchJSON.getString("endDistance").equals(distanceEndComboUser.getSelection())
+//                );
+//                System.out.println(previousAdvancedSearchJSON.getString("shotSuccess").equals(shotSuccessComboUser.getSelection())
+//                );
+//                System.out.println(previousAdvancedSearchJSON.getString("shotValue").equals(shotValueComboUser.getSelection())
+//                );
+//                System.out.println(previousAdvancedSearchJSON.get("allSelectedShotTypes").equals(shotTypeComboUser.getHashSet())
+//                );
+//                System.out.println(previousAdvancedSearchJSON.get("allSelectedTeams").equals(teamIds)
+//                );
+//                System.out.println(previousAdvancedSearchJSON.get("allSelectedHomeTeams").equals(homeTeamIds)
+//                );
+//                System.out.println(previousAdvancedSearchJSON.get("allSelectedAwayTeams").equals(awayTeamIds)
+//                );
+//                System.out.println(previousAdvancedSearchJSON.get("allSelectedCourtAreas").equals(courtAreasComboUser.getHashSet())
+//                );
+//                System.out.println(previousAdvancedSearchJSON.get("allSelectedCourtSides").equals(courtSidesComboUser.getHashSet())
+//                );
+//
+//                return false;
+//            }
+        }
+        System.out.println("Same search");
+        return true;
+    }
+
+    private JSONArray chooseJSONArray() {
+        try {
+            if (searchvbox.isVisible()) {
+                if (!checkForSameSimpleSearch()) {
+                    previousSimpleSearchResults = getSimpleShotData();
+                    System.out.println("Got new");
+                    return previousSimpleSearchResults;
+                } else {
+                    System.out.println("Using previous");
+                    return previousSimpleSearchResults;
+                }
+            } else {
+                if (!checkForSameAdvancedSearch()) {
+                    previousAdvancedSearchResults = createAdvancedJSONOutput(currentAdvancedSearch);
+                    System.out.println("Got new");
+                    return previousAdvancedSearchResults;
+                } else {
+                    System.out.println("Using previous");
+                    return previousAdvancedSearchResults;
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("Exception caught in chooseJSONArray");
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
+    private JSONObject createTempJsonOutput() {
+        JSONObject obj = new JSONObject();
+        obj.put("beginSeason", seasonsBeginComboUser.getSelection());
+        obj.put("endSeason", seasonsEndComboUser.getSelection());
+        ArrayList<Integer> allSelectedPlayerIDs = new ArrayList();
+        for (String each : playerComboUserAdvanced.getHashSet()) {
+            allSelectedPlayerIDs.add(Integer.parseInt(nameHash.get(each)[0]));
+        }
+        obj.put("allSelectedPlayers", allSelectedPlayerIDs);
+        obj.put("allSelectedSeasonTypes", seasonTypesComboUser.getHashSet());
+        obj.put("beginDistance", distanceBeginComboUser.getSelection());
+        obj.put("endDistance", distanceEndComboUser.getSelection());
+        obj.put("shotSuccess", shotSuccessComboUser.getSelection());
+        obj.put("shotValue", shotValueComboUser.getSelection());
+        obj.put("allSelectedShotTypes", shotTypeComboUser.getHashSet());
+        ArrayList<Integer> teamIds = new ArrayList();
+        for (String each : teamComboUser.getHashSet()) {
+            teamIds.add(relevantTeamNameIDHashMap.get(each));
+        }
+        obj.put("allSelectedTeams", teamIds);
+        teamIds = new ArrayList();
+        for (String each : homeTeamComboUser.getHashSet()) {
+            teamIds.add(relevantTeamNameIDHashMap.get(each));
+        }
+        obj.put("allSelectedHomeTeams", teamIds);
+        teamIds = new ArrayList();
+        for (String each : awayTeamComboUser.getHashSet()) {
+            teamIds.add(relevantTeamNameIDHashMap.get(each));
+        }
+        obj.put("allSelectedAwayTeams", teamIds);
+        obj.put("allSelectedCourtAreas", courtAreasComboUser.getHashSet());
+        obj.put("allSelectedCourtSides", courtSidesComboUser.getHashSet());
+        return obj;
     }
 }
