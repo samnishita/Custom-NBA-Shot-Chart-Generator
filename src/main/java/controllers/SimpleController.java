@@ -828,6 +828,8 @@ public class SimpleController implements Initializable {
                 searchscrollpane.setMaxHeight(advancedvbox.getLayoutBounds().getHeight() * 0.4);
                 searchbuttonadvanced.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\";");
                 errorlabeladvanced.setStyle("-fx-font: " + font * 0.75 + "px \"" + overallFont.getName() + "\"; ");
+                seasondash.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\"; ");
+                distancedash.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\"; ");
                 HBox hbox;
                 Label label;
                 Button button;
@@ -852,8 +854,8 @@ public class SimpleController implements Initializable {
                     }
                 }
             }
-            mask.setWidth(width);
-            mask.setHeight(height);
+            mask.setWidth(width*0.999);
+            mask.setHeight(height*0.999);
             imagegrid.setClip(mask);
             this.simplelayoutbutton.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";");
             this.advancedlayoutbutton.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";");
@@ -942,7 +944,7 @@ public class SimpleController implements Initializable {
         double width = imageview.localToParent(imageview.getBoundsInLocal()).getWidth();
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(height)).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         setViewTypeButtonStyle(3);
-        mask = new Rectangle(width, height);
+        mask = new Rectangle(width*0.999, height*0.999);
         imagegrid.setClip(mask);
         Node each;
         Label eachLabel;
@@ -1396,7 +1398,7 @@ public class SimpleController implements Initializable {
         VBox.setMargin(this.searchbutton, new Insets(20, 0, 0, 0));
         this.shotgrid.maxWidthProperty().bind(this.gridpane.widthProperty().divide(3));
         this.shotgrid.maxHeightProperty().bind(this.gridpane.heightProperty().divide(5.25));
-        mask = new Rectangle(imageview.getLayoutBounds().getWidth(), imageview.getLayoutBounds().getHeight());
+        mask = new Rectangle(imageview.getLayoutBounds().getWidth()*0.999, imageview.getLayoutBounds().getHeight()*0.999);
         searchscrollpane.prefWidthProperty().bind(advancedvbox.widthProperty());
         advancedvboxinner.prefWidthProperty().bind(searchscrollpane.widthProperty());
         selectionvbox.prefWidthProperty().bind(selectionscrollpane.widthProperty().multiply(0.95));
@@ -1433,8 +1435,6 @@ public class SimpleController implements Initializable {
         searchscrollpane.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
         selectionscrollpane.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
         selectionvbox.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
-        Stop[] stops = new Stop[]{new Stop(0, Color.BLACK), new Stop(1, Color.RED)};
-        LinearGradient lg1 = new LinearGradient(0, 0, 1, 0, true, CycleMethod.NO_CYCLE, stops);
         vbox.setStyle("-fx-background-color: linear-gradient(from 25% 25% to 100% 100%, #434343, #cdcccc)");
         gridpane.setStyle("-fx-background-color: transparent;");
     }
@@ -1524,7 +1524,8 @@ public class SimpleController implements Initializable {
         notestextarea.setStyle("-fx-font: " + font * 0.65 + "px \"" + overallFont.getName() + "\"; ");
         searchbuttonadvanced.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\";");
         errorlabeladvanced.setStyle("-fx-font: " + font * 0.75 + "px \"" + overallFont.getName() + "\"; ");
-
+        seasondash.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\"; ");
+        distancedash.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\"; ");
     }
 
     private void setShotDistanceCombo() {
@@ -2011,13 +2012,13 @@ public class SimpleController implements Initializable {
     }
 
     private void setEachViewTypeButtonOnClicked(int selector, Search currentSearch) {
-        setViewTypeButtonStyle(selector);
         if (searchvbox.isVisible()) {
             try {
                 this.previousYear = this.yearcombo.getValue().toString();
                 this.previousPlayer = this.playercombo.getValue().toString();
                 this.previousSeason = this.seasoncombo.getValue().toString();
                 currentSimpleSearch = currentSearch;
+                setViewTypeButtonStyle(selector);
                 if (!currentSimpleSearch.equals(Search.NONE)) {
                     runSearch();
                 }
@@ -2029,6 +2030,7 @@ public class SimpleController implements Initializable {
         } else {
             if (checkForEmptyAdvancedSearch()) {
                 currentAdvancedSearch = currentSearch;
+                setViewTypeButtonStyle(selector);
                 if (!currentAdvancedSearch.equals(Search.NONE)) {
                     runSearch();
                 }
@@ -2173,7 +2175,7 @@ public class SimpleController implements Initializable {
         }
 
         double weight = 0.5;
-        int radius = 25;
+        double radius = 25 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470.0;
         RadialGradient rg1 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
             new Stop(0, Color.web("#bc53f8")),
             new Stop(weight, Color.TRANSPARENT)});
