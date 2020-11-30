@@ -75,6 +75,7 @@ import mainapp.Shot;
 import mainapp.UserInputComboBox;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import javafx.scene.text.Font;
 
 /**
  *
@@ -99,9 +100,7 @@ public class SimpleController implements Initializable {
     private HashMap<Integer, String> activePlayers;
     private final int COMBO_FONT_SIZE = 18;
     private final int STAT_GRID_FONT_SIZE = 20;
-    private String previousYear;
-    private String previousPlayer;
-    private String previousSeason;
+    private String previousYear, previousPlayer, previousSeason;
     private ResourceBundle reader = null;
     private double squareSize = 10.0;
     private final double SQUARE_SIZE_ORIG = 10.0;
@@ -143,6 +142,10 @@ public class SimpleController implements Initializable {
     private JSONObject previousSimpleSearchJSON, previousAdvancedSearchJSON;
     private JSONArray previousSimpleSearchResults, previousAdvancedSearchResults;
     private boolean alreadyInitializedAdv = false;
+    private Font overallFont, boldFont, titleFont;
+    private ArrayList<Label> allGridLegendLabels = new ArrayList();
+    private ArrayList<Label> allSimpleFGLabels = new ArrayList();
+    private ArrayList<Label> allAdvancedFGLabels = new ArrayList();
     //General Features
     @FXML
     private BorderPane borderpane;
@@ -151,7 +154,7 @@ public class SimpleController implements Initializable {
     @FXML
     private ImageView imageview;
     @FXML
-    private Label titlelabel, lastupdatedlabel, charttitle, dateaccuracy, updatelabel, namelabel, progresslabel;
+    private Label titlelabel, lastupdatedlabel, charttitle, dateaccuracy, updatelabel, updatestitlelabel, namelabel, progresslabel;
     @FXML
     private HBox tophbox;
     @FXML
@@ -230,9 +233,19 @@ public class SimpleController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        try {
+            overallFont = Font.loadFont(SimpleController.class.getResourceAsStream("/fonts/MontserratLight-ywBvq.ttf"), 12);
+            titleFont = Font.loadFont(SimpleController.class.getResourceAsStream("/fonts/JosefinSansLight-ZVEll.ttf"), 12);
+            boldFont = Font.loadFont(SimpleController.class.getResourceAsStream("/fonts/MontserratSemibold-8M8PB.otf"), 12);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         Collections.addAll(viewButtons, traditionalbutton, gridbutton, heatmapbutton, zonebutton);
         Collections.addAll(simpleFGLabels, fgfrac, fgperc, twopointfrac, twopointperc, threepointfrac, threepointperc);
         Collections.addAll(advancedFGLabels, fgfracadv, fgpercadv, twopointfracadv, twopointpercadv, threepointfracadv, threepointpercadv);
+        Collections.addAll(allGridLegendLabels, gridcolorlegendtoplabel, gridcolorlegendlowerlabel, gridcolorlegendupperlabel, gridsizelegendtoplabel, gridsizelegendlowerlabel, gridsizelegendupperlabel);
+        Collections.addAll(allSimpleFGLabels, fg, fgfrac, fgperc, twopoint, twopointfrac, twopointperc, threepoint, threepointfrac, threepointperc);
+        Collections.addAll(allAdvancedFGLabels, fgadv, fgfracadv, fgpercadv, twopointadv, twopointfracadv, twopointpercadv, threepointadv, threepointfracadv, threepointpercadv);
         createResponsiveComboBoxes();
         organizeZoneFXMLElements();
         initSizing();
@@ -244,7 +257,12 @@ public class SimpleController implements Initializable {
             JSONArray jsonArrayInit = getInitData();
             JSONObject jsonObjMisc2 = jsonArrayInit.getJSONObject(2);
             dateaccuracy.setText(jsonArrayInit.getJSONObject(1).getString("value"));
-            updatelabel.setText(jsonArrayInit.getJSONObject(0).getString("value"));
+            if (jsonArrayInit.getJSONObject(0).getString("value").equals("")) {
+                updatestitlelabel.setVisible(false);
+                updatelabel.setVisible(false);
+            } else {
+                updatelabel.setText(jsonArrayInit.getJSONObject(0).getString("value"));
+            }
         } catch (IOException ex) {
             System.out.println("Error caught in Misc Initialization");
         }
@@ -305,42 +323,46 @@ public class SimpleController implements Initializable {
             }
         });
         this.simplelayoutbutton.setOnMouseClicked(t -> {
-            initSizing();
-            try {
-                setPlayerComboBox();
-                setSeasonsComboBox();
-            } catch (IOException ex) {
-                System.out.println("Error setting comboboxes");
+            if (!searchvbox.isVisible()) {
+                initSizing();
+                try {
+                    setPlayerComboBox();
+                    setSeasonsComboBox();
+                } catch (IOException ex) {
+                    System.out.println("Error setting comboboxes");
+                }
+                this.charttitle.setVisible(false);
+                searchvbox.setVisible(true);
+                advancedvbox.setVisible(false);
+                removeAllShotsFromView();
+                resetView();
+                simpleFGLabels.forEach(each -> each.setText("--"));
+                imageview.setImage(new Image("/images/transparent.png"));
+                changeButtonStyles();
+                allShots.clear();
             }
-            this.charttitle.setVisible(false);
-            searchvbox.setVisible(true);
-            advancedvbox.setVisible(false);
-            removeAllShotsFromView();
-            resetView();
-            simpleFGLabels.forEach(each -> each.setText("--"));
-            imageview.setImage(new Image("/images/transparent.png"));
-            changeButtonStyles();
-            allShots.clear();
         });
         this.advancedlayoutbutton.setOnMouseClicked(t -> {
-            if (!alreadyInitializedAdv) {
-                try {
-                    initAdvanced();
-                    alreadyInitializedAdv = true;
-                } catch (IOException ex) {
-                    System.out.println("Error caught initializing advanced");
+            if (!advancedvbox.isVisible()) {
+                if (!alreadyInitializedAdv) {
+                    try {
+                        initAdvanced();
+                        alreadyInitializedAdv = true;
+                    } catch (IOException ex) {
+                        System.out.println("Error caught initializing advanced");
+                    }
                 }
+                this.charttitle.setVisible(false);
+                searchvbox.setVisible(false);
+                advancedvbox.setVisible(true);
+                resize();
+                removeAllShotsFromView();
+                resetView();
+                advancedFGLabels.forEach(each -> each.setText("--"));
+                imageview.setImage(new Image("/images/transparent.png"));
+                changeButtonStyles();
+                allShots.clear();
             }
-            this.charttitle.setVisible(false);
-            searchvbox.setVisible(false);
-            advancedvbox.setVisible(true);
-            resize();
-            removeAllShotsFromView();
-            resetView();
-            advancedFGLabels.forEach(each -> each.setText("--"));
-            imageview.setImage(new Image("/images/transparent.png"));
-            changeButtonStyles();
-            allShots.clear();
         });
         this.searchbuttonadvanced.setOnMouseClicked(t -> {
             if (checkForEmptyAdvancedSearch()) {
@@ -653,12 +675,14 @@ public class SimpleController implements Initializable {
             tempRect.setHeight(((nodeCounter * 1.5) + 2) * height / 470);
             nodeCounter++;
         }
-        gridcolorlegendtoplabel.setStyle("-fx-font: " + height * 13.0 / 470 + "px \"Lucida Sans\"; ");
-        gridsizelegendtoplabel.setStyle("-fx-font: " + height * 13.0 / 470 + "px \"Lucida Sans\";");
-        gridcolorlegendlowerlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
-        gridcolorlegendupperlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
-        gridsizelegendlowerlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
-        gridsizelegendupperlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
+        for (Label each : allGridLegendLabels) {
+            if (each.getId().equals("gridcolorlegendtoplabel") || each.getId().equals("gridsizelegendtoplabel")) {
+                each.setStyle("-fx-font: " + height * 13.0 / 470 + "px \"" + overallFont.getName() + "\";");
+            } else {
+                each.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+            }
+        }
+
         gridcolorlegendgradient.setWidth(height * 153.0 / 470);
         gridcolorlegendgradient.setHeight(height * 17.0 / 470);
         squareSize = width / 50;
@@ -705,7 +729,7 @@ public class SimpleController implements Initializable {
                             setViewTypeButtonStyle(3);
                             break;
                         default:
-                            traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent; ");
+                            traditionalbutton.setStyle("-fx-font: " + font + "px \"" + boldFont.getName() + "\";-fx-background-color: transparent; ");
                     }
                 } else {
                     switch (currentSimpleSearch) {
@@ -722,23 +746,22 @@ public class SimpleController implements Initializable {
                             setViewTypeButtonStyle(3);
                             break;
                         default:
-                            traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent; ");
+                            traditionalbutton.setStyle("-fx-font: " + font + "px \"" + boldFont.getName() + "\";-fx-background-color: transparent; ");
                     }
                 }
-                introlabel.setStyle("-fx-font: " + font * 1.5 + "px \"Serif\";");
-                yearcombo.setStyle("-fx-font: " + font + "px \"Serif\";");
-                playercombo.setStyle("-fx-font: " + font + "px \"Serif\";");
-                seasoncombo.setStyle("-fx-font: " + font + "px \"Serif\";");
-                searchbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
-                fg.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
-                fgfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                fgperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                twopoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
-                twopointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                twopointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                threepoint.setStyle("-fx-font: " + font * 2.5 + "px \"Tahoma Bold\";");
-                threepointfrac.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                threepointperc.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
+                introlabel.setStyle("-fx-font: " + font * 1.5 + "px \"" + overallFont.getName() + "\";");
+                yearcombo.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";");
+                playercombo.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";");
+                seasoncombo.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";");
+                searchbutton.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\";");
+                errorlabel.setStyle("-fx-font: " + font * 0.75 + "px \"" + overallFont.getName() + "\"; ");
+                for (Label each : allSimpleFGLabels) {
+                    if (each.getId().equals("fg") || each.getId().equals("twopoint") || each.getId().equals("threepoint")) {
+                        each.setStyle("-fx-font: " + font * 2.5 + "px \"" + boldFont.getName() + "\";");
+                    } else {
+                        each.setStyle("-fx-font: " + fontGrid + "px \"" + boldFont.getName() + "\";");
+                    }
+                }
             } else {
                 if (!loadingoverlay.isVisible()) {
                     switch (currentAdvancedSearch) {
@@ -759,7 +782,7 @@ public class SimpleController implements Initializable {
                             setViewTypeButtonStyle(3);
                             break;
                         default:
-                            traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent; ");
+                            traditionalbutton.setStyle("-fx-font: " + font + "px \"" + boldFont.getName() + "\";-fx-background-color: transparent; ");
                     }
                 } else {
                     switch (currentAdvancedSearch) {
@@ -776,49 +799,35 @@ public class SimpleController implements Initializable {
                             setViewTypeButtonStyle(3);
                             break;
                         default:
-                            traditionalbutton.setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent; ");
+                            traditionalbutton.setStyle("-fx-font: " + font + "px \"" + boldFont.getName() + "\";-fx-background-color: transparent; ");
                     }
                 }
-                fgadv.setStyle("-fx-font: " + font * 2 + "px \"Tahoma Bold\";");
-                fgfracadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                fgpercadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                twopointadv.setStyle("-fx-font: " + font * 2 + "px \"Tahoma Bold\";");
-                twopointfracadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                twopointpercadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                threepointadv.setStyle("-fx-font: " + font * 2 + "px \"Tahoma Bold\";");
-                threepointfracadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                threepointpercadv.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"Tahoma Bold\";");
-                advancedintrolabel.setStyle("-fx-font: " + fontGrid + "px \"Tahoma Bold\";");
-                seasonslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                seasonsbegincombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                seasondash.setStyle("-fx-font: " + font * 1.5 + "px \"Arial\";");
-                seasonsendcombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                shotdistancelabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                distancebegincombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                distancedash.setStyle("-fx-font: " + font * 1.5 + "px \"Arial\";");
-                distanceendcombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                playerslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                playercomboadvanced.setStyle("-fx-font: " + font + "px \"Arial\";");
-                seasontypeslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                seasontypescomboadvanced.setStyle("-fx-font: " + font + "px \"Arial\";");
-                shotsuccesslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                shotsuccesscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                shotvaluelabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                shotvaluecombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                shottypeslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                shottypescombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                teamslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                teamscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                hometeamslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                hometeamscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                awayteamslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                awayteamscombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                courtareaslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                courtareascombo.setStyle("-fx-font: " + font + "px \"Arial\";");
-                courtsideslabel.setStyle("-fx-font: " + font + "px \"Arial\";");
-                courtsidescombo.setStyle("-fx-font: " + font + "px \"Arial\";");
+                for (Label each : allAdvancedFGLabels) {
+                    if (each.getId().equals("fgadv") || each.getId().equals("twopointadv") || each.getId().equals("threepointadv")) {
+                        each.setStyle("-fx-font: " + font * 2 + "px \"" + boldFont.getName() + "\";");
+                    } else {
+                        each.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"" + boldFont.getName() + "\";");
+                    }
+                }
+                HBox tempHBox;
+                for (Node each : advancedvboxinner.getChildren()) {
+                    if (!each.getClass().equals(HBox.class) && !each.getId().contains("dash")) {
+                        each.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";");
+                    } else if (each.getClass().equals(HBox.class)) {
+                        tempHBox = (HBox) each;
+                        for (Node each2 : tempHBox.getChildren()) {
+                            each2.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";");
+                        }
+                    } else {
+                        each.setStyle("-fx-font: " + font * 1.5 + "px \"" + overallFont.getName() + "\";");
+                    }
+                }
+                advancedintrolabel.setStyle("-fx-font: " + fontGrid + "px \"" + boldFont.getName() + "\";");
+                notestextarea.setStyle("-fx-font: " + font * 0.65 + "px \"" + overallFont.getName() + "\"; ");
                 searchscrollpane.setMinHeight(advancedvbox.getLayoutBounds().getHeight() * 0.4);
                 searchscrollpane.setMaxHeight(advancedvbox.getLayoutBounds().getHeight() * 0.4);
+                searchbuttonadvanced.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\";");
+                errorlabeladvanced.setStyle("-fx-font: " + font * 0.75 + "px \"" + overallFont.getName() + "\"; ");
                 HBox hbox;
                 Label label;
                 Button button;
@@ -828,13 +837,13 @@ public class SimpleController implements Initializable {
                         for (Node eachInner : hbox.getChildren()) {
                             if (eachInner.getClass().equals(Label.class)) {
                                 label = (Label) eachInner;
-                                label.setStyle("-fx-font: " + font * 0.9 + "px \"Arial\";");
+                                label.setStyle("-fx-font: " + font * 0.9 + "px \"" + overallFont.getName() + "\";");
                             } else if (eachInner.getClass().equals(Button.class)) {
                                 button = (Button) eachInner;
                                 if (button.isHover()) {
-                                    button.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;-fx-underline: true;");
+                                    button.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\"; -fx-text-fill: red;-fx-background-color: transparent;-fx-underline: true;");
                                 } else {
-                                    button.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;");
+                                    button.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\"; -fx-text-fill: red;-fx-background-color: transparent;");
                                 }
                             }
                         }
@@ -846,11 +855,14 @@ public class SimpleController implements Initializable {
             mask.setWidth(width);
             mask.setHeight(height);
             imagegrid.setClip(mask);
-            this.simplelayoutbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
-            this.advancedlayoutbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
+            this.simplelayoutbutton.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";");
+            this.advancedlayoutbutton.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";");
             titlelabel.setMinWidth(Region.USE_PREF_SIZE);
-            titlelabel.setStyle("-fx-font: " + fontGrid * 3 + "px \"Serif\"; ");
-            charttitle.setStyle("-fx-font: " + fontGrid * 1.15 + "px \"Arial Italic\";");
+            titlelabel.setStyle("-fx-font: " + fontGrid * 3 + "px \"" + titleFont.getName() + "\"; ");
+            namelabel.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"" + overallFont.getName() + "\"; ");
+            lastupdatedlabel.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\"; ");
+            dateaccuracy.setStyle("-fx-font: " + font * 1.4 + "px \"" + overallFont.getName() + "\"; ");
+            charttitle.setStyle("-fx-font: " + fontGrid * 1.15 + "px \"" + overallFont.getName() + "\";");
             charttitle.setMinHeight(height / 10);
             charttitle.setMinWidth(width);
             charttitle.setMaxHeight(height / 10);
@@ -870,9 +882,25 @@ public class SimpleController implements Initializable {
             VBox.setMargin(searchbutton, new Insets(20, 0, 0, 0));
             loadingoverlay.setWidth(width);
             loadingoverlay.setHeight(height);
-            progresslabel.setStyle("-fx-font: " + height * 16.0 / 470 + "px \"Arial Black\";");
+            progresslabel.setStyle("-fx-font: " + height * 16.0 / 470 + "px \"" + boldFont.getName() + "\";");
             progressindicator.setPrefHeight(height * 70.0 / 470);
             progressindicator.setPrefWidth(height * 70.0 / 470);
+            Label eachLabel;
+            Label eachLabelPercent;
+            double topFontSize = 17.0;
+            double bottomFontSize = 15.0;
+            for (int i = 1; i < 16; i++) {
+                eachLabel = allLabels.get(i - 1);
+                eachLabelPercent = allPercentLabels.get(i - 1);
+                eachLabel.setStyle("-fx-font: " + height * topFontSize / 470 + "px \"" + boldFont.getName() + "\"; -fx-font-weight: bold;");
+                eachLabelPercent.setStyle("-fx-font: " + height * bottomFontSize / 470 + "px \"" + boldFont.getName() + "\";-fx-font-weight: bold;");
+                if (i < 3) {
+                    eachLabel.setMinWidth(width * 120.0 / 470);
+                } else {
+                    eachLabel.setMinWidth(width * 90.0 / 470);
+                }
+                eachLabelPercent.setMinWidth(width * 90.0 / 470);
+            }
         } catch (Exception ex) {
 
         }
@@ -904,9 +932,9 @@ public class SimpleController implements Initializable {
         heatlegendupperlabel.maxWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.5));
         heatlegendlowerlabel.minWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.45));
         heatlegendupperlabel.minWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.45));
-        heatlegendtoplabel.setStyle("-fx-font: " + height * 13.0 / 470 + "px \"Lucida Sans\";");
-        heatlegendlowerlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
-        heatlegendupperlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
+        heatlegendtoplabel.setStyle("-fx-font: " + height * 13.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        heatlegendlowerlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        heatlegendupperlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
     }
 
     private void resizeZone() {
@@ -927,9 +955,13 @@ public class SimpleController implements Initializable {
             eachLabelPercent = allPercentLabels.get(i - 1);
             each.setScaleX(width / 500);
             each.setScaleY(height / 470);
-            eachLabel.setStyle("-fx-font: " + height * topFontSize / 470 + "px \"PT Sans Narrow\"; -fx-font-weight: bold;");
-            eachLabelPercent.setStyle("-fx-font: " + height * bottomFontSize / 470 + "px \"PT Sans Narrow\";-fx-font-weight: bold;");
-            eachLabel.setMinWidth(width * 90.0 / 470);
+            eachLabel.setStyle("-fx-font: " + height * topFontSize / 470 + "px \"" + boldFont.getName() + "\"; -fx-font-weight: bold;");
+            eachLabelPercent.setStyle("-fx-font: " + height * bottomFontSize / 470 + "px \"" + boldFont.getName() + "\";-fx-font-weight: bold;");
+            if (i < 3) {
+                eachLabel.setMinWidth(width * 120.0 / 470);
+            } else {
+                eachLabel.setMinWidth(width * 90.0 / 470);
+            }
             eachLabelPercent.setMinWidth(width * 90.0 / 470);
             switch (i) {
                 case 1:
@@ -1056,9 +1088,9 @@ public class SimpleController implements Initializable {
         zonelegendupperlabel.maxWidthProperty().bind(zonelegend.maxWidthProperty().multiply(0.5));
         zonelegendlowerlabel.minWidthProperty().bind(zonelegend.maxWidthProperty().multiply(0.45));
         zonelegendupperlabel.minWidthProperty().bind(zonelegend.maxWidthProperty().multiply(0.45));
-        zonelegendtoplabel.setStyle("-fx-font: " + height * 13.0 / 470 + "px \"Lucida Sans\";");
-        zonelegendlowerlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
-        zonelegendupperlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"Lucida Sans\";");
+        zonelegendtoplabel.setStyle("-fx-font: " + height * 13.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        zonelegendlowerlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        zonelegendupperlabel.setStyle("-fx-font: " + height * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
     }
 
     private void removeAllShotsFromView() {
@@ -1325,19 +1357,23 @@ public class SimpleController implements Initializable {
         setViewTypeButtonStyle(10);
         fontGrid = new BigDecimal(STAT_GRID_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         titlelabel.setMinWidth(Region.USE_PREF_SIZE);
-        titlelabel.setStyle("-fx-font: " + fontGrid * 3 + "px \"Serif\"; ");
+        titlelabel.setStyle("-fx-font: " + fontGrid * 3 + "px \"" + titleFont.getName() + "\"; ");
+        namelabel.setStyle("-fx-font: " + fontGrid * 0.75 + "px \"" + overallFont.getName() + "\"; ");
+        lastupdatedlabel.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\"; ");
+        dateaccuracy.setStyle("-fx-font: " + font * 1.4 + "px \"" + overallFont.getName() + "\"; ");
+        errorlabel.setStyle("-fx-font: " + font * 0.75 + "px \"" + overallFont.getName() + "\"; ");
         this.errorlabel.setVisible(false);
         this.introlabel.prefWidthProperty().bind(this.gridpane.widthProperty().divide(4));
-        this.introlabel.setStyle("-fx-font: " + font * 1.5 + "px \"Serif\";");
+        this.introlabel.setStyle("-fx-font: " + font * 1.5 + "px \"" + overallFont.getName() + "\";");
         this.yearcombo.prefWidthProperty().bind(this.gridpane.widthProperty().divide(5));
-        this.yearcombo.setStyle("-fx-font: " + font + "px \"Serif\";");
+        this.yearcombo.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";");
         this.playercombo.prefWidthProperty().bind(this.gridpane.widthProperty().divide(5));
-        this.playercombo.setStyle("-fx-font: " + font + "px \"Serif\";");
+        this.playercombo.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";");
         this.seasoncombo.prefWidthProperty().bind(this.gridpane.widthProperty().divide(5));
-        this.seasoncombo.setStyle("-fx-font: " + font + "px \"Serif\";");
-        this.searchbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
-        this.simplelayoutbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
-        this.advancedlayoutbutton.setStyle("-fx-font: " + font + "px \"Serif\";");
+        this.seasoncombo.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";");
+        this.searchbutton.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\";");
+        this.simplelayoutbutton.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";");
+        this.advancedlayoutbutton.setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";");
         this.simplelayoutbutton.prefWidthProperty().bind(this.gridpane.widthProperty().divide(8));
         this.advancedlayoutbutton.prefWidthProperty().bind(this.gridpane.widthProperty().divide(8));
 
@@ -1485,6 +1521,10 @@ public class SimpleController implements Initializable {
         setAdvancedPlayerComboBox();
         setAdvancedSeasonsComboBox();
         setShotDistanceCombo();
+        notestextarea.setStyle("-fx-font: " + font * 0.65 + "px \"" + overallFont.getName() + "\"; ");
+        searchbuttonadvanced.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\";");
+        errorlabeladvanced.setStyle("-fx-font: " + font * 0.75 + "px \"" + overallFont.getName() + "\"; ");
+
     }
 
     private void setShotDistanceCombo() {
@@ -1580,7 +1620,7 @@ public class SimpleController implements Initializable {
             newHBox.setPadding(insetsHBox);
             final String SELECTED = combo.getId();
             deleteButton = new Button("X");
-            deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;");
+            deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\"; -fx-text-fill: red;-fx-background-color: transparent;");
             newHBox.getChildren().add(deleteButton);
             final HBox HBOX = (HBox) deleteButton.getParent();
             final Scene FINALSCENE = selectionvbox.getScene();
@@ -1590,17 +1630,17 @@ public class SimpleController implements Initializable {
             deleteButton.setOnMouseClicked((Event t) -> {
                 deleteButton.setOnMouseEntered(t2 -> {
                     FINALSCENE.setCursor(Cursor.DEFAULT);
-                    deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;-fx-underline: true;");
+                    deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\"; -fx-text-fill: red;-fx-background-color: transparent;-fx-underline: true;");
                 });
                 deleteButtonInner(SELECTED, HBOX, labelPreText);
                 selectionvbox.getChildren().remove(newHBox);
             });
             deleteButton.setOnMouseEntered(t -> {
                 FINALSCENE.setCursor(Cursor.HAND);
-                deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;-fx-underline: true;");
+                deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\"; -fx-text-fill: red;-fx-background-color: transparent;-fx-underline: true;");
             });
             deleteButton.setOnMouseExited(t -> {
-                deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;");
+                deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\"; -fx-text-fill: red;-fx-background-color: transparent;");
                 FINALSCENE.setCursor(Cursor.DEFAULT);
             });
             deleteButton.prefHeightProperty().bind(newHBox.prefHeightProperty());
@@ -1608,7 +1648,7 @@ public class SimpleController implements Initializable {
             alreadySelected = combo.getValue().toString();
             label = new Label();
             label.setText(labelPreText + alreadySelected);
-            label.setStyle("-fx-font: " + font * 0.9 + "px \"Arial\";");
+            label.setStyle("-fx-font: " + font * 0.9 + "px \"" + overallFont.getName() + "\";");
             label.setPadding(insets);
             label.prefHeightProperty().bind(newHBox.prefHeightProperty());
             label.setAlignment(Pos.CENTER_LEFT);
@@ -1732,7 +1772,7 @@ public class SimpleController implements Initializable {
         Button deleteButton = new Button("X");
         deleteButton.setPrefSize(35.0, 35.0);
         deleteButton.setAlignment(Pos.CENTER);
-        deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;");
+        deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\"; -fx-text-fill: red;-fx-background-color: transparent;");
         newHBox.getChildren().add(deleteButton);
         final HBox HBOX = (HBox) deleteButton.getParent();
         final Scene FINALSCENE = selectionvbox.getScene();
@@ -1740,24 +1780,24 @@ public class SimpleController implements Initializable {
         deleteButton.setOnMouseClicked(t -> {
             deleteButton.setOnMouseEntered(t2 -> {
                 FINALSCENE.setCursor(Cursor.DEFAULT);
-                deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;-fx-underline: true;");
+                deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\"; -fx-text-fill: red;-fx-background-color: transparent;-fx-underline: true;");
             });
             deleteButtonInner(SELECTED, HBOX, labelPreText);
             selectionvbox.getChildren().remove(newHBox);
         });
         deleteButton.setOnMouseEntered(t -> {
             FINALSCENE.setCursor(Cursor.HAND);
-            deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;-fx-underline: true;");
+            deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\"; -fx-text-fill: red;-fx-background-color: transparent;-fx-underline: true;");
         });
         deleteButton.setOnMouseExited(t -> {
-            deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"Arial\"; -fx-text-fill: red;-fx-background-color: transparent;");
+            deleteButton.setStyle("-fx-font: " + font * 0.8 + "px \"" + overallFont.getName() + "\"; -fx-text-fill: red;-fx-background-color: transparent;");
             FINALSCENE.setCursor(Cursor.DEFAULT);
         });
         deleteButton.prefHeightProperty().bind(newHBox.prefHeightProperty());
         deleteButton.prefWidthProperty().bind(deleteButton.prefHeightProperty());
         Label label = new Label();
         label.setText(labelPreText + input);
-        label.setStyle("-fx-font: " + font * 0.9 + "px \"Arial\";");
+        label.setStyle("-fx-font: " + font * 0.9 + "px \"" + overallFont.getName() + "\";");
         label.setPadding(insets);
         label.prefHeightProperty().bind(newHBox.prefHeightProperty());
         label.setAlignment(Pos.CENTER_LEFT);
@@ -1946,13 +1986,13 @@ public class SimpleController implements Initializable {
     private void setViewTypeButtonStyle(int selector) {
         for (int i = 0; i < viewButtons.size(); i++) {
             if (i == selector && viewButtons.get(i).isHover()) {
-                viewButtons.get(i).setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: true;");
+                viewButtons.get(i).setStyle("-fx-font: " + font + "px \"" + boldFont.getName() + "\";-fx-background-color: transparent;-fx-underline: true;");
             } else if (i == selector && !viewButtons.get(i).isHover()) {
-                viewButtons.get(i).setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;");
+                viewButtons.get(i).setStyle("-fx-font: " + font + "px \"" + boldFont.getName() + "\";-fx-background-color: transparent;");
             } else if (i != selector && viewButtons.get(i).isHover()) {
-                viewButtons.get(i).setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: true;");
+                viewButtons.get(i).setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";-fx-background-color: transparent;-fx-underline: true;");
             } else {
-                viewButtons.get(i).setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;");
+                viewButtons.get(i).setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";-fx-background-color: transparent;");
             }
         }
     }
@@ -2002,18 +2042,18 @@ public class SimpleController implements Initializable {
 
     private void setEachViewTypeButtonsOnMouseEntered(int selector, Search currentSearch, Scene scene) {
         if ((searchvbox.isVisible() && currentSimpleSearch.equals(currentSearch)) || (advancedvbox.isVisible() && currentAdvancedSearch.equals(currentSearch))) {
-            viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: true;");
+            viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"" + boldFont.getName() + "\";-fx-background-color: transparent;-fx-underline: true;");
         } else {
-            viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: true;");
+            viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";-fx-background-color: transparent;-fx-underline: true;");
         }
         scene.setCursor(Cursor.HAND);
     }
 
     private void setEachViewTypeButtonsOnMouseExited(int selector, Search currentSearch, Scene scene) {
         if ((searchvbox.isVisible() && currentSimpleSearch.equals(currentSearch)) || (advancedvbox.isVisible() && currentAdvancedSearch.equals(currentSearch))) {
-            viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"Arial Black\";-fx-background-color: transparent;-fx-underline: false;");
+            viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"" + boldFont.getName() + "\";-fx-background-color: transparent;-fx-underline: false;");
         } else {
-            viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"Arial\";-fx-background-color: transparent;-fx-underline: false;");
+            viewButtons.get(selector).setStyle("-fx-font: " + font + "px \"" + overallFont.getName() + "\";-fx-background-color: transparent;-fx-underline: false;");
         }
         scene.setCursor(Cursor.DEFAULT);
     }
@@ -2122,9 +2162,9 @@ public class SimpleController implements Initializable {
         heatlegendupperlabel.maxWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.5));
         heatlegendlowerlabel.minWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.45));
         heatlegendupperlabel.minWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.45));
-        heatlegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"Lucida Sans\";");
-        heatlegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
-        heatlegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
+        heatlegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        heatlegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        heatlegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
 
         if (searchvbox.isVisible()) {
             setShotGrid(previousSimpleSearchResults);
@@ -2616,12 +2656,12 @@ public class SimpleController implements Initializable {
             tempRect.setHeight(((nodeCounter * 1.5) + 2) * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470);
             nodeCounter++;
         }
-        gridcolorlegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"Lucida Sans\";");
-        gridsizelegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"Lucida Sans\";");
-        gridcolorlegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
-        gridcolorlegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
-        gridsizelegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
-        gridsizelegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"Lucida Sans\";");
+        gridcolorlegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        gridsizelegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        gridcolorlegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        gridcolorlegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        gridsizelegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        gridsizelegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
         imageview.setImage(new Image("/images/transparent.png"));
         if (searchvbox.isVisible()) {
             setShotGrid(previousSimpleSearchResults);
