@@ -21,6 +21,7 @@
 <?import javafx.scene.paint.Stop?>
 <?import javafx.scene.shape.Arc?>
 <?import javafx.scene.shape.Line?>
+<?import javafx.scene.shape.Polygon?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
@@ -659,6 +660,12 @@
                         </VBox>
                      </children>
                         </GridPane>
+                  <Group>
+                     <children>
+                        <Polygon fx:id="triangle" fill="DODGERBLUE" layoutX="60.0" layoutY="40.0" points="-5.0, 40.0, 5.0, 40.0, 0, 80" stroke="BLACK" strokeType="INSIDE" />
+                        <Rectangle fx:id="bubble" arcHeight="35.0" arcWidth="35.0" fill="DODGERBLUE" height="80.0" stroke="BLACK" strokeType="INSIDE" width="120.0" />
+                     </children>
+                  </Group>
                         <HBox fx:id="buttonbox" alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                             <children>
                                 <Button fx:id="traditionalbutton" mnemonicParsing="false" prefHeight="40.0" prefWidth="175.0" style="-fx-background-color: transparent;" text="Traditional" textFill="WHITE">
@@ -1035,7 +1042,7 @@
                   </Label>
                   <ScrollPane fx:id="selectionscrollpane" hbarPolicy="NEVER" prefHeight="124.0" prefWidth="314.0">
                      <content>
-                        <AnchorPane prefHeight="94.0" prefWidth="198.0">
+                        <AnchorPane prefHeight="42.0" prefWidth="210.0">
                            <children>
                               <VBox fx:id="selectionvbox" minWidth="200.0" prefHeight="49.0" prefWidth="210.0" />
                            </children>
