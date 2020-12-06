@@ -41,9 +41,9 @@ Displays the most common shot locations, with more blue indicating high frequenc
 
 ### Installation
 Requires Java JDK 8. Visit <a href ="https://www.oraclie.com/java/technologies/javase/javase-jdk8-downloads.html">here</a> to download the latest JDK 
-(t's free) for your operating system.
+(it's free) for your operating system.
 
-Download the latest .jar file and run to open the app.
+Download the latest .jar file from Releases and run it to open the app.
 
 ### Future Updates
 * Advanced search to include filtering by date, quarter, and time remaining on the game clock
