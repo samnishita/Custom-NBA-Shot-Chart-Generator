@@ -149,7 +149,6 @@ public class SimpleController implements Initializable {
     private ArrayList<Label> allGridLegendLabels = new ArrayList();
     private ArrayList<Label> allSimpleFGLabels = new ArrayList();
     private ArrayList<Label> allAdvancedFGLabels = new ArrayList();
-
     private Shape tradBubble, tradBubbleNS, tradBubbleSWNE, tradBubbleWE, tradBubbleNWSE;
     private Label tradShotInfo = new Label();
     private ArrayList<Shape> allBubbles = new ArrayList();
@@ -516,8 +515,9 @@ public class SimpleController implements Initializable {
     private void setPlayerComboBox() throws IOException {
         this.activePlayers = new HashMap();
         JSONArray jsonArray = getActivePlayersData();
+        JSONObject eachPlayer;
         for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject eachPlayer = jsonArray.getJSONObject(i);
+            eachPlayer = jsonArray.getJSONObject(i);
             this.activePlayers.put(eachPlayer.getInt("id"), eachPlayer.getString("firstname") + " " + eachPlayer.getString("lastname"));
         }
         HashMap<String, String> names = new HashMap();
@@ -530,7 +530,7 @@ public class SimpleController implements Initializable {
         }
         Collections.sort(fixedNames);
         for (String each : fixedNames) {
-            realNames.add(names.get(each));
+            realNames.add(names.get(each).trim());
         }
         if (seasoncombo.getValue() != null) {
             this.previousSeason = seasoncombo.getValue().toString();
@@ -2663,7 +2663,7 @@ public class SimpleController implements Initializable {
                             try {
                                 tradShotInfo.setStyle("-fx-text-fill: WHITE; -fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 12.0 / 470 + "px \"" + boldFont.getName() + "\";");
                                 if (msiTemp.getShot().getX() < -175 && msiTemp.getShot().getY() < 80) {//1
-                                   tradBubble = tradBubbleNWSE;
+                                    tradBubble = tradBubbleNWSE;
                                     tradBubble.setRotate(0);
                                     tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
                                     tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
