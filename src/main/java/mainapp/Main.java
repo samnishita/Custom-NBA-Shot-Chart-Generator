@@ -45,7 +45,7 @@ import org.json.JSONObject;
 public class Main extends Application {
 
     private FXMLLoader loader;
-    private SimpleController sc;
+    private static SimpleController sc;
     private String hostName;
     private int portNumber;
     private ResourceBundle reader = null;
@@ -56,69 +56,45 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        reader = ResourceBundle.getBundle("dbconfig");
-        hostName = reader.getString("server.host");
-        portNumber = Integer.parseInt(reader.getString("server.port"));
-
         try {
-            socket = new Socket(hostName, portNumber);
-            out = new PrintWriter(socket.getOutputStream(), true);
-//            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//            stdIn = new BufferedReader(new InputStreamReader(System.in));
-        } catch (UnknownHostException e) {
-            System.err.println("Don't know about host " + hostName);
-//            System.exit(1);
-        } catch (IOException e) {
-            System.err.println("Couldn't get I/O for the connection to "
-                    + hostName);
-//            System.exit(1);
+            reader = ResourceBundle.getBundle("dbconfig");
+            hostName = reader.getString("server.host");
+            portNumber = Integer.parseInt(reader.getString("server.port"));
+            try {
+                socket = new Socket(hostName, portNumber);
+                out = new PrintWriter(socket.getOutputStream(), true);
+            } catch (UnknownHostException e) {
+                System.err.println("Don't know about host " + hostName);
+            } catch (IOException e) {
+                System.err.println("Couldn't get I/O for the connection to "
+                        + hostName);
+            }
+            loader = new FXMLLoader(getClass().getResource("/fxml/simplegrid.fxml"));
+            Parent root = (Parent) loader.load();
+            scene = new Scene(root);
+            scene.getStylesheets().add("/css/controllercss.css");
+            stage.setScene(scene);
+            stage.setTitle("Dynamic NBA Shot Charts");
+            stage.setMinHeight(750.0 / 1.1);
+            stage.setMinWidth(900.0 / 1.1);
+
+            stage.show();
+            sc = loader.getController();
+            GridPane gp = sc.getGridPane();
+            VBox vbox = sc.getVBox();
+            vbox.maxWidthProperty().bind(scene.widthProperty());
+            vbox.maxHeightProperty().bind(scene.heightProperty());
+            gp.maxHeightProperty().bind(vbox.maxHeightProperty().multiply(0.9));
+            gp.maxWidthProperty().bind(vbox.maxWidthProperty());
+            ImageView iv = sc.getIV();
+            iv.fitWidthProperty().bind(scene.widthProperty().divide(900.0 / 500));
+            iv.fitHeightProperty().bind(scene.heightProperty().divide(750.0 / 470));
+            iv.setPreserveRatio(true);
+            sc.setAllViewTypeButtonsOnMouseActions();
+            sc.populateUnchangingComboBoxes();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-        loader = new FXMLLoader(getClass().getResource("/fxml/simplegrid.fxml"));
-        Parent root = (Parent) loader.load();
-        scene = new Scene(root);
-        scene.getStylesheets().add("/css/transparent-text-area.css");
-        stage.setScene(scene);
-        stage.setTitle("Dynamic NBA Shot Charts");
-        stage.setMinHeight(750.0 / 1.1);
-        stage.setMinWidth(900.0 / 1.1);
-
-        stage.show();
-        sc = loader.getController();
-        GridPane gp = sc.getGridPane();
-        VBox vbox = sc.getVBox();
-        vbox.maxWidthProperty().bind(scene.widthProperty());
-        vbox.maxHeightProperty().bind(scene.heightProperty());
-        gp.maxHeightProperty().bind(vbox.maxHeightProperty().multiply(0.9));
-        gp.maxWidthProperty().bind(vbox.maxWidthProperty());
-        ImageView iv = sc.getIV();
-//        iv.setFitHeight(1776);
-//        iv.setFitWidth(1890);
-        iv.fitWidthProperty().bind(scene.widthProperty().divide(900.0 / 500));
-        iv.fitHeightProperty().bind(scene.heightProperty().divide(750.0 / 470));
-//        iv.fitWidthProperty().bind(gp.maxWidthProperty().divide(1.7));
-//        iv.fitHeightProperty().bind(gp.maxHeightProperty().divide(1.15));
-        iv.setPreserveRatio(true);
-
-//        vbox.maxWidthProperty().addListener(new ChangeListener<Number>() {
-//            @Override
-//            public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
-//                System.out.println("VBOX Width: " + vbox.getWidth());
-//                System.out.println("VBOX MAX Width: " + vbox.getMaxWidth());
-//                System.out.println("Scene Width: " + scene.getWidth());
-//                System.out.println("GP Width: " + gp.getWidth());
-//                System.out.println("");
-//            }
-//        });
-//        vbox.maxHeightProperty().addListener(new ChangeListener<Number>() {
-//            @Override
-//            public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneHeight, Number newSceneHeight) {
-//                System.out.println("VBOX Height: " + vbox.getHeight());
-//                System.out.println("VBOX MAX Height: " + vbox.getMaxHeight());
-//                System.out.println("Scene Height: " + scene.getHeight());
-//                System.out.println("GP Height: " + gp.getHeight());
-//                System.out.println("");
-//            }
-//        });
     }
 
     public static void main(String[] args) {
@@ -143,5 +119,9 @@ public class Main extends Application {
     @Override
     public void stop() {
         System.exit(0);
+    }
+
+    public static SimpleController getSC() {
+        return sc;
     }
 }

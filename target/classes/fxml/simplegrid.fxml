@@ -6,6 +6,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.image.Image?>
@@ -20,6 +21,7 @@
 <?import javafx.scene.paint.Stop?>
 <?import javafx.scene.shape.Arc?>
 <?import javafx.scene.shape.Line?>
+<?import javafx.scene.shape.Polygon?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
@@ -86,7 +88,7 @@
                 <RowConstraints percentHeight="5" vgrow="ALWAYS" />
             </rowConstraints>
             <children>
-            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
+            <HBox alignment="BOTTOM_CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
                <children>
                   <Button fx:id="simplelayoutbutton" mnemonicParsing="false" prefWidth="80.0" text="Simple" HBox.hgrow="ALWAYS">
                      <HBox.margin>
@@ -94,11 +96,6 @@
                      </HBox.margin>
                   </Button>
                   <Button fx:id="advancedlayoutbutton" mnemonicParsing="false" prefWidth="80.0" text="Advanced" HBox.hgrow="ALWAYS">
-                     <HBox.margin>
-                        <Insets left="10.0" right="10.0" />
-                     </HBox.margin>
-                  </Button>
-                  <Button fx:id="comparelayoutbutton" disable="true" mnemonicParsing="false" opacity="0.49" prefWidth="80.0" text="Ignore" HBox.hgrow="ALWAYS">
                      <HBox.margin>
                         <Insets left="10.0" right="10.0" />
                      </HBox.margin>
@@ -428,7 +425,7 @@
                               <Rectangle2D />
                            </viewport>
                               </ImageView>
-                        <VBox fx:id="zonelegend" alignment="CENTER" maxHeight="80.0" maxWidth="180.0" prefHeight="80.0" prefWidth="180.0" style="-fx-background-color: slategray;" translateX="-155.0" translateY="190.0">
+                        <VBox fx:id="zonelegend" alignment="CENTER" maxHeight="80.0" maxWidth="180.0" prefHeight="80.0" prefWidth="180.0" style="-fx-background-color: dimgray;" translateX="-155.0" translateY="190.0">
                            <children>
                               <Label fx:id="zonelegendtoplabel" alignment="CENTER" prefHeight="29.0" prefWidth="146.0" text="Shooting Percentage" textAlignment="CENTER" textFill="WHITE">
                                  <font>
@@ -647,8 +644,28 @@
                               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                            </padding>
                         </VBox>
+                        <Rectangle fx:id="loadingoverlay" fill="#b5b5b5" height="470.0" opacity="0.8" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="500.0" />
+                        <VBox fx:id="progressvbox" alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                           <children>
+                              <Label fx:id="progresslabel" alignment="CENTER" text="Loading Search, Please Wait...">
+                                 <font>
+                                    <Font name="Arial" size="15.0" />
+                                 </font>
+                                 <VBox.margin>
+                                    <Insets bottom="10.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <ProgressIndicator fx:id="progressindicator" prefHeight="70.0" prefWidth="70.0" visible="false" />
+                           </children>
+                        </VBox>
                      </children>
                         </GridPane>
+                  <Group>
+                     <children>
+                        <Polygon fx:id="triangle" fill="DODGERBLUE" layoutX="60.0" layoutY="40.0" points="-5.0, 40.0, 5.0, 40.0, 0, 80" stroke="BLACK" strokeType="INSIDE" />
+                        <Rectangle fx:id="bubble" arcHeight="35.0" arcWidth="35.0" fill="DODGERBLUE" height="80.0" stroke="BLACK" strokeType="INSIDE" width="120.0" />
+                     </children>
+                  </Group>
                         <HBox fx:id="buttonbox" alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                             <children>
                                 <Button fx:id="traditionalbutton" mnemonicParsing="false" prefHeight="40.0" prefWidth="175.0" style="-fx-background-color: transparent;" text="Traditional" textFill="WHITE">
@@ -690,9 +707,9 @@
                         </HBox>
                     </children>
                 </VBox>
-                <VBox fx:id="searchvbox" alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" visible="false" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.rowSpan="2" GridPane.vgrow="ALWAYS">
+                <VBox fx:id="searchvbox" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.rowSpan="2" GridPane.vgrow="ALWAYS">
                     <children>
-                        <Label fx:id="introlabel" prefWidth="200.0" text="It may be a little sluggish. (The server is cheap)" textAlignment="CENTER" textFill="WHITE" wrapText="true" VBox.vgrow="ALWAYS">
+                        <Label fx:id="introlabel" alignment="CENTER" prefWidth="200.0" text="Choose your search parameters" textAlignment="CENTER" textFill="WHITE" wrapText="true" VBox.vgrow="ALWAYS">
                             <VBox.margin>
                                 <Insets top="10.0" />
                             </VBox.margin>
@@ -826,7 +843,7 @@
                                 <Insets bottom="25.0" />
                             </VBox.margin>
                         </GridPane>
-                        <Label alignment="BOTTOM_LEFT" prefWidth="198.0" text="Important Updates" textFill="WHITE">
+                        <Label fx:id="updatestitlelabel" alignment="BOTTOM_LEFT" prefWidth="198.0" text="Important Updates" textFill="WHITE">
                             <font>
                                 <Font name="Arial Italic" size="24.0" />
                             </font>
@@ -839,9 +856,9 @@
                         <Button fx:id="buttonswitch" mnemonicParsing="false" text="Switch" visible="false" />
                     </children>
                 </VBox>
-            <VBox fx:id="advancedvbox" alignment="TOP_CENTER" prefHeight="600.0" prefWidth="314.0" GridPane.rowIndex="1" GridPane.rowSpan="2">
+            <VBox fx:id="advancedvbox" alignment="TOP_CENTER" prefHeight="600.0" prefWidth="314.0" visible="false" GridPane.rowIndex="1" GridPane.rowSpan="2">
                <children>
-                  <TextArea fx:id="notestextarea" editable="false" prefHeight="111.0" prefWidth="324.0" text="Choosing no value for any parameter is equivalent to choosing all options of the given parameter, unless otherwise noted. (Ex: not selecting a season type will return shots from the Preseason, Regular Season, and Playoffs)&#10;7,500 shot limit for traditional searches, 50,000 shot limit for other searches&#10;Can take up to 30 seconds to complete, seconds depending on volume of shots." wrapText="true">
+                  <TextArea fx:id="notestextarea" editable="false" prefHeight="111.0" prefWidth="324.0" text="NOTES: &#10;Choosing no value for any parameter is equivalent to choosing all options of the given parameter, unless otherwise noted. (Ex: not selecting a season type will return shots from the Preseason, Regular Season, and Playoffs)&#10;7,500 shot limit for traditional searches, 50,000 shot limit for other searches&#10;Can take up to 30 seconds to complete, depending on volume of shots.&#10;Long dropdown menus can be navigated by typing." wrapText="true">
                      <VBox.margin>
                         <Insets bottom="15.0" top="30.0" />
                      </VBox.margin>
@@ -1025,7 +1042,7 @@
                   </Label>
                   <ScrollPane fx:id="selectionscrollpane" hbarPolicy="NEVER" prefHeight="124.0" prefWidth="314.0">
                      <content>
-                        <AnchorPane prefHeight="94.0" prefWidth="198.0">
+                        <AnchorPane prefHeight="42.0" prefWidth="210.0">
                            <children>
                               <VBox fx:id="selectionvbox" minWidth="200.0" prefHeight="49.0" prefWidth="210.0" />
                            </children>
@@ -1053,6 +1070,9 @@
                                  <font>
                                     <Font name="Tahoma Bold" size="30.0" />
                                  </font>
+                                 <VBox.margin>
+                                    <Insets bottom="8.0" />
+                                 </VBox.margin>
                               </Label>
                            </children>
                         </VBox>
@@ -1062,6 +1082,9 @@
                                  <font>
                                     <Font name="Tahoma Bold" size="30.0" />
                                  </font>
+                                 <VBox.margin>
+                                    <Insets bottom="8.0" />
+                                 </VBox.margin>
                               </Label>
                            </children>
                         </VBox>
@@ -1071,6 +1094,9 @@
                                  <font>
                                     <Font name="Tahoma Bold" size="30.0" />
                                  </font>
+                                 <VBox.margin>
+                                    <Insets bottom="8.0" />
+                                 </VBox.margin>
                               </Label>
                            </children>
                         </VBox>
@@ -1080,6 +1106,9 @@
                                  <font>
                                     <Font name="Tahoma Bold" size="20.0" />
                                  </font>
+                                 <VBox.margin>
+                                    <Insets bottom="2.0" />
+                                 </VBox.margin>
                               </Label>
                            </children>
                         </VBox>
@@ -1089,6 +1118,9 @@
                                  <font>
                                     <Font name="Tahoma Bold" size="20.0" />
                                  </font>
+                                 <VBox.margin>
+                                    <Insets bottom="2.0" />
+                                 </VBox.margin>
                               </Label>
                            </children>
                         </VBox>
@@ -1098,6 +1130,9 @@
                                  <font>
                                     <Font name="Tahoma Bold" size="20.0" />
                                  </font>
+                                 <VBox.margin>
+                                    <Insets bottom="2.0" />
+                                 </VBox.margin>
                               </Label>
                            </children>
                         </VBox>
