@@ -21,7 +21,7 @@ Same data, four ways to view it.
 
 
 ### Details
-All shot data is sourced from stats.nba.com
+All shot data is sourced from stats.nba.com via a web scraping algorithm I designed.
 <br><h4>*Traditional View*</h4>
 Each individual shot is plotted. Makes and misses are indicated by green circles and red X's, respectively. 
 Hovering over any shot with the cursor will display the details of that shot.
