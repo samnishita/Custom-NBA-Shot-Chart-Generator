@@ -40,7 +40,7 @@ Displays the most common shot locations, with more blue indicating high frequenc
 <br>Limited to 50,000 shots per search.
 
 ### Installation
-Requires Java JDK 8. Visit <a href ="https://www.oraclie.com/java/technologies/javase/javase-jdk8-downloads.html">here</a> to download the latest JDK 
+Requires Java JDK 8. Visit <a href ="https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html">here</a> to download the latest JDK 
 (it's free) for your operating system.
 
 Download the latest .jar file (ShotChart1.0.0.jar) from Releases and run it to open the app.
