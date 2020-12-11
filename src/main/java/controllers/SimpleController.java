@@ -30,8 +30,13 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -162,6 +167,10 @@ public class SimpleController implements Initializable {
     private Shape tradBubble, tradBubbleNS, tradBubbleSWNE, tradBubbleWE, tradBubbleNWSE;
     private Label tradShotInfo = new Label();
     private ArrayList<Shape> allBubbles = new ArrayList();
+    private int maxThreads = 5;
+    private ExecutorService exServ;
+    private List<Callable<String>> callables;
+    private ArrayList<Coordinate> coordsList;
     //General Features
     @FXML
     private BorderPane borderpane;
@@ -440,6 +449,53 @@ public class SimpleController implements Initializable {
             }
         });
         createAlwaysRunningResizer();
+        maxThreads = Runtime.getRuntime().availableProcessors();
+        System.out.println(maxThreads);
+        coordsList = new ArrayList(300000);
+        exServ = Executors.newFixedThreadPool(maxThreads);
+        Callable<String> heatRunCallable;
+        callables = new ArrayList();
+        for (int i = 0; i < maxThreads; i++) {
+            final int iFinal = i;
+            heatRunCallable = () -> {
+                double aSum = 0;
+                double bSum = 0;
+                int p = 2;
+                int eachCounter = 0;
+                int iFinalThread = iFinal;
+                int maxSurroundingCoords = (int) Math.pow(MAX_DISTANCE_BETWEEN_NODES_HEAT * 2, 2);
+                int surroundingCounter;
+                for (Coordinate each : coordsList) {
+                    if (each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0 && each.getY() >= (452 / maxThreads) * iFinalThread - 52
+                            && each.getY() < (452 / maxThreads) * (iFinalThread + 1) - 52) {
+                        aSum = 0;
+                        bSum = 0;
+                        surroundingCounter = 0;
+                        for (Coordinate each2 : coordsList) {
+                            if (surroundingCounter >= maxSurroundingCoords) {
+                                break;
+                            } else if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
+                                surroundingCounter++;
+                                aSum = aSum + ((coordAverages.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
+                                bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
+                                if (coordAverages.get(each2).get(1).intValue() != 0) {
+                                    eachCounter++;
+                                }
+                            }
+
+                        }
+                        if (eachCounter > 1) {
+                            coordValue.put(each, aSum / bSum);
+                        } else {
+                            coordValue.put(each, 0.0);
+                        }
+                    }
+
+                }
+                return "Done running";
+            };
+            callables.add(heatRunCallable);
+        }
     }
 
     public BorderPane getBP() {
@@ -2386,64 +2442,78 @@ public class SimpleController implements Initializable {
             }
             coordValue = new ConcurrentHashMap();
             allUltraFineHeatThreads = new ArrayList();
-            int maxThreads = 5;
-            Thread thread;
-            final ArrayList<Coordinate> coordsList = new ArrayList(300000);
+//            int maxThreads = 5;
+//            Thread thread;
+//            final ArrayList<Coordinate> coordsList = new ArrayList(300000);
+            coordsList = new ArrayList(300000);
             coordsList.addAll(coordAverages.keySet());
-            for (int i = 0; i < maxThreads; i++) {
-                final int iFinal = i;
-                final int iMaxFinal = maxThreads;
-                thread = new Thread(() -> {
-                    double aSum = 0;
-                    double bSum = 0;
-                    int p = 2;
-                    int eachCounter = 0;
-                    int iFinalThread = iFinal;
-                    int maxSurroundingCoords = (int) Math.pow(MAX_DISTANCE_BETWEEN_NODES_HEAT * 2, 2);
-                    int surroundingCounter;
-                    for (Coordinate each : coordsList) {
-                        if (each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0 && each.getY() >= (452 / iMaxFinal) * iFinalThread - 52
-                                && each.getY() < (452 / iMaxFinal) * (iFinalThread + 1) - 52) {
-                            aSum = 0;
-                            bSum = 0;
-                            surroundingCounter = 0;
-                            for (Coordinate each2 : coordsList) {
-                                if (surroundingCounter >= maxSurroundingCoords) {
-                                    break;
-                                } else if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
-                                    surroundingCounter++;
-                                    aSum = aSum + ((coordAverages.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
-                                    bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
-                                    if (coordAverages.get(each2).get(1).intValue() != 0) {
-                                        eachCounter++;
-                                    }
-                                }
+//            for (int i = 0; i < maxThreads; i++) {
+//                final int iFinal = i;
+//                final int iMaxFinal = maxThreads;
+//                thread = new Thread(() -> {
+//                    double aSum = 0;
+//                    double bSum = 0;
+//                    int p = 2;
+//                    int eachCounter = 0;
+//                    int iFinalThread = iFinal;
+//                    int maxSurroundingCoords = (int) Math.pow(MAX_DISTANCE_BETWEEN_NODES_HEAT * 2, 2);
+//                    int surroundingCounter;
+//                    for (Coordinate each : coordsList) {
+//                        if (each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0 && each.getY() >= (452 / iMaxFinal) * iFinalThread - 52
+//                                && each.getY() < (452 / iMaxFinal) * (iFinalThread + 1) - 52) {
+//                            aSum = 0;
+//                            bSum = 0;
+//                            surroundingCounter = 0;
+//                            for (Coordinate each2 : coordsList) {
+//                                if (surroundingCounter >= maxSurroundingCoords) {
+//                                    break;
+//                                } else if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
+//                                    surroundingCounter++;
+//                                    aSum = aSum + ((coordAverages.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
+//                                    bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
+//                                    if (coordAverages.get(each2).get(1).intValue() != 0) {
+//                                        eachCounter++;
+//                                    }
+//                                }
+//
+//                            }
+//                            if (eachCounter > 1) {
+//                                coordValue.put(each, aSum / bSum);
+//                            } else {
+//                                coordValue.put(each, 0.0);
+//                            }
+//                        }
+//
+//                    }
+//
+//                });
+//                allUltraFineHeatThreads.add(thread);
+//            }
+//            allUltraFineHeatThreads.forEach(eachThread -> eachThread.start());
+//            boolean done = false;
+//            while (!done) {
+//                try {
+//                    for (Thread eachThread : allUltraFineHeatThreads) {
+//                        eachThread.join();
+//                    }
+//                    done = true;
+//                } catch (InterruptedException ex) {
+//
+//                }
+//
+//            }
 
-                            }
-                            if (eachCounter > 1) {
-                                coordValue.put(each, aSum / bSum);
-                            } else {
-                                coordValue.put(each, 0.0);
-                            }
-                        }
-
+            List<Future<String>> futures = exServ.invokeAll(callables);
+            boolean allDone = false;
+            while (!allDone) {
+                for (Future each : futures) {
+                    if (!each.isDone()) {
+                        allDone = false;
+                        Thread.sleep(200);
+                    } else {
+                        allDone = true;
                     }
-
-                });
-                allUltraFineHeatThreads.add(thread);
-            }
-            allUltraFineHeatThreads.forEach(eachThread -> eachThread.start());
-            boolean done = false;
-            while (!done) {
-                try {
-                    for (Thread eachThread : allUltraFineHeatThreads) {
-                        eachThread.join();
-                    }
-                    done = true;
-                } catch (InterruptedException ex) {
-
                 }
-
             }
         } catch (Exception ex) {
             ex.printStackTrace();
