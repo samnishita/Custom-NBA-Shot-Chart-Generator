@@ -15,8 +15,12 @@
  */
 package controllers;
 
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import javafx.concurrent.Service;
+import mainapp.Coordinate;
+import mainapp.Search;
 import mainapp.Shot;
 import org.json.JSONArray;
 
@@ -33,15 +37,34 @@ public interface MapControllerInterface {
     void setMadeShot(Shot shot, HashMap hashmap);
 
     void setMissedShot(Shot shot, HashMap hashmap);
-    
+
     void plotTradShots();
-    
+
+    void plotGridShots();
+
+    void plotHeatShots();
+
+    void plotZoneShots();
+
     void notifyOfGatheringTradShots();
+
     void notifyOfGatheringGridShots();
+
     void notifyOfGatheringHeatShots();
+
     void notifyOfGatheringZoneShots();
+
     void notifyOfTradShotsGathered();
+
     void notifyOfGridShotsGathered();
+
     void notifyOfHeatShotsGathered();
+
     void notifyOfZoneShotsGathered();
-}
+
+    double getWidth();
+
+    double getHeight();
+
+    double getDistance(Coordinate coordOrig, Coordinate coordI);
+    }

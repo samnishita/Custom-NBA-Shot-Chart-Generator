@@ -94,7 +94,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
+import logic.GridMethods;
+import logic.HeatMethods;
+import logic.MethodsInterface;
 import logic.TraditionalMethods;
+import logic.ZoneMethods;
+import mainapp.Search;
 
 /**
  *
@@ -102,45 +107,56 @@ import logic.TraditionalMethods;
  */
 public class SimpleController implements Initializable, MapControllerInterface {
 
-    enum Search {
-        TRADITIONAL,
-        GRID,
-        ZONE,
-        HEAT,
-        NONE
+    @Override
+    public double getWidth() {
+        return this.imageview.localToParent(imageview.getBoundsInLocal()).getWidth();
     }
 
+    @Override
+    public double getHeight() {
+        return this.imageview.localToParent(imageview.getBoundsInLocal()).getHeight();
+    }
+
+   
+
+//    enum Search {
+//        TRADITIONAL,
+//        GRID,
+//        ZONE,
+//        HEAT,
+//        NONE
+//    }
     private LinkedHashMap<String, String[]> nameHash;
     private final BigDecimal ORIG_HEIGHT = new BigDecimal("470");
     private final BigDecimal SHOT_MADE_RADIUS = new BigDecimal("5");
     private final BigDecimal SHOT_MISS_START_END = new BigDecimal("3");
     private final BigDecimal SHOT_LINE_THICKNESS = new BigDecimal("2");
-    private LinkedHashMap<Shot, Object> allShots = new LinkedHashMap();
+//    private LinkedHashMap<Shot, Object> allShots = new LinkedHashMap();
     private HashMap<Integer, String> activePlayers;
     private final int COMBO_FONT_SIZE = 18;
     private final int STAT_GRID_FONT_SIZE = 20;
     private String previousYear, previousPlayer, previousSeason;
     private ResourceBundle reader = null;
-    private double squareSize = 10.0;
-    private final double SQUARE_SIZE_ORIG = 10.0;
-    private HashMap<Coordinate, ArrayList<Double>> coordAverages;
-    private int maxShotsPerMaxSquare = 0;
-    private ConcurrentHashMap<Coordinate, Double> coordValue;
-    private final int OFFSET = 10;
-    private final int maxDistanceBetweenNodes = 20;
-    private LinkedList<Rectangle> allTiles;
-    private double min;
-    private int shotCounter = 0;
+//    private double squareSize = 10.0;
+//    private final double SQUARE_SIZE_ORIG = 10.0;
+//    private HashMap<Coordinate, ArrayList<Double>> coordAverages;
+//    private int maxShotsPerMaxSquare = 0;
+//    private ConcurrentHashMap<Coordinate, Double> coordValue;
+//    private final int OFFSET = 10;
+//    private final int maxDistanceBetweenNodes = 20;
+//    private LinkedList<Rectangle> allTiles;
+//    private double min;
+//    private int shotCounter = 0;
     private double maxCutoff = 0.0;
     private double diff = maxCutoff / 10;
-    private int offsetHeat = 15;
-    private final int MAX_DISTANCE_BETWEEN_NODES_HEAT = 30;
+//    private int offsetHeat = 15;
+//    private final int MAX_DISTANCE_BETWEEN_NODES_HEAT = 30;
     private LinkedList<Circle> allHeatCircles;
     private ArrayList<Node> allZoneFXML = new ArrayList();
     private LinkedList<Label> allLabels, allPercentLabels;
     private LinkedList<Node> allShapes;
-    private HashMap<Integer, Double[]> allZones;
-    private HashMap<Integer, Double> allZoneAverages;
+//    private HashMap<Integer, Double[]> allZones;
+//    private HashMap<Integer, Double> allZoneAverages;
     private DecimalFormat df = new DecimalFormat("##.#");
     private Rectangle mask;
 //    private ArrayList<Thread> allUltraFineHeatThreads;
@@ -152,8 +168,8 @@ public class SimpleController implements Initializable, MapControllerInterface {
     private Search currentAdvancedSearch = Search.TRADITIONAL;
     private ArrayList<Label> simpleFGLabels = new ArrayList();
     private ArrayList<Label> advancedFGLabels = new ArrayList();
-    private Service tradService, gridService, heatService, zoneService;
-    private long start, end;
+//    private Service tradService, gridService, heatService, zoneService;
+//    private long start, end;
     private UserInputComboBox playerComboUser, playerComboUserAdvanced, seasonsBeginComboUser, seasonsEndComboUser,
             distanceBeginComboUser, distanceEndComboUser, shotSuccessComboUser, shotValueComboUser,
             shotTypeComboUser, teamComboUser, homeTeamComboUser, awayTeamComboUser,
@@ -168,11 +184,16 @@ public class SimpleController implements Initializable, MapControllerInterface {
     private Shape tradBubble, tradBubbleNS, tradBubbleSWNE, tradBubbleWE, tradBubbleNWSE;
     private Label tradShotInfo = new Label();
     private ArrayList<Shape> allBubbles = new ArrayList();
-    private int maxThreads = 5;
-    private ExecutorService exServ;
-    private List<Callable<String>> callables;
-    private ArrayList<Coordinate> coordsList;
+//    private int maxThreads = 5;
+//    private ExecutorService exServ;
+//    private List<Callable<String>> callables;
+//    private ArrayList<Coordinate> coordsList;
+    private ArrayList<MethodsInterface> allMethodInterfaces = new ArrayList();
     private TraditionalMethods tradMeth;
+    private GridMethods gridMeth;
+    private HeatMethods heatMeth;
+    private ZoneMethods zoneMeth;
+    private HashMap<Search, MethodsInterface> searchMIHashMap = new HashMap();
     //General Features
     @FXML
     private BorderPane borderpane;
@@ -280,6 +301,12 @@ public class SimpleController implements Initializable, MapControllerInterface {
         Collections.addAll(allSimpleFGLabels, fg, fgfrac, fgperc, twopoint, twopointfrac, twopointperc, threepoint, threepointfrac, threepointperc);
         Collections.addAll(allAdvancedFGLabels, fgadv, fgfracadv, fgpercadv, twopointadv, twopointfracadv, twopointpercadv, threepointadv, threepointfracadv, threepointpercadv);
         Collections.addAll(allBubbles, tradBubble, tradBubbleNS, tradBubbleNWSE, tradBubbleSWNE, tradBubbleWE);
+        Collections.addAll(allMethodInterfaces, tradMeth, gridMeth);
+//        searchMIHashMap.put(Search.TRADITIONAL, tradMeth);
+//        searchMIHashMap.put(Search.GRID, gridMeth);
+//        searchMIHashMap.put(Search.HEAT, heatMeth);
+//        searchMIHashMap.put(Search.ZONE, zoneMeth);
+
         createResponsiveComboBoxes();
         organizeZoneFXMLElements();
         initSizing();
@@ -373,7 +400,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
                 simpleFGLabels.forEach(each -> each.setText("--"));
                 imageview.setImage(new Image("/images/transparent.png"));
                 changeButtonStyles();
-                allShots.clear();
+//                allShots.clear();
             }
         });
         this.advancedlayoutbutton.setOnMouseClicked(t -> {
@@ -395,7 +422,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
                 advancedFGLabels.forEach(each -> each.setText("--"));
                 imageview.setImage(new Image("/images/transparent.png"));
                 changeButtonStyles();
-                allShots.clear();
+//                allShots.clear();
             }
         });
         this.searchbuttonadvanced.setOnMouseClicked(t -> {
@@ -407,7 +434,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
             }
         });
         createAlwaysRunningResizer();
-        createHeatCallables();
+//        createHeatCallables();
     }
 
     public BorderPane getBP() {
@@ -444,7 +471,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
     }
 
     private void resizeShots() {
-        if (!allShots.keySet().isEmpty()) {
+        if (!tradMeth.getAllShots().keySet().isEmpty()) {
             font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
             setViewTypeButtonStyle(0);
             double height = imageview.localToParent(imageview.getBoundsInLocal()).getHeight();
@@ -457,15 +484,15 @@ public class SimpleController implements Initializable, MapControllerInterface {
             Circle circle;
             Line line1;
             Line line2;
-            for (Shot each : allShots.keySet()) {
+            for (Shot each : tradMeth.getAllShots().keySet()) {
                 if (each.getMake() == 1) {
-                    circle = (Circle) allShots.get(each);
+                    circle = (Circle) tradMeth.getAllShots().get(each);
                     circle.setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * height / 470 + minX + width / 2);
                     circle.setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * height / 470 + minY + height / 2 - (185.0 * height / 470));
                     circle.setRadius(height * SHOT_MADE_RADIUS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue());
                     circle.setStrokeWidth(height * scaledLineThickness);
                 } else {
-                    msi = (MissedShotIcon) allShots.get(each);
+                    msi = (MissedShotIcon) tradMeth.getAllShots().get(each);
                     line1 = msi.getLine1();
                     line2 = msi.getLine2();
                     line1.setStrokeWidth(height * scaledLineThickness);
@@ -609,13 +636,12 @@ public class SimpleController implements Initializable, MapControllerInterface {
         return new JSONArray(Main.getServerResponse().readLine());
     }
 
-    private JSONArray getGridAveragesData() throws IOException {
-        JSONObject jsonObjOut = new JSONObject();
-        jsonObjOut.put("selector", "gridaverages");
-        Main.getPrintWriterOut().println(jsonObjOut.toString());
-        return new JSONArray(Main.getServerResponse().readLine());
-    }
-
+//    private JSONArray getGridAveragesData() throws IOException {
+//        JSONObject jsonObjOut = new JSONObject();
+//        jsonObjOut.put("selector", "gridaverages");
+//        Main.getPrintWriterOut().println(jsonObjOut.toString());
+//        return new JSONArray(Main.getServerResponse().readLine());
+//    }
     private JSONArray getSeasonsData() throws IOException {
         JSONObject jsonObjOut = new JSONObject();
         jsonObjOut.put("selector", "seasons");
@@ -645,43 +671,42 @@ public class SimpleController implements Initializable, MapControllerInterface {
         return new JSONArray(Main.getServerResponse().readLine());
     }
 
-    private void idwGrid() {
-        coordValue = new ConcurrentHashMap();
-        double predictedValue = 0;
-        double aSum = 0;
-        double bSum = 0;
-        int p = 2;
-        double valueI = 0;
-        for (Coordinate each : coordAverages.keySet()) {
-            if (each.getX() % OFFSET == 0 && (each.getY() - 5) % OFFSET == 0) {
-                aSum = 0;
-                bSum = 0;
-                for (Coordinate each2 : coordAverages.keySet()) {
-                    if (!each.equals(each2) && getDistance(each, each2) < maxDistanceBetweenNodes) {
-                        valueI = coordAverages.get(each2).get(2);
-                        aSum = aSum + (valueI / Math.pow(getDistance(each, each2), p));
-                        bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
-                    }
-                }
-                predictedValue = aSum / bSum;
-                coordValue.put(each, predictedValue);
-            }
-        }
-    }
-
-    private double getDistance(Coordinate coordOrig, Coordinate coordI) {
+//    private void idwGrid() {
+//        coordValue = new ConcurrentHashMap();
+//        double predictedValue = 0;
+//        double aSum = 0;
+//        double bSum = 0;
+//        int p = 2;
+//        double valueI = 0;
+//        for (Coordinate each : coordAverages.keySet()) {
+//            if (each.getX() % OFFSET == 0 && (each.getY() - 5) % OFFSET == 0) {
+//                aSum = 0;
+//                bSum = 0;
+//                for (Coordinate each2 : coordAverages.keySet()) {
+//                    if (!each.equals(each2) && getDistance(each, each2) < maxDistanceBetweenNodes) {
+//                        valueI = coordAverages.get(each2).get(2);
+//                        aSum = aSum + (valueI / Math.pow(getDistance(each, each2), p));
+//                        bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
+//                    }
+//                }
+//                predictedValue = aSum / bSum;
+//                coordValue.put(each, predictedValue);
+//            }
+//        }
+//    }
+    @Override
+    public double getDistance(Coordinate coordOrig, Coordinate coordI) {
         return Math.sqrt(Math.pow(coordOrig.getX() - coordI.getX(), 2) + Math.pow(coordOrig.getY() - coordI.getY(), 2));
     }
 
-    private HashMap<String, BigDecimal> useGridAverages() throws IOException {
-        HashMap<String, BigDecimal> hashmap = new HashMap();
-        JSONArray jsonArray = getGridAveragesData();
-        for (int i = 0; i < jsonArray.length(); i++) {
-            hashmap.put(jsonArray.getJSONObject(i).getString("uniqueid"), jsonArray.getJSONObject(i).getBigDecimal("average"));
-        }
-        return hashmap;
-    }
-
+//    private HashMap<String, BigDecimal> useGridAverages() throws IOException {
+//        HashMap<String, BigDecimal> hashmap = new HashMap();
+//        JSONArray jsonArray = getGridAveragesData();
+//        for (int i = 0; i < jsonArray.length(); i++) {
+//            hashmap.put(jsonArray.getJSONObject(i).getString("uniqueid"), jsonArray.getJSONObject(i).getBigDecimal("average"));
+//        }
+//        return hashmap;
+//    }
     private void resizeGrid() {
         double height = (imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
         double width = imageview.localToParent(imageview.getBoundsInLocal()).getWidth();
@@ -723,15 +748,15 @@ public class SimpleController implements Initializable, MapControllerInterface {
 
         gridcolorlegendgradient.setWidth(height * 153.0 / 470);
         gridcolorlegendgradient.setHeight(height * 17.0 / 470);
-        squareSize = width / 50;
+        double squareSize = width / 50;
         int counter = 0;
         Rectangle square;
-        for (Coordinate each2 : coordValue.keySet()) {
-            square = allTiles.get(counter);
-            if (coordAverages.get(each2).get(1) < maxShotsPerMaxSquare && coordAverages.get(each2).get(1) > min) {
-                square.setHeight((coordAverages.get(each2).get(1) / maxShotsPerMaxSquare * squareSize) * 0.9);
-                square.setWidth((coordAverages.get(each2).get(1) / maxShotsPerMaxSquare * squareSize) * 0.9);
-            } else if (coordAverages.get(each2).get(1) >= maxShotsPerMaxSquare) {
+        for (Coordinate each2 : gridMeth.getCoordValue().keySet()) {
+            square = gridMeth.getAllTiles().get(counter);
+            if (gridMeth.getAllShots().get(each2).get(1) < gridMeth.getMaxShotsPerMaxSquare() && gridMeth.getAllShots().get(each2).get(1) > gridMeth.getMin()) {
+                square.setHeight((gridMeth.getAllShots().get(each2).get(1) / gridMeth.getMaxShotsPerMaxSquare() * squareSize) * 0.9);
+                square.setWidth((gridMeth.getAllShots().get(each2).get(1) / gridMeth.getMaxShotsPerMaxSquare() * squareSize) * 0.9);
+            } else if (gridMeth.getAllShots().get(each2).get(1) >= gridMeth.getMaxShotsPerMaxSquare()) {
                 square.setHeight(squareSize * 0.9);
                 square.setWidth(squareSize * 0.9);
             }
@@ -748,7 +773,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
         fontGrid = new BigDecimal(STAT_GRID_FONT_SIZE).multiply(new BigDecimal(imageview.getLayoutBounds().getHeight())).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
         try {
             if (searchvbox.isVisible()) {
-                if (!loadingoverlay.isVisible()) {
+                if (!loadingoverlay.isVisible() || (loadingoverlay.isVisible() && progresslabel.getText().equals("Gathering Shots"))) {
                     switch (currentSimpleSearch) {
                         case TRADITIONAL:
                             resizeShots();
@@ -768,6 +793,20 @@ public class SimpleController implements Initializable, MapControllerInterface {
                             break;
                         default:
                             traditionalbutton.setStyle("-fx-font: " + font + "px \"" + boldFont.getName() + "\";-fx-background-color: transparent; ");
+                    }
+                    if (heatlegend.isVisible()) {
+                        resizeHeat();
+                    } else if (zonelegend.isVisible()) {
+                        resizeZone();
+                    } else if (gridlegendcolor.isVisible()) {
+                        resizeGrid();
+                    } else {
+                        for (Node each : imagegrid.getChildren()) {
+                            if (each.getClass().equals(Line.class)) {
+                                resizeShots();
+                                break;
+                            }
+                        }
                     }
                 } else {
                     switch (currentSimpleSearch) {
@@ -801,7 +840,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
                     }
                 }
             } else {
-                if (!loadingoverlay.isVisible()) {
+                if (!loadingoverlay.isVisible() || (loadingoverlay.isVisible() && progresslabel.getText().equals("Gathering Shots"))) {
                     switch (currentAdvancedSearch) {
                         case TRADITIONAL:
                             resizeShots();
@@ -821,6 +860,20 @@ public class SimpleController implements Initializable, MapControllerInterface {
                             break;
                         default:
                             traditionalbutton.setStyle("-fx-font: " + font + "px \"" + boldFont.getName() + "\";-fx-background-color: transparent; ");
+                    }
+                    if (heatlegend.isVisible()) {
+                        resizeHeat();
+                    } else if (zonelegend.isVisible()) {
+                        resizeZone();
+                    } else if (gridlegendcolor.isVisible()) {
+                        resizeGrid();
+                    } else {
+                        for (Node each : imagegrid.getChildren()) {
+                            if (each.getClass().equals(Line.class)) {
+                                resizeShots();
+                                break;
+                            }
+                        }
                     }
                 } else {
                     switch (currentAdvancedSearch) {
@@ -954,10 +1007,10 @@ public class SimpleController implements Initializable, MapControllerInterface {
     private void resizeHeat() {
         double height = (imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(height)).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-        setViewTypeButtonStyle(2);
+//        setViewTypeButtonStyle(2);
         Circle tempCircle;
         int keyCounter = 0;
-        for (Coordinate each : coordValue.keySet()) {
+        for (Coordinate each : heatMeth.getCoordValue().keySet()) {
             tempCircle = (Circle) allHeatCircles.get(keyCounter);
             tempCircle.setTranslateX(each.getX() * 1.0 * imageview.getLayoutBounds().getHeight() / 470);
             tempCircle.setTranslateY(each.getY() * 1.0 * imageview.getLayoutBounds().getHeight() / 470 - (185.0 * height / 470));
@@ -986,7 +1039,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
         double height = (imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
         double width = imageview.localToParent(imageview.getBoundsInLocal()).getWidth();
         font = new BigDecimal(COMBO_FONT_SIZE).multiply(new BigDecimal(height)).divide(new BigDecimal("550"), 6, RoundingMode.HALF_UP).doubleValue();
-        setViewTypeButtonStyle(3);
+//        setViewTypeButtonStyle(3);
         mask = new Rectangle(width * 0.999, height * 0.999);
         imagegrid.setClip(mask);
         Node each;
@@ -1186,8 +1239,10 @@ public class SimpleController implements Initializable, MapControllerInterface {
             currentAdvancedSearch = Search.GRID;
         }
 
-        gridService.reset();
-        gridService.start();
+//        gridService.reset();
+//        gridService.start();
+        gridMeth.getService().reset();
+        gridMeth.getService().start();
         startLoadingTransition();
     }
 
@@ -1205,9 +1260,10 @@ public class SimpleController implements Initializable, MapControllerInterface {
         } else {
             this.currentAdvancedSearch = Search.HEAT;
         }
-
-        heatService.reset();
-        heatService.start();
+//        heatService.reset();
+//        heatService.start();
+        heatMeth.getService().reset();
+        heatMeth.getService().start();
         startLoadingTransition();
     }
 
@@ -1298,8 +1354,10 @@ public class SimpleController implements Initializable, MapControllerInterface {
         } else {
             currentAdvancedSearch = Search.ZONE;
         }
-        zoneService.reset();
-        zoneService.start();
+//        zoneService.reset();
+//        zoneService.start();
+        zoneMeth.getService().reset();
+        zoneMeth.getService().start();
         startLoadingTransition();
     }
 
@@ -1310,29 +1368,28 @@ public class SimpleController implements Initializable, MapControllerInterface {
         return new JSONArray(Main.getServerResponse().readLine());
     }
 
-    private HashMap<Integer, Double> useZoneAverages() throws IOException {
-        HashMap<Integer, Double> hashmap = new HashMap();
-        JSONArray jsonArray = getZoneAveragesData();
-        for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject eachShot = jsonArray.getJSONObject(i);
-            hashmap.put(i + 1, eachShot.getBigDecimal("average").doubleValue());
-        }
-        return hashmap;
+//    private HashMap<Integer, Double> useZoneAverages() throws IOException {
+//        HashMap<Integer, Double> hashmap = new HashMap();
+//        JSONArray jsonArray = getZoneAveragesData();
+//        for (int i = 0; i < jsonArray.length(); i++) {
+//            JSONObject eachShot = jsonArray.getJSONObject(i);
+//            hashmap.put(i + 1, eachShot.getBigDecimal("average").doubleValue());
+//        }
+//        return hashmap;
+//
+//    }
 
-    }
-
-    private void addShotToHashMap(int selector, int make) {
-        allZones.get(selector)[1] = allZones.get(selector)[1] + 1;
-        if (make == 1) {
-            allZones.get(selector)[0] = allZones.get(selector)[0] + 1;
-        }
-    }
-
+//    private void addShotToHashMap(int selector, int make) {
+//        allZones.get(selector)[1] = allZones.get(selector)[1] + 1;
+//        if (make == 1) {
+//            allZones.get(selector)[0] = allZones.get(selector)[0] + 1;
+//        }
+//    }
     private void changeShapeColor(Shape shape, Double playerValue, int i) {
-        if (allZones.get(i)[1] == 0) {
+        if (zoneMeth.getAllZones().get(i)[1] == 0) {
             shape.setFill(Color.web("#b2b2b2"));
         } else {
-            Double diff = playerValue - allZoneAverages.get(i);
+            Double diff = playerValue - zoneMeth.getAllZoneAverages().get(i);
             if (diff > 0.06) {
                 shape.setFill(Color.web("#fc2121"));
             } else if (diff < 0.06 && diff >= 0.04) {
@@ -1352,10 +1409,10 @@ public class SimpleController implements Initializable, MapControllerInterface {
     }
 
     private void changeRectColor(Rectangle rect, Double playerValue, int i) {
-        if (allZones.get(i)[1] == 0) {
+        if (zoneMeth.getAllZones().get(i)[1] == 0) {
             rect.setFill(Color.web("#b2b2b2"));
         } else {
-            diff = playerValue - allZoneAverages.get(i);
+            diff = playerValue - zoneMeth.getAllZoneAverages().get(i);
             if (diff > 0.06) {
                 rect.setFill(Color.web("#fc2121"));
             } else if (diff < 0.06 && diff >= 0.04) {
@@ -1375,10 +1432,10 @@ public class SimpleController implements Initializable, MapControllerInterface {
     }
 
     private void changeArcColor(Arc arc, Double playerValue, int i) {
-        if (allZones.get(i)[1] == 0) {
+        if (zoneMeth.getAllZones().get(i)[1] == 0) {
             arc.setFill(Color.web("#b2b2b2"));
         } else {
-            Double diff = playerValue - allZoneAverages.get(i);
+            Double diff = playerValue - zoneMeth.getAllZoneAverages().get(i);
             if (diff > 0.06) {
                 arc.setFill(Color.web("#fc2121"));
             } else if (diff < 0.06 && diff >= 0.04) {
@@ -2148,8 +2205,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
             searchbuttonadvanced.setDisable(true);
             searchbuttonadvanced.setOpacity(0.5);
         }
-        start = System.nanoTime();
-
+//        start = System.nanoTime();
         switch (tempSearch) {
             case TRADITIONAL:
                 traditional();
@@ -2196,248 +2252,246 @@ public class SimpleController implements Initializable, MapControllerInterface {
         }
     }
 
-    private void plotHeatAfterServiceSucceeds() {
-        resetView();
-        removeAllShotsFromView();
-        heatlegend.setVisible(true);
-        imageview.setImage(new Image("/images/newtransparent.png"));
-        heatlegend.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (-155.0 / 470));
-        heatlegend.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (185.0 / 470));
-        heatlegend.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        heatlegend.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        heatlegend.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        heatlegendgradient.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 153.0 / 470);
-        heatlegendgradient.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 17.0 / 470);
-        heatlegendtoplabel.maxWidthProperty().bind(heatlegend.maxWidthProperty());
-        heatlegendlowerlabel.maxWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.5));
-        heatlegendupperlabel.maxWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.5));
-        heatlegendlowerlabel.minWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.45));
-        heatlegendupperlabel.minWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.45));
-        heatlegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"" + overallFont.getName() + "\";");
-        heatlegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
-        heatlegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
-
-        if (searchvbox.isVisible()) {
-            setShotGrid(previousSimpleSearchResults);
-        } else {
-            setShotGridAdvanced(previousAdvancedSearchResults);
-        }
-
-        double weight = 0.5;
-        double radius = 25 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470.0;
-        RadialGradient rg1 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
-            new Stop(0, Color.web("#bc53f8")),
-            new Stop(weight, Color.TRANSPARENT)});
-        RadialGradient rg2 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
-            new Stop(0, Color.web("#dd76ff")),
-            new Stop(weight, Color.TRANSPARENT)});
-        RadialGradient rg3 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
-            new Stop(0, Color.web("#e696fa")),
-            new Stop(weight, Color.TRANSPARENT)});
-        RadialGradient rg4 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
-            new Stop(0, Color.web("#c4b8ff")),
-            new Stop(weight, Color.TRANSPARENT)});
-        RadialGradient rg5 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
-            new Stop(0, Color.web("#6bb2f8")),
-            new Stop(weight, Color.TRANSPARENT)});
-        RadialGradient rg6 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
-            new Stop(0, Color.web("#62c8ff")),
-            new Stop(weight, Color.TRANSPARENT)});
-        RadialGradient rg7 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
-            new Stop(0, Color.web("#90ebff")),
-            new Stop(weight, Color.TRANSPARENT)});
-        ArrayList<Circle> circles1 = new ArrayList();
-        ArrayList<Circle> circles2 = new ArrayList();
-        ArrayList<Circle> circles3 = new ArrayList();
-        ArrayList<Circle> circles4 = new ArrayList();
-        ArrayList<Circle> circles5 = new ArrayList();
-        ArrayList<Circle> circles6 = new ArrayList();
-        ArrayList<Circle> circles7 = new ArrayList();
-        double maxValue = 0.0;
-        for (Coordinate each : coordValue.keySet()) {
-            if (coordValue.get(each) > maxValue) {
-                maxValue = coordValue.get(each);
-            }
-        }
-        if (maxValue != 0) {
-            maxValue = maxValue * (500 * 1.0 / shotCounter);
-            maxCutoff = 0.00004 * shotCounter / maxValue + 0.3065;
-            diff = maxCutoff / 7;
-            allHeatCircles = new LinkedList();
-            for (Coordinate each : coordValue.keySet()) {
-                double value = coordValue.get(each);
-                if (value <= maxValue * (maxCutoff - (diff * 6))) {
-                    Circle circle = new Circle(0);
-                    allHeatCircles.add(circle);
-                } else if (value > maxValue * (maxCutoff - (diff * 6)) && value <= maxValue * (maxCutoff - (diff * 5))) {
-                    Circle circle = new Circle(radius, rg1);
-                    setCircle(circle, each.getX(), each.getY());
-                    circles1.add(circle);
-                    allHeatCircles.add(circle);
-                } else if (value > maxValue * (maxCutoff - (diff * 5)) && value <= maxValue * (maxCutoff - (diff * 4))) {
-                    Circle circle = new Circle(radius, rg2);
-                    setCircle(circle, each.getX(), each.getY());
-                    circles2.add(circle);
-                    allHeatCircles.add(circle);
-                } else if (value > maxValue * (maxCutoff - (diff * 4)) && value <= maxValue * (maxCutoff - (diff * 3))) {
-                    Circle circle = new Circle(radius, rg3);
-                    setCircle(circle, each.getX(), each.getY());
-                    circles3.add(circle);
-                    allHeatCircles.add(circle);
-                } else if (value > maxValue * (maxCutoff - (diff * 3)) && value <= maxValue * (maxCutoff - (diff * 2))) {
-                    Circle circle = new Circle(radius, rg4);
-                    setCircle(circle, each.getX(), each.getY());
-                    circles4.add(circle);
-                    allHeatCircles.add(circle);
-                } else if (value > maxValue * (maxCutoff - (diff * 2)) && value <= maxValue * (maxCutoff - (diff * 1))) {
-                    Circle circle = new Circle(radius, rg5);
-                    setCircle(circle, each.getX(), each.getY());
-                    circles5.add(circle);
-                    allHeatCircles.add(circle);
-                } else if (value > maxValue * (maxCutoff - (diff * 1)) && value <= maxValue * maxCutoff) {
-                    Circle circle = new Circle(radius, rg6);
-                    setCircle(circle, each.getX(), each.getY());
-                    circles6.add(circle);
-                    allHeatCircles.add(circle);
-                } else {
-                    Circle circle = new Circle(radius, rg7);
-                    setCircle(circle, each.getX(), each.getY());
-                    circles7.add(circle);
-                    allHeatCircles.add(circle);
-                }
-            }
-        }
-        circles1.forEach(circle -> imagegrid.getChildren().add(circle));
-        circles2.forEach(circle -> imagegrid.getChildren().add(circle));
-        circles3.forEach(circle -> imagegrid.getChildren().add(circle));
-        circles4.forEach(circle -> imagegrid.getChildren().add(circle));
-        circles5.forEach(circle -> imagegrid.getChildren().add(circle));
-        circles6.forEach(circle -> imagegrid.getChildren().add(circle));
-        circles7.forEach(circle -> imagegrid.getChildren().add(circle));
-        endLoadingTransition();
-        enableButtons();
-        end = System.nanoTime();
-        System.out.println("HEAT: " + (end - start) * 1.0 / 1000000000 + " seconds");
-    }
-
-    private ConcurrentHashMap<Coordinate, Double> serviceTaskMethodsHeat(boolean isSearchVboxVisible) throws IOException {
-        Platform.runLater(() -> errorlabeladvanced.setVisible(isSearchVboxVisible));
-        Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
-        try {
-            coordAverages = new HashMap();
-            ArrayList info = new ArrayList();
-            info.add(0.0);
-            info.add(0.0);
-            info.add(0.0);
-            for (int x = -250; x < 251; x++) {
-                for (int y = -52; y < 400; y++) {
-                    coordAverages.put(new Coordinate(x, y), new ArrayList(info));
-                }
-            }
-            JSONArray jsonArray = chooseJSONArray();
-            shotCounter = 0;
-            Platform.runLater(() -> progresslabel.setText("Generating Heat Map"));
-            Coordinate tempCoord;
-            JSONObject eachShot;
-            for (int i = 0; i < jsonArray.length(); i++) {
-                eachShot = jsonArray.getJSONObject(i);
-                if (eachShot.getInt("y") >= 400) {
-                    continue;
-                }
-                shotCounter++;
-                tempCoord = new Coordinate(eachShot.getInt("x"), eachShot.getInt("y"));
-                coordAverages.get(tempCoord).set(1, coordAverages.get(tempCoord).get(1) + 1);
-                if (eachShot.getInt("make") == 1) {
-                    coordAverages.get(tempCoord).set(0, coordAverages.get(tempCoord).get(0) + 1);
-                }
-            }
-            for (Coordinate each : coordAverages.keySet()) {
-                if (coordAverages.get(each).get(1) != 0) {
-                    coordAverages.get(each).set(2, coordAverages.get(each).get(0) * 1.0 / coordAverages.get(each).get(1) * 1.0);
-                }
-            }
-            coordValue = new ConcurrentHashMap();
-//            allUltraFineHeatThreads = new ArrayList();
-//            int maxThreads = 5;
-//            Thread thread;
-//            final ArrayList<Coordinate> coordsList = new ArrayList(300000);
-            coordsList = new ArrayList(300000);
-            coordsList.addAll(coordAverages.keySet());
-//            for (int i = 0; i < maxThreads; i++) {
-//                final int iFinal = i;
-//                final int iMaxFinal = maxThreads;
-//                thread = new Thread(() -> {
-//                    double aSum = 0;
-//                    double bSum = 0;
-//                    int p = 2;
-//                    int eachCounter = 0;
-//                    int iFinalThread = iFinal;
-//                    int maxSurroundingCoords = (int) Math.pow(MAX_DISTANCE_BETWEEN_NODES_HEAT * 2, 2);
-//                    int surroundingCounter;
-//                    for (Coordinate each : coordsList) {
-//                        if (each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0 && each.getY() >= (452 / iMaxFinal) * iFinalThread - 52
-//                                && each.getY() < (452 / iMaxFinal) * (iFinalThread + 1) - 52) {
-//                            aSum = 0;
-//                            bSum = 0;
-//                            surroundingCounter = 0;
-//                            for (Coordinate each2 : coordsList) {
-//                                if (surroundingCounter >= maxSurroundingCoords) {
-//                                    break;
-//                                } else if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
-//                                    surroundingCounter++;
-//                                    aSum = aSum + ((coordAverages.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
-//                                    bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
-//                                    if (coordAverages.get(each2).get(1).intValue() != 0) {
-//                                        eachCounter++;
-//                                    }
-//                                }
+//    private void plotHeatAfterServiceSucceeds() {
+//        resetView();
+//        removeAllShotsFromView();
+//        heatlegend.setVisible(true);
+//        imageview.setImage(new Image("/images/newtransparent.png"));
+//        heatlegend.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (-155.0 / 470));
+//        heatlegend.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (185.0 / 470));
+//        heatlegend.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+//        heatlegend.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+//        heatlegend.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+//        heatlegendgradient.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 153.0 / 470);
+//        heatlegendgradient.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 17.0 / 470);
+//        heatlegendtoplabel.maxWidthProperty().bind(heatlegend.maxWidthProperty());
+//        heatlegendlowerlabel.maxWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.5));
+//        heatlegendupperlabel.maxWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.5));
+//        heatlegendlowerlabel.minWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.45));
+//        heatlegendupperlabel.minWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.45));
+//        heatlegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"" + overallFont.getName() + "\";");
+//        heatlegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+//        heatlegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
 //
-//                            }
-//                            if (eachCounter > 1) {
-//                                coordValue.put(each, aSum / bSum);
-//                            } else {
-//                                coordValue.put(each, 0.0);
-//                            }
-//                        }
+//        if (searchvbox.isVisible()) {
+//            setShotGrid(previousSimpleSearchResults);
+//        } else {
+//            setShotGridAdvanced(previousAdvancedSearchResults);
+//        }
 //
-//                    }
-//
-//                });
-//                allUltraFineHeatThreads.add(thread);
+//        double weight = 0.5;
+//        double radius = 25 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470.0;
+//        RadialGradient rg1 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
+//            new Stop(0, Color.web("#bc53f8")),
+//            new Stop(weight, Color.TRANSPARENT)});
+//        RadialGradient rg2 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
+//            new Stop(0, Color.web("#dd76ff")),
+//            new Stop(weight, Color.TRANSPARENT)});
+//        RadialGradient rg3 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
+//            new Stop(0, Color.web("#e696fa")),
+//            new Stop(weight, Color.TRANSPARENT)});
+//        RadialGradient rg4 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
+//            new Stop(0, Color.web("#c4b8ff")),
+//            new Stop(weight, Color.TRANSPARENT)});
+//        RadialGradient rg5 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
+//            new Stop(0, Color.web("#6bb2f8")),
+//            new Stop(weight, Color.TRANSPARENT)});
+//        RadialGradient rg6 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
+//            new Stop(0, Color.web("#62c8ff")),
+//            new Stop(weight, Color.TRANSPARENT)});
+//        RadialGradient rg7 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
+//            new Stop(0, Color.web("#90ebff")),
+//            new Stop(weight, Color.TRANSPARENT)});
+//        ArrayList<Circle> circles1 = new ArrayList();
+//        ArrayList<Circle> circles2 = new ArrayList();
+//        ArrayList<Circle> circles3 = new ArrayList();
+//        ArrayList<Circle> circles4 = new ArrayList();
+//        ArrayList<Circle> circles5 = new ArrayList();
+//        ArrayList<Circle> circles6 = new ArrayList();
+//        ArrayList<Circle> circles7 = new ArrayList();
+//        double maxValue = 0.0;
+//        for (Coordinate each : heatMeth.getCoordValue().keySet()) {
+//            if (heatMeth.getCoordValue().get(each) > maxValue) {
+//                maxValue = heatMeth.getCoordValue().get(each);
 //            }
-//            allUltraFineHeatThreads.forEach(eachThread -> eachThread.start());
-//            boolean done = false;
-//            while (!done) {
-//                try {
-//                    for (Thread eachThread : allUltraFineHeatThreads) {
-//                        eachThread.join();
-//                    }
-//                    done = true;
-//                } catch (InterruptedException ex) {
-//
+//        }
+//        if (maxValue != 0) {
+//            maxValue = maxValue * (500 * 1.0 / heatMeth.getShotCounter());
+//            maxCutoff = 0.00004 * heatMeth.getShotCounter() / maxValue + 0.3065;
+//            diff = maxCutoff / 7;
+//            allHeatCircles = new LinkedList();
+//            for (Coordinate each : heatMeth.getCoordValue().keySet()) {
+//                double value = heatMeth.getCoordValue().get(each);
+//                if (value <= maxValue * (maxCutoff - (diff * 6))) {
+//                    Circle circle = new Circle(0);
+//                    allHeatCircles.add(circle);
+//                } else if (value > maxValue * (maxCutoff - (diff * 6)) && value <= maxValue * (maxCutoff - (diff * 5))) {
+//                    Circle circle = new Circle(radius, rg1);
+//                    setCircle(circle, each.getX(), each.getY());
+//                    circles1.add(circle);
+//                    allHeatCircles.add(circle);
+//                } else if (value > maxValue * (maxCutoff - (diff * 5)) && value <= maxValue * (maxCutoff - (diff * 4))) {
+//                    Circle circle = new Circle(radius, rg2);
+//                    setCircle(circle, each.getX(), each.getY());
+//                    circles2.add(circle);
+//                    allHeatCircles.add(circle);
+//                } else if (value > maxValue * (maxCutoff - (diff * 4)) && value <= maxValue * (maxCutoff - (diff * 3))) {
+//                    Circle circle = new Circle(radius, rg3);
+//                    setCircle(circle, each.getX(), each.getY());
+//                    circles3.add(circle);
+//                    allHeatCircles.add(circle);
+//                } else if (value > maxValue * (maxCutoff - (diff * 3)) && value <= maxValue * (maxCutoff - (diff * 2))) {
+//                    Circle circle = new Circle(radius, rg4);
+//                    setCircle(circle, each.getX(), each.getY());
+//                    circles4.add(circle);
+//                    allHeatCircles.add(circle);
+//                } else if (value > maxValue * (maxCutoff - (diff * 2)) && value <= maxValue * (maxCutoff - (diff * 1))) {
+//                    Circle circle = new Circle(radius, rg5);
+//                    setCircle(circle, each.getX(), each.getY());
+//                    circles5.add(circle);
+//                    allHeatCircles.add(circle);
+//                } else if (value > maxValue * (maxCutoff - (diff * 1)) && value <= maxValue * maxCutoff) {
+//                    Circle circle = new Circle(radius, rg6);
+//                    setCircle(circle, each.getX(), each.getY());
+//                    circles6.add(circle);
+//                    allHeatCircles.add(circle);
+//                } else {
+//                    Circle circle = new Circle(radius, rg7);
+//                    setCircle(circle, each.getX(), each.getY());
+//                    circles7.add(circle);
+//                    allHeatCircles.add(circle);
 //                }
-//
 //            }
-            List<Future<String>> futures = exServ.invokeAll(callables);
-            boolean allDone = false;
-            while (!allDone) {
-                for (Future each : futures) {
-                    if (!each.isDone()) {
-                        allDone = false;
-                        Thread.sleep(100);
-                        break;
-                    } else {
-                        allDone = true;
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        return coordValue;
-    }
-
+//        }
+//        circles1.forEach(circle -> imagegrid.getChildren().add(circle));
+//        circles2.forEach(circle -> imagegrid.getChildren().add(circle));
+//        circles3.forEach(circle -> imagegrid.getChildren().add(circle));
+//        circles4.forEach(circle -> imagegrid.getChildren().add(circle));
+//        circles5.forEach(circle -> imagegrid.getChildren().add(circle));
+//        circles6.forEach(circle -> imagegrid.getChildren().add(circle));
+//        circles7.forEach(circle -> imagegrid.getChildren().add(circle));
+//        endLoadingTransition();
+//        enableButtons();
+////        end = System.nanoTime();
+////        System.out.println("HEAT: " + (end - start) * 1.0 / 1000000000 + " seconds");
+//    }
+//    private ConcurrentHashMap<Coordinate, Double> serviceTaskMethodsHeat(boolean isSearchVboxVisible) throws IOException {
+//        Platform.runLater(() -> errorlabeladvanced.setVisible(isSearchVboxVisible));
+//        Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
+//        try {
+//            coordAverages = new HashMap();
+//            ArrayList info = new ArrayList();
+//            info.add(0.0);
+//            info.add(0.0);
+//            info.add(0.0);
+//            for (int x = -250; x < 251; x++) {
+//                for (int y = -52; y < 400; y++) {
+//                    coordAverages.put(new Coordinate(x, y), new ArrayList(info));
+//                }
+//            }
+//            JSONArray jsonArray = chooseJSONArray();
+//            shotCounter = 0;
+//            Platform.runLater(() -> progresslabel.setText("Generating Heat Map"));
+//            Coordinate tempCoord;
+//            JSONObject eachShot;
+//            for (int i = 0; i < jsonArray.length(); i++) {
+//                eachShot = jsonArray.getJSONObject(i);
+//                if (eachShot.getInt("y") >= 400) {
+//                    continue;
+//                }
+//                shotCounter++;
+//                tempCoord = new Coordinate(eachShot.getInt("x"), eachShot.getInt("y"));
+//                coordAverages.get(tempCoord).set(1, coordAverages.get(tempCoord).get(1) + 1);
+//                if (eachShot.getInt("make") == 1) {
+//                    coordAverages.get(tempCoord).set(0, coordAverages.get(tempCoord).get(0) + 1);
+//                }
+//            }
+//            for (Coordinate each : coordAverages.keySet()) {
+//                if (coordAverages.get(each).get(1) != 0) {
+//                    coordAverages.get(each).set(2, coordAverages.get(each).get(0) * 1.0 / coordAverages.get(each).get(1) * 1.0);
+//                }
+//            }
+//            coordValue = new ConcurrentHashMap();
+////            allUltraFineHeatThreads = new ArrayList();
+////            int maxThreads = 5;
+////            Thread thread;
+////            final ArrayList<Coordinate> coordsList = new ArrayList(300000);
+//            coordsList = new ArrayList(300000);
+//            coordsList.addAll(coordAverages.keySet());
+////            for (int i = 0; i < maxThreads; i++) {
+////                final int iFinal = i;
+////                final int iMaxFinal = maxThreads;
+////                thread = new Thread(() -> {
+////                    double aSum = 0;
+////                    double bSum = 0;
+////                    int p = 2;
+////                    int eachCounter = 0;
+////                    int iFinalThread = iFinal;
+////                    int maxSurroundingCoords = (int) Math.pow(MAX_DISTANCE_BETWEEN_NODES_HEAT * 2, 2);
+////                    int surroundingCounter;
+////                    for (Coordinate each : coordsList) {
+////                        if (each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0 && each.getY() >= (452 / iMaxFinal) * iFinalThread - 52
+////                                && each.getY() < (452 / iMaxFinal) * (iFinalThread + 1) - 52) {
+////                            aSum = 0;
+////                            bSum = 0;
+////                            surroundingCounter = 0;
+////                            for (Coordinate each2 : coordsList) {
+////                                if (surroundingCounter >= maxSurroundingCoords) {
+////                                    break;
+////                                } else if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
+////                                    surroundingCounter++;
+////                                    aSum = aSum + ((coordAverages.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
+////                                    bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
+////                                    if (coordAverages.get(each2).get(1).intValue() != 0) {
+////                                        eachCounter++;
+////                                    }
+////                                }
+////
+////                            }
+////                            if (eachCounter > 1) {
+////                                coordValue.put(each, aSum / bSum);
+////                            } else {
+////                                coordValue.put(each, 0.0);
+////                            }
+////                        }
+////
+////                    }
+////
+////                });
+////                allUltraFineHeatThreads.add(thread);
+////            }
+////            allUltraFineHeatThreads.forEach(eachThread -> eachThread.start());
+////            boolean done = false;
+////            while (!done) {
+////                try {
+////                    for (Thread eachThread : allUltraFineHeatThreads) {
+////                        eachThread.join();
+////                    }
+////                    done = true;
+////                } catch (InterruptedException ex) {
+////
+////                }
+////
+////            }
+//            List<Future<String>> futures = exServ.invokeAll(callables);
+//            boolean allDone = false;
+//            while (!allDone) {
+//                for (Future each : futures) {
+//                    if (!each.isDone()) {
+//                        allDone = false;
+//                        Thread.sleep(100);
+//                        break;
+//                    } else {
+//                        allDone = true;
+//                    }
+//                }
+//            }
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
+//
+//        return coordValue;
+//    }
     private void createServices() {
 //        tradService = new Service() {
 //            @Override
@@ -2459,45 +2513,48 @@ public class SimpleController implements Initializable, MapControllerInterface {
 //            endLoadingTransition();
 //            enableButtons();
 //        });
-        gridService = new Service() {
-            @Override
-            protected Task<ConcurrentHashMap<Coordinate, Double>> createTask() {
-                return new Task() {
-                    @Override
-                    protected ConcurrentHashMap<Coordinate, Double> call() throws Exception {
-                        return serviceTaskMethodsGrid(searchvbox.isVisible());
-                    }
-                };
-            }
-        };
-        gridService.setOnSucceeded(s -> plotGridAfterServiceSucceeds());
-        setServiceOnFailed(gridService);
-        heatService = new Service() {
-            @Override
-            protected Task<ConcurrentHashMap<Coordinate, Double>> createTask() {
-                return new Task() {
-                    @Override
-                    protected ConcurrentHashMap<Coordinate, Double> call() throws Exception {
-                        return serviceTaskMethodsHeat(searchvbox.isVisible());
-                    }
-                };
-            }
-        };
-        heatService.setOnSucceeded(s -> plotHeatAfterServiceSucceeds());
-        setServiceOnFailed(heatService);
-        zoneService = new Service() {
-            @Override
-            protected Task<HashMap<Integer, Double>> createTask() {
-                return new Task() {
-                    @Override
-                    protected HashMap<Integer, Double> call() throws Exception {
-                        return serviceTaskMethodsZone(searchvbox.isVisible());
-                    }
-                };
-            }
-        };
-        zoneService.setOnSucceeded(s -> plotZoneAfterServiceSucceeds((HashMap<Integer, Double>) zoneService.getValue()));
-        setServiceOnFailed(zoneService);
+//        gridService = new Service() {
+//            @Override
+//            protected Task<ConcurrentHashMap<Coordinate, Double>> createTask() {
+//                return new Task() {
+//                    @Override
+//                    protected ConcurrentHashMap<Coordinate, Double> call() throws Exception {
+//                        return serviceTaskMethodsGrid(searchvbox.isVisible());
+//                    }
+//                };
+//            }
+//        };
+//        gridService.setOnSucceeded(s -> plotGridAfterServiceSucceeds());
+//        setServiceOnFailed(gridService);
+        gridMeth = new GridMethods(this, 10.0);
+//        heatService = new Service() {
+//            @Override
+//            protected Task<ConcurrentHashMap<Coordinate, Double>> createTask() {
+//                return new Task() {
+//                    @Override
+//                    protected ConcurrentHashMap<Coordinate, Double> call() throws Exception {
+//                        return serviceTaskMethodsHeat(searchvbox.isVisible());
+//                    }
+//                };
+//            }
+//        };
+//        heatService.setOnSucceeded(s -> plotHeatAfterServiceSucceeds());
+//        setServiceOnFailed(heatService);
+        heatMeth = new HeatMethods(this);
+//        zoneService = new Service() {
+//            @Override
+//            protected Task<HashMap<Integer, Double>> createTask() {
+//                return new Task() {
+//                    @Override
+//                    protected HashMap<Integer, Double> call() throws Exception {
+//                        return serviceTaskMethodsZone(searchvbox.isVisible());
+//                    }
+//                };
+//            }
+//        };
+//        zoneService.setOnSucceeded(s -> plotZoneAfterServiceSucceeds((HashMap<Integer, Double>) zoneService.getValue()));
+//        setServiceOnFailed(zoneService);
+        zoneMeth = new ZoneMethods(this);
     }
 
 //    private LinkedHashMap<Shot, Object> serviceTaskMethodsTrad(boolean isSearchVboxVisible) throws IOException, Exception {
@@ -2740,371 +2797,367 @@ public class SimpleController implements Initializable, MapControllerInterface {
 //        end = System.nanoTime();
 //        System.out.println("TRADITIONAL: " + (end - start) * 1.0 / 1000000000 + " seconds");
 //    }
-    private ConcurrentHashMap<Coordinate, Double> serviceTaskMethodsGrid(boolean isSearchVboxVisible) throws IOException, Exception {
-        Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
-        Platform.runLater(() -> errorlabeladvanced.setVisible(isSearchVboxVisible));
-        JSONArray jsonArray = chooseJSONArray();
-        Platform.runLater(() -> progresslabel.setText("Generating Grid"));
-        Coordinate coord;
-        coordAverages = new LinkedHashMap();
-        for (int j = -55; j < 400; j = j + (int) SQUARE_SIZE_ORIG) {
-            for (int i = -250; i < 250; i = i + (int) SQUARE_SIZE_ORIG) {
-                coord = new Coordinate(i, j);
-                ArrayList info = new ArrayList();
-                info.add(0.0);
-                info.add(0.0);
-                info.add(0.0);
-                coordAverages.put(coord, info);
-            }
-        }
-        double factor = 0.007;
-        shotCounter = 0;
-        HashMap<String, BigDecimal> averages = null;
-        try {
-            averages = useGridAverages();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        allShots = new LinkedHashMap();
-        JSONObject eachShot;
-        for (int i = 0; i < jsonArray.length(); i++) {
-            eachShot = jsonArray.getJSONObject(i);
-            if (eachShot.getInt("y") >= 400) {
-                continue;
-            }
-            shotCounter++;
-            for (Coordinate each : coordAverages.keySet()) {
-                if (eachShot.getInt("x") < each.getX() + 5 + SQUARE_SIZE_ORIG * 1.5 && eachShot.getInt("x") >= each.getX() + 5 - SQUARE_SIZE_ORIG * 1.5 && eachShot.getInt("y") < each.getY() + 5 + SQUARE_SIZE_ORIG * 1.5 && eachShot.getInt("y") >= each.getY() + 5 - SQUARE_SIZE_ORIG * 1.5) {
-                    coordAverages.get(each).set(1, coordAverages.get(each).get(1) + 1);
-                    if (eachShot.getInt("make") == 1) {
-                        coordAverages.get(each).set(0, coordAverages.get(each).get(0) + 1);
-                    }
-                }
-            }
-
-        }
-        for (Coordinate each : coordAverages.keySet()) {
-            if (coordAverages.get(each).get(1) != 0) {
-                coordAverages.get(each).set(2, coordAverages.get(each).get(0) * 1.0 / coordAverages.get(each).get(1) * 1.0);
-            }
-        }
-        idwGrid();
-        min = 1;
-        double minFactor = 0.00045;
-        if (shotCounter * minFactor > 1) {
-            min = shotCounter * minFactor;
-        } else {
-            factor = 4.1008 * Math.pow(shotCounter, -0.798);
-        }
-        maxShotsPerMaxSquare = (int) (factor * shotCounter);
-        if (maxShotsPerMaxSquare == 0) {
-            maxShotsPerMaxSquare = 1;
-        }
-        squareSize = imageview.getLayoutBounds().getWidth() / 50;
-        allTiles = new LinkedList();
-        String temp;
-        double avg;
-        for (Coordinate each2 : coordValue.keySet()) {
-            Rectangle square = new Rectangle();
-            if (coordAverages.get(each2).get(1) < maxShotsPerMaxSquare && coordAverages.get(each2).get(1) > min) {
-                square.setHeight((coordAverages.get(each2).get(1) / maxShotsPerMaxSquare * squareSize) * 0.9);
-                square.setWidth((coordAverages.get(each2).get(1) / maxShotsPerMaxSquare * squareSize) * 0.9);
-            } else if (coordAverages.get(each2).get(1) >= maxShotsPerMaxSquare) {
-                square.setHeight(squareSize * 0.9);
-                square.setWidth(squareSize * 0.9);
-            }
-            temp = "(" + each2.getX() + "," + each2.getY() + ")";
-            avg = averages.get(temp).doubleValue();
-            if (coordValue.get(each2) > avg + 0.07) {
-                square.setFill(Color.web("#fc2121"));
-            } else if (coordValue.get(each2) > avg + 0.05 && coordValue.get(each2) <= avg + 0.07) {
-                square.setFill(Color.web("#ff6363"));
-            } else if (coordValue.get(each2) > avg + 0.015 && coordValue.get(each2) <= avg + 0.05) {
-                square.setFill(Color.web("#ff9c9c"));
-            } else if (coordValue.get(each2) > avg - 0.015 && coordValue.get(each2) <= avg + 0.015) {
-                square.setFill(Color.WHITE);
-            } else if (coordValue.get(each2) > avg - 0.05 && coordValue.get(each2) <= avg - 0.015) {
-                square.setFill(Color.web("#aed9ff"));
-            } else if (coordValue.get(each2) > avg - 0.07 && coordValue.get(each2) <= avg - 0.05) {
-                square.setFill(Color.web("#8bc9ff"));
-            } else {
-                square.setFill(Color.web("#7babff"));
-            }
-            square.setOpacity(0.85);
-            square.setTranslateX((each2.getX() + 5) * imageview.getLayoutBounds().getHeight() / 470);
-            square.setTranslateY(each2.getY() * imageview.getLayoutBounds().getHeight() / 470 - (175.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
-            allTiles.add(square);
-        }
-        return coordValue;
-    }
-
-    private void plotGridAfterServiceSucceeds() {
-        resetView();
-        removeAllShotsFromView();
-        gridbackground.setVisible(true);
-        gridbackground.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
-        gridbackground.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
-        gridlegendcolor.setVisible(true);
-        gridlegendsize.setVisible(true);
-        gridlegendcolor.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (-155.0 / 470));
-        gridlegendcolor.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (185.0 / 470));
-        gridlegendsize.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (155.0 / 470));
-        gridlegendsize.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (185.0 / 470));
-        gridlegendcolor.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        gridlegendcolor.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        gridlegendcolor.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        gridlegendsize.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        gridlegendsize.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        gridlegendsize.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
-        gridcolorlegendgradient.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 153.0 / 470);
-        gridcolorlegendgradient.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 17.0 / 470);
-        gridcolorlegendtoplabel.maxWidthProperty().bind(gridlegendcolor.maxWidthProperty());
-        gridcolorlegendlowerlabel.maxWidthProperty().bind(gridlegendcolor.maxWidthProperty().multiply(0.5));
-        gridcolorlegendupperlabel.maxWidthProperty().bind(gridlegendcolor.maxWidthProperty().multiply(0.5));
-        gridcolorlegendlowerlabel.minWidthProperty().bind(gridlegendcolor.maxWidthProperty().multiply(0.45));
-        gridcolorlegendupperlabel.minWidthProperty().bind(gridlegendcolor.maxWidthProperty().multiply(0.45));
-        Rectangle tempRect;
-        double nodeCounter = 0;
-        for (Node each : gridsizelegendgradient.getChildren()) {
-            tempRect = (Rectangle) each;
-            tempRect.setWidth(((nodeCounter * 1.5) + 2) * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470);
-            tempRect.setHeight(((nodeCounter * 1.5) + 2) * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470);
-            nodeCounter++;
-        }
-        gridcolorlegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"" + overallFont.getName() + "\";");
-        gridsizelegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"" + overallFont.getName() + "\";");
-        gridcolorlegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
-        gridcolorlegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
-        gridsizelegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
-        gridsizelegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
-        imageview.setImage(new Image("/images/transparent.png"));
-        if (searchvbox.isVisible()) {
-            setShotGrid(previousSimpleSearchResults);
-        } else {
-            setShotGridAdvanced(previousAdvancedSearchResults);
-        }
-        allTiles.forEach(square -> imagegrid.add(square, 0, 0));
-        endLoadingTransition();
-        enableButtons();
-        end = System.nanoTime();
-        System.out.println("GRID: " + (end - start) * 1.0 / 1000000000 + " seconds");
-    }
-
-    private HashMap<Integer, Double> serviceTaskMethodsZone(boolean isSearchVboxVisible) throws IOException, Exception {
-        Platform.runLater(() -> errorlabeladvanced.setVisible(isSearchVboxVisible));
-        Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
-        JSONArray jsonArray = chooseJSONArray();
-        Platform.runLater(() -> progresslabel.setText("Generating Zones"));
-        allZones = new HashMap();
-        Double[] doubles;
-        for (int i = 1; i < 16; i++) {
-            doubles = new Double[3];
-            doubles[0] = 0.0;
-            doubles[1] = 0.0;
-            doubles[2] = 0.0;
-            allZones.put(i, doubles);
-        }
-        try {
-            allZoneAverages = useZoneAverages();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        JSONObject eachShot;
-        for (int i = 0; i < jsonArray.length(); i++) {
-            eachShot = jsonArray.getJSONObject(i);
-
-            switch (eachShot.getString("shotzonebasic")) {
-                case "Backcourt":
-                    break;
-                case "Restricted Area":
-                    addShotToHashMap(1, eachShot.getInt("make"));
-                    break;
-                case "In The Paint (Non-RA)":
-                    switch (eachShot.getString("shotzonearea")) {
-                        case "Left Side(L)":
-                            switch (eachShot.getString("shotzonerange")) {
-                                case "8-16 ft.":
-                                    addShotToHashMap(3, eachShot.getInt("make"));
-                                    break;
-                            }
-                            break;
-                        case "Center(C)":
-                            switch (eachShot.getString("shotzonerange")) {
-                                case "Less Than 8 ft.":
-                                    addShotToHashMap(2, eachShot.getInt("make"));
-                                    break;
-                                case "8-16 ft.":
-                                    addShotToHashMap(4, eachShot.getInt("make"));
-                                    break;
-
-                            }
-                            break;
-
-                        case "Right Side(R)":
-                            switch (eachShot.getString("shotzonerange")) {
-                                case "8-16 ft.":
-                                    addShotToHashMap(5, eachShot.getInt("make"));
-                                    break;
-                            }
-                            break;
-                    }
-                    break;
-                case "Mid-Range":
-                    switch (eachShot.getString("shotzonearea")) {
-                        case "Left Side(L)":
-                            switch (eachShot.getString("shotzonerange")) {
-                                case "8-16 ft.":
-                                    addShotToHashMap(3, eachShot.getInt("make"));
-                                    break;
-                                case "16-24 ft.":
-                                    addShotToHashMap(6, eachShot.getInt("make"));
-                                    break;
-                            }
-                            break;
-
-                        case "Left Side Center(LC)":
-                            switch (eachShot.getString("shotzonerange")) {
-                                case "16-24 ft.":
-                                    addShotToHashMap(7, eachShot.getInt("make"));
-                                    break;
-                            }
-                            break;
-
-                        case "Center(C)":
-                            switch (eachShot.getString("shotzonerange")) {
-                                case "8-16 ft.":
-                                    addShotToHashMap(4, eachShot.getInt("make"));
-                                    break;
-                                case "16-24 ft.":
-                                    addShotToHashMap(8, eachShot.getInt("make"));
-                                    break;
-                            }
-                            break;
-
-                        case "Right Side Center(RC)":
-                            switch (eachShot.getString("shotzonerange")) {
-                                case "16-24 ft.":
-                                    addShotToHashMap(9, eachShot.getInt("make"));
-                                    break;
-                            }
-                            break;
-
-                        case "Right Side(R)":
-                            switch (eachShot.getString("shotzonerange")) {
-                                case "8-16 ft.":
-                                    addShotToHashMap(5, eachShot.getInt("make"));
-                                    break;
-                                case "16-24 ft.":
-                                    addShotToHashMap(10, eachShot.getInt("make"));
-                                    break;
-                            }
-                            break;
-                    }
-                    break;
-                case "Left Corner 3":
-                    addShotToHashMap(11, eachShot.getInt("make"));
-                    break;
-                case "Right Corner 3":
-                    addShotToHashMap(15, eachShot.getInt("make"));
-                    break;
-                case "Above the Break 3":
-                    switch (eachShot.getString("shotzonearea")) {
-                        case "Left Side Center(LC)":
-                            switch (eachShot.getString("shotzonerange")) {
-                                case "24+ ft.":
-                                    addShotToHashMap(12, eachShot.getInt("make"));
-                                    break;
-                            }
-                            break;
-
-                        case "Center(C)":
-                            switch (eachShot.getString("shotzonerange")) {
-                                case "24+ ft.":
-                                    addShotToHashMap(13, eachShot.getInt("make"));
-                                    break;
-                            }
-                            break;
-
-                        case "Right Side Center(RC)":
-                            switch (eachShot.getString("shotzonerange")) {
-                                case "24+ ft.":
-                                    addShotToHashMap(14, eachShot.getInt("make"));
-                                    break;
-                                default:
-                            }
-                            break;
-                    }
-                    break;
-            }
-        }
-
-        HashMap<Integer, Double> playerZones = new HashMap();
-        for (Integer each : allZones.keySet()) {
-            allZones.get(each)[2] = allZones.get(each)[0] * 1.0 / allZones.get(each)[1];
-            playerZones.put(each, allZones.get(each)[2]);
-        }
-        end = System.nanoTime();
-        System.out.println("ZONE: " + (end - start) * 1.0 / 1000000000 + " seconds");
-
-        return playerZones;
-    }
-
-    private void plotZoneAfterServiceSucceeds(HashMap<Integer, Double> playerZones) {
-        resizeZone();
-        resetView();
-        removeAllShotsFromView();
-        imageview.setImage(new Image("/images/transparent.png"));
-        for (Node each : allShapes) {
-            each.setVisible(true);
-        }
-        zonelegend.setVisible(true);
-        zonelegendgradient.setVisible(true);
-        zonelegendlowerlabel.setVisible(true);
-        zonelegendtoplabel.setVisible(true);
-        zonelegendupperlabel.setVisible(true);
-        for (int i = 0; i < allLabels.size(); i++) {
-            allLabels.get(i).setVisible(true);
-            allPercentLabels.get(i).setVisible(true);
-        }
-        if (searchvbox.isVisible()) {
-            setShotGrid(previousSimpleSearchResults);
-        } else {
-            setShotGridAdvanced(previousAdvancedSearchResults);
-        }
-        Shape tempShape;
-        Rectangle tempRect;
-        Arc tempArc;
-        for (int i = 1; i < 16; i++) {
-            if (allShapes.get(i - 1).getClass().equals(Arc.class)) {
-                tempArc = (Arc) allShapes.get(i - 1);
-                changeArcColor(tempArc, playerZones.get(i), i);
-            } else if (allShapes.get(i - 1).getClass().equals(Rectangle.class)) {
-                tempRect = (Rectangle) allShapes.get(i - 1);
-                changeRectColor(tempRect, playerZones.get(i), i);
-            } else {
-                tempShape = (Shape) allShapes.get(i - 1);
-                changeShapeColor(tempShape, playerZones.get(i), i);
-            }
-        }
-        imageview.toFront();
-        for (int j = 0; j < 15; j++) {
-            allLabels.get(j).setText(allZones.get(j + 1)[0].intValue() + "/" + allZones.get(j + 1)[1].intValue());
-            allLabels.get(j).toFront();
-            if (allZones.get(j + 1)[1].intValue() != 0 && allZones.get(j + 1)[1].intValue() == allZones.get(j + 1)[0].intValue()) {
-                allPercentLabels.get(j).setText("100%");
-            } else if (allZones.get(j + 1)[1].intValue() == 0 && allZones.get(j + 1)[1].intValue() == allZones.get(j + 1)[0].intValue()) {
-                allPercentLabels.get(j).setText("0%");
-            } else {
-                allPercentLabels.get(j).setText(df.format(allZones.get(j + 1)[2] * 100) + "%");
-            }
-            allPercentLabels.get(j).toFront();
-        }
-        zonelegend.setVisible(true);
-        zonelegend.toFront();
-        endLoadingTransition();
-        enableButtons();
-    }
-
+//    private ConcurrentHashMap<Coordinate, Double> serviceTaskMethodsGrid(boolean isSearchVboxVisible) throws IOException, Exception {
+//        Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
+//        Platform.runLater(() -> errorlabeladvanced.setVisible(isSearchVboxVisible));
+//        JSONArray jsonArray = chooseJSONArray();
+//        Platform.runLater(() -> progresslabel.setText("Generating Grid"));
+//        Coordinate coord;
+//        coordAverages = new LinkedHashMap();
+//        for (int j = -55; j < 400; j = j + (int) SQUARE_SIZE_ORIG) {
+//            for (int i = -250; i < 250; i = i + (int) SQUARE_SIZE_ORIG) {
+//                coord = new Coordinate(i, j);
+//                ArrayList info = new ArrayList();
+//                info.add(0.0);
+//                info.add(0.0);
+//                info.add(0.0);
+//                coordAverages.put(coord, info);
+//            }
+//        }
+//        double factor = 0.007;
+//        shotCounter = 0;
+//        HashMap<String, BigDecimal> averages = null;
+//        try {
+//            averages = useGridAverages();
+//        } catch (IOException ex) {
+//            ex.printStackTrace();
+//        }
+//        allShots = new LinkedHashMap();
+//        JSONObject eachShot;
+//        for (int i = 0; i < jsonArray.length(); i++) {
+//            eachShot = jsonArray.getJSONObject(i);
+//            if (eachShot.getInt("y") >= 400) {
+//                continue;
+//            }
+//            shotCounter++;
+//            for (Coordinate each : coordAverages.keySet()) {
+//                if (eachShot.getInt("x") < each.getX() + 5 + SQUARE_SIZE_ORIG * 1.5 && eachShot.getInt("x") >= each.getX() + 5 - SQUARE_SIZE_ORIG * 1.5 && eachShot.getInt("y") < each.getY() + 5 + SQUARE_SIZE_ORIG * 1.5 && eachShot.getInt("y") >= each.getY() + 5 - SQUARE_SIZE_ORIG * 1.5) {
+//                    coordAverages.get(each).set(1, coordAverages.get(each).get(1) + 1);
+//                    if (eachShot.getInt("make") == 1) {
+//                        coordAverages.get(each).set(0, coordAverages.get(each).get(0) + 1);
+//                    }
+//                }
+//            }
+//
+//        }
+//        for (Coordinate each : coordAverages.keySet()) {
+//            if (coordAverages.get(each).get(1) != 0) {
+//                coordAverages.get(each).set(2, coordAverages.get(each).get(0) * 1.0 / coordAverages.get(each).get(1) * 1.0);
+//            }
+//        }
+//        idwGrid();
+//        min = 1;
+//        double minFactor = 0.00045;
+//        if (shotCounter * minFactor > 1) {
+//            min = shotCounter * minFactor;
+//        } else {
+//            factor = 4.1008 * Math.pow(shotCounter, -0.798);
+//        }
+//        maxShotsPerMaxSquare = (int) (factor * shotCounter);
+//        if (maxShotsPerMaxSquare == 0) {
+//            maxShotsPerMaxSquare = 1;
+//        }
+//        squareSize = imageview.getLayoutBounds().getWidth() / 50;
+//        allTiles = new LinkedList();
+//        String temp;
+//        double avg;
+//        for (Coordinate each2 : coordValue.keySet()) {
+//            Rectangle square = new Rectangle();
+//            if (coordAverages.get(each2).get(1) < maxShotsPerMaxSquare && coordAverages.get(each2).get(1) > min) {
+//                square.setHeight((coordAverages.get(each2).get(1) / maxShotsPerMaxSquare * squareSize) * 0.9);
+//                square.setWidth((coordAverages.get(each2).get(1) / maxShotsPerMaxSquare * squareSize) * 0.9);
+//            } else if (coordAverages.get(each2).get(1) >= maxShotsPerMaxSquare) {
+//                square.setHeight(squareSize * 0.9);
+//                square.setWidth(squareSize * 0.9);
+//            }
+//            temp = "(" + each2.getX() + "," + each2.getY() + ")";
+//            avg = averages.get(temp).doubleValue();
+//            if (coordValue.get(each2) > avg + 0.07) {
+//                square.setFill(Color.web("#fc2121"));
+//            } else if (coordValue.get(each2) > avg + 0.05 && coordValue.get(each2) <= avg + 0.07) {
+//                square.setFill(Color.web("#ff6363"));
+//            } else if (coordValue.get(each2) > avg + 0.015 && coordValue.get(each2) <= avg + 0.05) {
+//                square.setFill(Color.web("#ff9c9c"));
+//            } else if (coordValue.get(each2) > avg - 0.015 && coordValue.get(each2) <= avg + 0.015) {
+//                square.setFill(Color.WHITE);
+//            } else if (coordValue.get(each2) > avg - 0.05 && coordValue.get(each2) <= avg - 0.015) {
+//                square.setFill(Color.web("#aed9ff"));
+//            } else if (coordValue.get(each2) > avg - 0.07 && coordValue.get(each2) <= avg - 0.05) {
+//                square.setFill(Color.web("#8bc9ff"));
+//            } else {
+//                square.setFill(Color.web("#7babff"));
+//            }
+//            square.setOpacity(0.85);
+//            square.setTranslateX((each2.getX() + 5) * imageview.getLayoutBounds().getHeight() / 470);
+//            square.setTranslateY(each2.getY() * imageview.getLayoutBounds().getHeight() / 470 - (175.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
+//            allTiles.add(square);
+//        }
+//        return coordValue;
+//    }
+//    private void plotGridAfterServiceSucceeds() {
+//        resetView();
+//        removeAllShotsFromView();
+//        gridbackground.setVisible(true);
+//        gridbackground.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
+//        gridbackground.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
+//        gridlegendcolor.setVisible(true);
+//        gridlegendsize.setVisible(true);
+//        gridlegendcolor.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (-155.0 / 470));
+//        gridlegendcolor.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (185.0 / 470));
+//        gridlegendsize.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (155.0 / 470));
+//        gridlegendsize.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (185.0 / 470));
+//        gridlegendcolor.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+//        gridlegendcolor.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+//        gridlegendcolor.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+//        gridlegendsize.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+//        gridlegendsize.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+//        gridlegendsize.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+//        gridcolorlegendgradient.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 153.0 / 470);
+//        gridcolorlegendgradient.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 17.0 / 470);
+//        gridcolorlegendtoplabel.maxWidthProperty().bind(gridlegendcolor.maxWidthProperty());
+//        gridcolorlegendlowerlabel.maxWidthProperty().bind(gridlegendcolor.maxWidthProperty().multiply(0.5));
+//        gridcolorlegendupperlabel.maxWidthProperty().bind(gridlegendcolor.maxWidthProperty().multiply(0.5));
+//        gridcolorlegendlowerlabel.minWidthProperty().bind(gridlegendcolor.maxWidthProperty().multiply(0.45));
+//        gridcolorlegendupperlabel.minWidthProperty().bind(gridlegendcolor.maxWidthProperty().multiply(0.45));
+//        Rectangle tempRect;
+//        double nodeCounter = 0;
+//        for (Node each : gridsizelegendgradient.getChildren()) {
+//            tempRect = (Rectangle) each;
+//            tempRect.setWidth(((nodeCounter * 1.5) + 2) * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470);
+//            tempRect.setHeight(((nodeCounter * 1.5) + 2) * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470);
+//            nodeCounter++;
+//        }
+//        gridcolorlegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"" + overallFont.getName() + "\";");
+//        gridsizelegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"" + overallFont.getName() + "\";");
+//        gridcolorlegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+//        gridcolorlegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+//        gridsizelegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+//        gridsizelegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+//        imageview.setImage(new Image("/images/transparent.png"));
+//        if (searchvbox.isVisible()) {
+//            setShotGrid(previousSimpleSearchResults);
+//        } else {
+//            setShotGridAdvanced(previousAdvancedSearchResults);
+//        }
+//        allTiles.forEach(square -> imagegrid.add(square, 0, 0));
+//        endLoadingTransition();
+//        enableButtons();
+//        end = System.nanoTime();
+//        System.out.println("GRID: " + (end - start) * 1.0 / 1000000000 + " seconds");
+//    }
+//    private HashMap<Integer, Double> serviceTaskMethodsZone(boolean isSearchVboxVisible) throws IOException, Exception {
+//        Platform.runLater(() -> errorlabeladvanced.setVisible(isSearchVboxVisible));
+//        Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
+//        JSONArray jsonArray = chooseJSONArray();
+//        Platform.runLater(() -> progresslabel.setText("Generating Zones"));
+//        allZones = new HashMap();
+//        Double[] doubles;
+//        for (int i = 1; i < 16; i++) {
+//            doubles = new Double[3];
+//            doubles[0] = 0.0;
+//            doubles[1] = 0.0;
+//            doubles[2] = 0.0;
+//            allZones.put(i, doubles);
+//        }
+//        try {
+//            allZoneAverages = useZoneAverages();
+//        } catch (IOException ex) {
+//            ex.printStackTrace();
+//        }
+//        JSONObject eachShot;
+//        for (int i = 0; i < jsonArray.length(); i++) {
+//            eachShot = jsonArray.getJSONObject(i);
+//
+//            switch (eachShot.getString("shotzonebasic")) {
+//                case "Backcourt":
+//                    break;
+//                case "Restricted Area":
+//                    addShotToHashMap(1, eachShot.getInt("make"));
+//                    break;
+//                case "In The Paint (Non-RA)":
+//                    switch (eachShot.getString("shotzonearea")) {
+//                        case "Left Side(L)":
+//                            switch (eachShot.getString("shotzonerange")) {
+//                                case "8-16 ft.":
+//                                    addShotToHashMap(3, eachShot.getInt("make"));
+//                                    break;
+//                            }
+//                            break;
+//                        case "Center(C)":
+//                            switch (eachShot.getString("shotzonerange")) {
+//                                case "Less Than 8 ft.":
+//                                    addShotToHashMap(2, eachShot.getInt("make"));
+//                                    break;
+//                                case "8-16 ft.":
+//                                    addShotToHashMap(4, eachShot.getInt("make"));
+//                                    break;
+//
+//                            }
+//                            break;
+//
+//                        case "Right Side(R)":
+//                            switch (eachShot.getString("shotzonerange")) {
+//                                case "8-16 ft.":
+//                                    addShotToHashMap(5, eachShot.getInt("make"));
+//                                    break;
+//                            }
+//                            break;
+//                    }
+//                    break;
+//                case "Mid-Range":
+//                    switch (eachShot.getString("shotzonearea")) {
+//                        case "Left Side(L)":
+//                            switch (eachShot.getString("shotzonerange")) {
+//                                case "8-16 ft.":
+//                                    addShotToHashMap(3, eachShot.getInt("make"));
+//                                    break;
+//                                case "16-24 ft.":
+//                                    addShotToHashMap(6, eachShot.getInt("make"));
+//                                    break;
+//                            }
+//                            break;
+//
+//                        case "Left Side Center(LC)":
+//                            switch (eachShot.getString("shotzonerange")) {
+//                                case "16-24 ft.":
+//                                    addShotToHashMap(7, eachShot.getInt("make"));
+//                                    break;
+//                            }
+//                            break;
+//
+//                        case "Center(C)":
+//                            switch (eachShot.getString("shotzonerange")) {
+//                                case "8-16 ft.":
+//                                    addShotToHashMap(4, eachShot.getInt("make"));
+//                                    break;
+//                                case "16-24 ft.":
+//                                    addShotToHashMap(8, eachShot.getInt("make"));
+//                                    break;
+//                            }
+//                            break;
+//
+//                        case "Right Side Center(RC)":
+//                            switch (eachShot.getString("shotzonerange")) {
+//                                case "16-24 ft.":
+//                                    addShotToHashMap(9, eachShot.getInt("make"));
+//                                    break;
+//                            }
+//                            break;
+//
+//                        case "Right Side(R)":
+//                            switch (eachShot.getString("shotzonerange")) {
+//                                case "8-16 ft.":
+//                                    addShotToHashMap(5, eachShot.getInt("make"));
+//                                    break;
+//                                case "16-24 ft.":
+//                                    addShotToHashMap(10, eachShot.getInt("make"));
+//                                    break;
+//                            }
+//                            break;
+//                    }
+//                    break;
+//                case "Left Corner 3":
+//                    addShotToHashMap(11, eachShot.getInt("make"));
+//                    break;
+//                case "Right Corner 3":
+//                    addShotToHashMap(15, eachShot.getInt("make"));
+//                    break;
+//                case "Above the Break 3":
+//                    switch (eachShot.getString("shotzonearea")) {
+//                        case "Left Side Center(LC)":
+//                            switch (eachShot.getString("shotzonerange")) {
+//                                case "24+ ft.":
+//                                    addShotToHashMap(12, eachShot.getInt("make"));
+//                                    break;
+//                            }
+//                            break;
+//
+//                        case "Center(C)":
+//                            switch (eachShot.getString("shotzonerange")) {
+//                                case "24+ ft.":
+//                                    addShotToHashMap(13, eachShot.getInt("make"));
+//                                    break;
+//                            }
+//                            break;
+//
+//                        case "Right Side Center(RC)":
+//                            switch (eachShot.getString("shotzonerange")) {
+//                                case "24+ ft.":
+//                                    addShotToHashMap(14, eachShot.getInt("make"));
+//                                    break;
+//                                default:
+//                            }
+//                            break;
+//                    }
+//                    break;
+//            }
+//        }
+//
+//        HashMap<Integer, Double> playerZones = new HashMap();
+//        for (Integer each : allZones.keySet()) {
+//            allZones.get(each)[2] = allZones.get(each)[0] * 1.0 / allZones.get(each)[1];
+//            playerZones.put(each, allZones.get(each)[2]);
+//        }
+////        end = System.nanoTime();
+////        System.out.println("ZONE: " + (end - start) * 1.0 / 1000000000 + " seconds");
+//
+//        return playerZones;
+//    }
+//    private void plotZoneAfterServiceSucceeds(HashMap<Integer, Double> playerZones) {
+//        resizeZone();
+//        resetView();
+//        removeAllShotsFromView();
+//        imageview.setImage(new Image("/images/transparent.png"));
+//        for (Node each : allShapes) {
+//            each.setVisible(true);
+//        }
+//        zonelegend.setVisible(true);
+//        zonelegendgradient.setVisible(true);
+//        zonelegendlowerlabel.setVisible(true);
+//        zonelegendtoplabel.setVisible(true);
+//        zonelegendupperlabel.setVisible(true);
+//        for (int i = 0; i < allLabels.size(); i++) {
+//            allLabels.get(i).setVisible(true);
+//            allPercentLabels.get(i).setVisible(true);
+//        }
+//        if (searchvbox.isVisible()) {
+//            setShotGrid(previousSimpleSearchResults);
+//        } else {
+//            setShotGridAdvanced(previousAdvancedSearchResults);
+//        }
+//        Shape tempShape;
+//        Rectangle tempRect;
+//        Arc tempArc;
+//        for (int i = 1; i < 16; i++) {
+//            if (allShapes.get(i - 1).getClass().equals(Arc.class)) {
+//                tempArc = (Arc) allShapes.get(i - 1);
+//                changeArcColor(tempArc, playerZones.get(i), i);
+//            } else if (allShapes.get(i - 1).getClass().equals(Rectangle.class)) {
+//                tempRect = (Rectangle) allShapes.get(i - 1);
+//                changeRectColor(tempRect, playerZones.get(i), i);
+//            } else {
+//                tempShape = (Shape) allShapes.get(i - 1);
+//                changeShapeColor(tempShape, playerZones.get(i), i);
+//            }
+//        }
+//        imageview.toFront();
+//        for (int j = 0; j < 15; j++) {
+//            allLabels.get(j).setText(allZones.get(j + 1)[0].intValue() + "/" + allZones.get(j + 1)[1].intValue());
+//            allLabels.get(j).toFront();
+//            if (allZones.get(j + 1)[1].intValue() != 0 && allZones.get(j + 1)[1].intValue() == allZones.get(j + 1)[0].intValue()) {
+//                allPercentLabels.get(j).setText("100%");
+//            } else if (allZones.get(j + 1)[1].intValue() == 0 && allZones.get(j + 1)[1].intValue() == allZones.get(j + 1)[0].intValue()) {
+//                allPercentLabels.get(j).setText("0%");
+//            } else {
+//                allPercentLabels.get(j).setText(df.format(allZones.get(j + 1)[2] * 100) + "%");
+//            }
+//            allPercentLabels.get(j).toFront();
+//        }
+//        zonelegend.setVisible(true);
+//        zonelegend.toFront();
+//        endLoadingTransition();
+//        enableButtons();
+//    }
     private void enableButtons() {
         viewButtons.forEach(button -> {
             button.setDisable(false);
@@ -3277,79 +3330,77 @@ public class SimpleController implements Initializable, MapControllerInterface {
         bubble.setVisible(false);
     }
 
-    private void createHeatCallables() {
-        maxThreads = Runtime.getRuntime().availableProcessors();
-        coordsList = new ArrayList(300000);
-        exServ = Executors.newFixedThreadPool(maxThreads);
-        Callable<String> heatRunCallable;
-        callables = new ArrayList();
-        for (int i = 0; i < maxThreads; i++) {
-            final int iFinal = i;
-            heatRunCallable = () -> {
-                double aSum = 0;
-                double bSum = 0;
-                int p = 2;
-                int eachCounter = 0;
-                int iFinalThread = iFinal;
-                int maxSurroundingCoords = (int) Math.pow(MAX_DISTANCE_BETWEEN_NODES_HEAT * 2, 2);
-                int surroundingCounter;
-                int x;
-                int y;
-                int minY;
-                int maxY;
-                minY = (452 / maxThreads) * iFinalThread - 52;
-                maxY = (452 / maxThreads) * (iFinalThread + 1) - 52;
-                for (Coordinate each : coordsList) {
-                    x = each.getX();
-                    y = each.getY();
-//                    if (each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0 && each.getY() >= (452 / maxThreads) * iFinalThread - 52
-//                            && each.getY() < (452 / maxThreads) * (iFinalThread + 1) - 52) {
-                    if (x % offsetHeat == 0 && y % offsetHeat == 0 && y >= minY && y < maxY) {
-                        aSum = 0;
-                        bSum = 0;
-                        surroundingCounter = 0;
-                        for (Coordinate each2 : coordsList) {
-                            if (surroundingCounter >= maxSurroundingCoords) {
-                                break;
-                            } else if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
-                                surroundingCounter++;
-                                aSum = aSum + ((coordAverages.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
-                                bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
-                                if (coordAverages.get(each2).get(1).intValue() != 0) {
-                                    eachCounter++;
-                                }
-                            }
-
-                        }
-                        if (eachCounter > 1) {
-                            coordValue.put(each, aSum / bSum);
-                        } else {
-                            coordValue.put(each, 0.0);
-                        }
-                    }
-
-                }
-                return "Done running";
-            };
-            callables.add(heatRunCallable);
-        }
-    }
-
-    private void setServiceOnFailed(Service service) {
-        service.setOnFailed(s -> {
-            System.out.println("Failed");
-            endLoadingTransition();
-            enableButtons();
-        });
-    }
-
+//    private void createHeatCallables() {
+//        maxThreads = Runtime.getRuntime().availableProcessors();
+//        coordsList = new ArrayList(300000);
+//        exServ = Executors.newFixedThreadPool(maxThreads);
+//        Callable<String> heatRunCallable;
+//        callables = new ArrayList();
+//        for (int i = 0; i < maxThreads; i++) {
+//            final int iFinal = i;
+//            heatRunCallable = () -> {
+//                double aSum = 0;
+//                double bSum = 0;
+//                int p = 2;
+//                int eachCounter = 0;
+//                int iFinalThread = iFinal;
+//                int maxSurroundingCoords = (int) Math.pow(MAX_DISTANCE_BETWEEN_NODES_HEAT * 2, 2);
+//                int surroundingCounter;
+//                int x;
+//                int y;
+//                int minY;
+//                int maxY;
+//                minY = (452 / maxThreads) * iFinalThread - 52;
+//                maxY = (452 / maxThreads) * (iFinalThread + 1) - 52;
+//                for (Coordinate each : coordsList) {
+//                    x = each.getX();
+//                    y = each.getY();
+////                    if (each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0 && each.getY() >= (452 / maxThreads) * iFinalThread - 52
+////                            && each.getY() < (452 / maxThreads) * (iFinalThread + 1) - 52) {
+//                    if (x % offsetHeat == 0 && y % offsetHeat == 0 && y >= minY && y < maxY) {
+//                        aSum = 0;
+//                        bSum = 0;
+//                        surroundingCounter = 0;
+//                        for (Coordinate each2 : coordsList) {
+//                            if (surroundingCounter >= maxSurroundingCoords) {
+//                                break;
+//                            } else if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
+//                                surroundingCounter++;
+//                                aSum = aSum + ((coordAverages.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
+//                                bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
+//                                if (coordAverages.get(each2).get(1).intValue() != 0) {
+//                                    eachCounter++;
+//                                }
+//                            }
+//
+//                        }
+//                        if (eachCounter > 1) {
+//                            coordValue.put(each, aSum / bSum);
+//                        } else {
+//                            coordValue.put(each, 0.0);
+//                        }
+//                    }
+//
+//                }
+//                return "Done running";
+//            };
+//            callables.add(heatRunCallable);
+//        }
+//    }
+//    private void setServiceOnFailed(Service service) {
+//        service.setOnFailed(s -> {
+//            System.out.println("Failed");
+//            endLoadingTransition();
+//            enableButtons();
+//        });
+//    }
     @Override
     public void resetViewOnServiceFailed(Service service) {
-        service.setOnFailed(s -> {
-            System.out.println("Failed");
-            endLoadingTransition();
-            enableButtons();
-        });
+//        service.setOnFailed(s -> {
+        System.out.println("Failed");
+        endLoadingTransition();
+        enableButtons();
+//        });
     }
 
     @Override
@@ -3457,15 +3508,15 @@ public class SimpleController implements Initializable, MapControllerInterface {
 
     @Override
     public void plotTradShots() {
-        allShots = tradMeth.getAllShots();
+//        allShots = tradMeth.getAllShots();
         resetView();
         removeAllShotsFromView();
         imageview.setImage(new Image("/images/newbackcourt.png"));
-        allShots.keySet().stream()
+        tradMeth.getAllShots().keySet().stream()
                 .filter((each) -> (each.getY() <= 410))
                 .forEachOrdered((each) -> {
                     if (each.getMake() == 0) {
-                        final MissedShotIcon msiTemp = (MissedShotIcon) allShots.get(each);
+                        final MissedShotIcon msiTemp = (MissedShotIcon) tradMeth.getAllShots().get(each);
                         msiTemp.getLine1().setManaged(false);
                         msiTemp.getLine2().setManaged(false);
                         msiTemp.getLine1().setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);// 50/470
@@ -3557,7 +3608,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
                             tradShotInfo.setVisible(false);
                         });
                     } else {
-                        imagegrid.getChildren().add((Circle) allShots.get(each));
+                        imagegrid.getChildren().add((Circle) tradMeth.getAllShots().get(each));
                     }
                 });
         if (searchvbox.isVisible()) {
@@ -3582,32 +3633,266 @@ public class SimpleController implements Initializable, MapControllerInterface {
 
     @Override
     public void notifyOfGatheringGridShots() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
+        Platform.runLater(() -> errorlabeladvanced.setVisible(searchvbox.isVisible()));
     }
 
     @Override
     public void notifyOfGatheringHeatShots() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Platform.runLater(() -> errorlabeladvanced.setVisible(searchvbox.isVisible()));
+        Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
     }
 
     @Override
     public void notifyOfGatheringZoneShots() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Platform.runLater(() -> errorlabeladvanced.setVisible(searchvbox.isVisible()));
+        Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
     }
 
     @Override
     public void notifyOfGridShotsGathered() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Platform.runLater(() -> progresslabel.setText("Generating Grid"));
     }
 
     @Override
     public void notifyOfHeatShotsGathered() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Platform.runLater(() -> progresslabel.setText("Generating Heat Map"));
     }
 
     @Override
     public void notifyOfZoneShotsGathered() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Platform.runLater(() -> progresslabel.setText("Generating Zones"));
+    }
+
+    @Override
+    public void plotGridShots() {
+        resetView();
+        removeAllShotsFromView();
+        gridbackground.setVisible(true);
+        gridbackground.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getWidth());
+        gridbackground.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight());
+        gridlegendcolor.setVisible(true);
+        gridlegendsize.setVisible(true);
+        gridlegendcolor.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (-155.0 / 470));
+        gridlegendcolor.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (185.0 / 470));
+        gridlegendsize.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (155.0 / 470));
+        gridlegendsize.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (185.0 / 470));
+        gridlegendcolor.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        gridlegendcolor.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        gridlegendcolor.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        gridlegendsize.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        gridlegendsize.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        gridlegendsize.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        gridcolorlegendgradient.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 153.0 / 470);
+        gridcolorlegendgradient.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 17.0 / 470);
+        gridcolorlegendtoplabel.maxWidthProperty().bind(gridlegendcolor.maxWidthProperty());
+        gridcolorlegendlowerlabel.maxWidthProperty().bind(gridlegendcolor.maxWidthProperty().multiply(0.5));
+        gridcolorlegendupperlabel.maxWidthProperty().bind(gridlegendcolor.maxWidthProperty().multiply(0.5));
+        gridcolorlegendlowerlabel.minWidthProperty().bind(gridlegendcolor.maxWidthProperty().multiply(0.45));
+        gridcolorlegendupperlabel.minWidthProperty().bind(gridlegendcolor.maxWidthProperty().multiply(0.45));
+        Rectangle tempRect;
+        double nodeCounter = 0;
+        for (Node each : gridsizelegendgradient.getChildren()) {
+            tempRect = (Rectangle) each;
+            tempRect.setWidth(((nodeCounter * 1.5) + 2) * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470);
+            tempRect.setHeight(((nodeCounter * 1.5) + 2) * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470);
+            nodeCounter++;
+        }
+        gridcolorlegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        gridsizelegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        gridcolorlegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        gridcolorlegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        gridsizelegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        gridsizelegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        imageview.setImage(new Image("/images/transparent.png"));
+        if (searchvbox.isVisible()) {
+            setShotGrid(previousSimpleSearchResults);
+        } else {
+            setShotGridAdvanced(previousAdvancedSearchResults);
+        }
+        gridMeth.getAllTiles().forEach(square -> imagegrid.add(square, 0, 0));
+        endLoadingTransition();
+        enableButtons();
+    }
+
+    @Override
+    public void plotHeatShots() {
+        resetView();
+        removeAllShotsFromView();
+        heatlegend.setVisible(true);
+        imageview.setImage(new Image("/images/newtransparent.png"));
+        heatlegend.setTranslateX(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (-155.0 / 470));
+        heatlegend.setTranslateY(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * (185.0 / 470));
+        heatlegend.setMaxWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        heatlegend.setMinWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        heatlegend.setPrefWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 170.0 / 470);
+        heatlegendgradient.setWidth(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 153.0 / 470);
+        heatlegendgradient.setHeight(imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 17.0 / 470);
+        heatlegendtoplabel.maxWidthProperty().bind(heatlegend.maxWidthProperty());
+        heatlegendlowerlabel.maxWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.5));
+        heatlegendupperlabel.maxWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.5));
+        heatlegendlowerlabel.minWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.45));
+        heatlegendupperlabel.minWidthProperty().bind(heatlegend.maxWidthProperty().multiply(0.45));
+        heatlegendtoplabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 13.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        heatlegendlowerlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+        heatlegendupperlabel.setStyle("-fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 11.0 / 470 + "px \"" + overallFont.getName() + "\";");
+
+        if (searchvbox.isVisible()) {
+            setShotGrid(previousSimpleSearchResults);
+        } else {
+            setShotGridAdvanced(previousAdvancedSearchResults);
+        }
+
+        double weight = 0.5;
+        double radius = 25 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470.0;
+        RadialGradient rg1 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
+            new Stop(0, Color.web("#bc53f8")),
+            new Stop(weight, Color.TRANSPARENT)});
+        RadialGradient rg2 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
+            new Stop(0, Color.web("#dd76ff")),
+            new Stop(weight, Color.TRANSPARENT)});
+        RadialGradient rg3 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
+            new Stop(0, Color.web("#e696fa")),
+            new Stop(weight, Color.TRANSPARENT)});
+        RadialGradient rg4 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
+            new Stop(0, Color.web("#c4b8ff")),
+            new Stop(weight, Color.TRANSPARENT)});
+        RadialGradient rg5 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
+            new Stop(0, Color.web("#6bb2f8")),
+            new Stop(weight, Color.TRANSPARENT)});
+        RadialGradient rg6 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
+            new Stop(0, Color.web("#62c8ff")),
+            new Stop(weight, Color.TRANSPARENT)});
+        RadialGradient rg7 = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, new Stop[]{
+            new Stop(0, Color.web("#90ebff")),
+            new Stop(weight, Color.TRANSPARENT)});
+        ArrayList<Circle> circles1 = new ArrayList();
+        ArrayList<Circle> circles2 = new ArrayList();
+        ArrayList<Circle> circles3 = new ArrayList();
+        ArrayList<Circle> circles4 = new ArrayList();
+        ArrayList<Circle> circles5 = new ArrayList();
+        ArrayList<Circle> circles6 = new ArrayList();
+        ArrayList<Circle> circles7 = new ArrayList();
+        double maxValue = 0.0;
+        for (Coordinate each : heatMeth.getCoordValue().keySet()) {
+            if (heatMeth.getCoordValue().get(each) > maxValue) {
+                maxValue = heatMeth.getCoordValue().get(each);
+            }
+        }
+        if (maxValue != 0) {
+            maxValue = maxValue * (500 * 1.0 / heatMeth.getShotCounter());
+            maxCutoff = 0.00004 * heatMeth.getShotCounter() / maxValue + 0.3065;
+            diff = maxCutoff / 7;
+            allHeatCircles = new LinkedList();
+            for (Coordinate each : heatMeth.getCoordValue().keySet()) {
+                double value = heatMeth.getCoordValue().get(each);
+                if (value <= maxValue * (maxCutoff - (diff * 6))) {
+                    Circle circle = new Circle(0);
+                    allHeatCircles.add(circle);
+                } else if (value > maxValue * (maxCutoff - (diff * 6)) && value <= maxValue * (maxCutoff - (diff * 5))) {
+                    Circle circle = new Circle(radius, rg1);
+                    setCircle(circle, each.getX(), each.getY());
+                    circles1.add(circle);
+                    allHeatCircles.add(circle);
+                } else if (value > maxValue * (maxCutoff - (diff * 5)) && value <= maxValue * (maxCutoff - (diff * 4))) {
+                    Circle circle = new Circle(radius, rg2);
+                    setCircle(circle, each.getX(), each.getY());
+                    circles2.add(circle);
+                    allHeatCircles.add(circle);
+                } else if (value > maxValue * (maxCutoff - (diff * 4)) && value <= maxValue * (maxCutoff - (diff * 3))) {
+                    Circle circle = new Circle(radius, rg3);
+                    setCircle(circle, each.getX(), each.getY());
+                    circles3.add(circle);
+                    allHeatCircles.add(circle);
+                } else if (value > maxValue * (maxCutoff - (diff * 3)) && value <= maxValue * (maxCutoff - (diff * 2))) {
+                    Circle circle = new Circle(radius, rg4);
+                    setCircle(circle, each.getX(), each.getY());
+                    circles4.add(circle);
+                    allHeatCircles.add(circle);
+                } else if (value > maxValue * (maxCutoff - (diff * 2)) && value <= maxValue * (maxCutoff - (diff * 1))) {
+                    Circle circle = new Circle(radius, rg5);
+                    setCircle(circle, each.getX(), each.getY());
+                    circles5.add(circle);
+                    allHeatCircles.add(circle);
+                } else if (value > maxValue * (maxCutoff - (diff * 1)) && value <= maxValue * maxCutoff) {
+                    Circle circle = new Circle(radius, rg6);
+                    setCircle(circle, each.getX(), each.getY());
+                    circles6.add(circle);
+                    allHeatCircles.add(circle);
+                } else {
+                    Circle circle = new Circle(radius, rg7);
+                    setCircle(circle, each.getX(), each.getY());
+                    circles7.add(circle);
+                    allHeatCircles.add(circle);
+                }
+            }
+        }
+        circles1.forEach(circle -> imagegrid.getChildren().add(circle));
+        circles2.forEach(circle -> imagegrid.getChildren().add(circle));
+        circles3.forEach(circle -> imagegrid.getChildren().add(circle));
+        circles4.forEach(circle -> imagegrid.getChildren().add(circle));
+        circles5.forEach(circle -> imagegrid.getChildren().add(circle));
+        circles6.forEach(circle -> imagegrid.getChildren().add(circle));
+        circles7.forEach(circle -> imagegrid.getChildren().add(circle));
+        endLoadingTransition();
+        enableButtons();
+    }
+
+    @Override
+    public void plotZoneShots() {
+        resizeZone();
+        resetView();
+        removeAllShotsFromView();
+        imageview.setImage(new Image("/images/transparent.png"));
+        for (Node each : allShapes) {
+            each.setVisible(true);
+        }
+        zonelegend.setVisible(true);
+        zonelegendgradient.setVisible(true);
+        zonelegendlowerlabel.setVisible(true);
+        zonelegendtoplabel.setVisible(true);
+        zonelegendupperlabel.setVisible(true);
+        for (int i = 0; i < allLabels.size(); i++) {
+            allLabels.get(i).setVisible(true);
+            allPercentLabels.get(i).setVisible(true);
+        }
+        if (searchvbox.isVisible()) {
+            setShotGrid(previousSimpleSearchResults);
+        } else {
+            setShotGridAdvanced(previousAdvancedSearchResults);
+        }
+        Shape tempShape;
+        Rectangle tempRect;
+        Arc tempArc;
+        for (int i = 1; i < 16; i++) {
+            if (allShapes.get(i - 1).getClass().equals(Arc.class)) {
+                tempArc = (Arc) allShapes.get(i - 1);
+                changeArcColor(tempArc, zoneMeth.getAllShots().get(i), i);
+            } else if (allShapes.get(i - 1).getClass().equals(Rectangle.class)) {
+                tempRect = (Rectangle) allShapes.get(i - 1);
+                changeRectColor(tempRect, zoneMeth.getAllShots().get(i), i);
+            } else {
+                tempShape = (Shape) allShapes.get(i - 1);
+                changeShapeColor(tempShape, zoneMeth.getAllShots().get(i), i);
+            }
+        }
+        imageview.toFront();
+        for (int j = 0; j < 15; j++) {
+            allLabels.get(j).setText(zoneMeth.getAllZones().get(j + 1)[0].intValue() + "/" + zoneMeth.getAllZones().get(j + 1)[1].intValue());
+            allLabels.get(j).toFront();
+            if (zoneMeth.getAllZones().get(j + 1)[1].intValue() != 0 && zoneMeth.getAllZones().get(j + 1)[1].intValue() == zoneMeth.getAllZones().get(j + 1)[0].intValue()) {
+                allPercentLabels.get(j).setText("100%");
+            } else if (zoneMeth.getAllZones().get(j + 1)[1].intValue() == 0 && zoneMeth.getAllZones().get(j + 1)[1].intValue() == zoneMeth.getAllZones().get(j + 1)[0].intValue()) {
+                allPercentLabels.get(j).setText("0%");
+            } else {
+                allPercentLabels.get(j).setText(df.format(zoneMeth.getAllZones().get(j + 1)[2] * 100) + "%");
+            }
+            allPercentLabels.get(j).toFront();
+        }
+        zonelegend.setVisible(true);
+        zonelegend.toFront();
+        endLoadingTransition();
+        enableButtons();
     }
 
 }

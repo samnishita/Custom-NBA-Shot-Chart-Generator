@@ -15,6 +15,7 @@
  */
 package logic;
 
+import controllers.MapControllerInterface;
 import java.util.HashMap;
 import javafx.concurrent.Service;
 
@@ -24,9 +25,14 @@ import javafx.concurrent.Service;
  */
 public interface MethodsInterface {
 
-    HashMap serviceTaskMethods();
-    
+    Object serviceTaskMethods();
+
     Service getService();
-    
-    
+
+    void plotAfterServiceSucceeds();
+
+    Object getAllShots();
+
+    void setOnServiceFailed(MapControllerInterface mci);
+
 }

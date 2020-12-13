@@ -29,6 +29,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Shape;
 import mainapp.MissedShotIcon;
+import mainapp.Search;
 import mainapp.Shot;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -42,7 +43,7 @@ public class TraditionalMethods implements MethodsInterface {
     private Service tradService;
     private MapControllerInterface mci;
     private int max = 7500;
-    private LinkedHashMap<Shot, Object> allShots;
+    private LinkedHashMap<Shot, Object> allShots = new LinkedHashMap();
     private long startTime;
     private long endTime;
 
@@ -66,6 +67,7 @@ public class TraditionalMethods implements MethodsInterface {
 
     @Override
     public HashMap serviceTaskMethods() {
+        mci.notifyOfGatheringTradShots();
         startTime = System.nanoTime();
         allShots = new LinkedHashMap();
         try {
@@ -92,12 +94,14 @@ public class TraditionalMethods implements MethodsInterface {
         return allShots;
     }
 
+    @Override
     public void plotAfterServiceSucceeds() {
         mci.plotTradShots();
         endTime = System.nanoTime();
         System.out.println("TRADITIONAL: " + (endTime - startTime) * 1.0 / 1000000000 + " seconds");
     }
 
+    @Override
     public void setOnServiceFailed(MapControllerInterface mci) {
         mci.resetViewOnServiceFailed(tradService);
     }
@@ -106,8 +110,9 @@ public class TraditionalMethods implements MethodsInterface {
     public Service getService() {
         return this.tradService;
     }
-    
-    public LinkedHashMap<Shot, Object> getAllShots(){
+
+    @Override
+    public LinkedHashMap<Shot, Object> getAllShots() {
         return allShots;
     }
 }
