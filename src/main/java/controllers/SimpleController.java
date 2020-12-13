@@ -94,12 +94,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
+import logic.TraditionalMethods;
 
 /**
  *
  * @author samnishita
  */
-public class SimpleController implements Initializable {
+public class SimpleController implements Initializable, MapControllerInterface {
 
     enum Search {
         TRADITIONAL,
@@ -142,7 +143,7 @@ public class SimpleController implements Initializable {
     private HashMap<Integer, Double> allZoneAverages;
     private DecimalFormat df = new DecimalFormat("##.#");
     private Rectangle mask;
-    private ArrayList<Thread> allUltraFineHeatThreads;
+//    private ArrayList<Thread> allUltraFineHeatThreads;
     private LinkedHashMap<String, Integer> relevantTeamNameIDHashMap = new LinkedHashMap();
     private double font = 0.0;
     private double fontGrid = 0.0;
@@ -171,6 +172,7 @@ public class SimpleController implements Initializable {
     private ExecutorService exServ;
     private List<Callable<String>> callables;
     private ArrayList<Coordinate> coordsList;
+    private TraditionalMethods tradMeth;
     //General Features
     @FXML
     private BorderPane borderpane;
@@ -262,51 +264,6 @@ public class SimpleController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        tradBubbleNS = Shape.union(bubble, triangle);
-        tradBubble = tradBubbleNS;
-        imagegrid.getChildren().add(tradBubbleNS);
-        imagegrid.getChildren().add(tradShotInfo);
-        tradShotInfo.setMaxSize(tradBubble.getLayoutBounds().getWidth(), tradBubble.getLayoutBounds().getHeight() / 2);
-        tradShotInfo.wrapTextProperty().setValue(true);
-        tradShotInfo.setStyle("-fx-text-fill: WHITE;");
-        tradShotInfo.setAlignment(Pos.CENTER);
-        tradShotInfo.setTextAlignment(TextAlignment.CENTER);
-        tradBubbleNS.setFill(Color.GRAY);
-        tradBubbleNS.setStroke(Color.WHITE);
-        tradBubbleNS.setStrokeWidth(1);
-        triangle.setManaged(false);
-        bubble.setManaged(false);
-        triangle.setTranslateX(-60);
-        triangle.setTranslateY(-20);
-        triangle.setRotate(45);
-        tradBubbleSWNE = Shape.union(bubble, triangle);
-        imagegrid.getChildren().add(tradBubbleSWNE);
-        tradBubbleSWNE.setFill(Color.GRAY);
-        tradBubbleSWNE.setStroke(Color.WHITE);
-        tradBubbleSWNE.setStrokeWidth(1);
-        triangle.setTranslateX(-80);
-        triangle.setTranslateY(-60);
-        triangle.setRotate(90);
-        tradBubbleWE = Shape.union(bubble, triangle);
-        imagegrid.getChildren().add(tradBubbleWE);
-        tradBubbleWE.setFill(Color.GRAY);
-        tradBubbleWE.setStroke(Color.WHITE);
-        tradBubbleWE.setStrokeWidth(1);
-        triangle.setTranslateX(-60);
-        triangle.setTranslateY(-100);
-        triangle.setRotate(135);
-        tradBubbleNWSE = Shape.union(bubble, triangle);
-        imagegrid.getChildren().add(tradBubbleNWSE);
-        tradBubbleNWSE.setFill(Color.GRAY);
-        tradBubbleNWSE.setStroke(Color.WHITE);
-        tradBubbleNWSE.setStrokeWidth(1);
-        tradShotInfo.setVisible(false);
-        tradBubbleNS.setVisible(false);
-        tradBubbleSWNE.setVisible(false);
-        tradBubbleWE.setVisible(false);
-        tradBubbleNWSE.setVisible(false);
-        triangle.setVisible(false);
-        bubble.setVisible(false);
         try {
             overallFont = Font.loadFont(SimpleController.class.getResourceAsStream("/fonts/MontserratLight-ywBvq.ttf"), 12);
             titleFont = Font.loadFont(SimpleController.class.getResourceAsStream("/fonts/JosefinSansLight-ZVEll.ttf"), 12);
@@ -314,6 +271,7 @@ public class SimpleController implements Initializable {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        createCustomShapes();
         tradShotInfo.setFont(overallFont);
         Collections.addAll(viewButtons, traditionalbutton, gridbutton, heatmapbutton, zonebutton);
         Collections.addAll(simpleFGLabels, fgfrac, fgperc, twopointfrac, twopointperc, threepointfrac, threepointperc);
@@ -449,53 +407,7 @@ public class SimpleController implements Initializable {
             }
         });
         createAlwaysRunningResizer();
-        maxThreads = Runtime.getRuntime().availableProcessors();
-        System.out.println(maxThreads);
-        coordsList = new ArrayList(300000);
-        exServ = Executors.newFixedThreadPool(maxThreads);
-        Callable<String> heatRunCallable;
-        callables = new ArrayList();
-        for (int i = 0; i < maxThreads; i++) {
-            final int iFinal = i;
-            heatRunCallable = () -> {
-                double aSum = 0;
-                double bSum = 0;
-                int p = 2;
-                int eachCounter = 0;
-                int iFinalThread = iFinal;
-                int maxSurroundingCoords = (int) Math.pow(MAX_DISTANCE_BETWEEN_NODES_HEAT * 2, 2);
-                int surroundingCounter;
-                for (Coordinate each : coordsList) {
-                    if (each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0 && each.getY() >= (452 / maxThreads) * iFinalThread - 52
-                            && each.getY() < (452 / maxThreads) * (iFinalThread + 1) - 52) {
-                        aSum = 0;
-                        bSum = 0;
-                        surroundingCounter = 0;
-                        for (Coordinate each2 : coordsList) {
-                            if (surroundingCounter >= maxSurroundingCoords) {
-                                break;
-                            } else if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
-                                surroundingCounter++;
-                                aSum = aSum + ((coordAverages.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
-                                bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
-                                if (coordAverages.get(each2).get(1).intValue() != 0) {
-                                    eachCounter++;
-                                }
-                            }
-
-                        }
-                        if (eachCounter > 1) {
-                            coordValue.put(each, aSum / bSum);
-                        } else {
-                            coordValue.put(each, 0.0);
-                        }
-                    }
-
-                }
-                return "Done running";
-            };
-            callables.add(heatRunCallable);
-        }
+        createHeatCallables();
     }
 
     public BorderPane getBP() {
@@ -613,7 +525,7 @@ public class SimpleController implements Initializable {
     }
 
     private void setAdvancedPlayerComboBox() throws IOException {
-        playerComboUserAdvanced = new UserInputComboBox(playercomboadvanced, new HashSet<String>(), "");
+        playerComboUserAdvanced = new UserInputComboBox(playercomboadvanced, new HashSet(), "");
         this.activePlayers = new HashMap();
         JSONArray jsonArray = getInitAllPlayersData();
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -646,8 +558,9 @@ public class SimpleController implements Initializable {
         } else {
             ArrayList<String> actives = new ArrayList();
             JSONArray jsonArraySeasons = getSeasonsData();
+            JSONObject eachSeason;
             for (int i = 0; i < jsonArraySeasons.length(); i++) {
-                JSONObject eachSeason = jsonArraySeasons.getJSONObject(i);
+                eachSeason = jsonArraySeasons.getJSONObject(i);
                 if (Integer.parseInt(eachSeason.get("preseason").toString()) == 1) {
                     actives.add("Preseason");
                 }
@@ -670,7 +583,7 @@ public class SimpleController implements Initializable {
         seasons.add("Preseason");
         seasons.add("Regular Season");
         seasons.add("Playoffs");
-        seasonTypesComboUser = new UserInputComboBox(seasontypescomboadvanced, new HashSet<String>(), "");
+        seasonTypesComboUser = new UserInputComboBox(seasontypescomboadvanced, new HashSet(), "");
         seasonTypesComboUser.getComboBox().setItems(FXCollections.observableArrayList(seasons));
     }
 
@@ -712,7 +625,6 @@ public class SimpleController implements Initializable {
         jsonObjOut.put("playerlastname", nameHash.get(this.playercombo.getValue().toString())[2]);
         Main.getPrintWriterOut().println(jsonObjOut.toString());
         return new JSONArray(Main.getServerResponse().readLine());
-
     }
 
     private JSONArray getShotTypesData() throws IOException {
@@ -1013,8 +925,10 @@ public class SimpleController implements Initializable {
             progresslabel.setStyle("-fx-font: " + height * 16.0 / 470 + "px \"" + boldFont.getName() + "\";");
             progressindicator.setPrefHeight(height * 70.0 / 470);
             progressindicator.setPrefWidth(height * 70.0 / 470);
-            tradBubble.setScaleX(height / 470.0);
-            tradBubble.setScaleY(height / 470.0);
+            allBubbles.forEach(each -> {
+                each.setScaleX(height / 470.0);
+                each.setScaleY(height / 470.0);
+            });
             tradShotInfo.setMaxSize(bubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() * 0.9, bubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() * 0.9);
             Label eachLabel;
             Label eachLabelPercent;
@@ -1250,8 +1164,10 @@ public class SimpleController implements Initializable {
         } else {
             currentAdvancedSearch = Search.TRADITIONAL;
         }
-        tradService.reset();
-        tradService.start();
+//        tradService.reset();
+//        tradService.start();
+        tradMeth.getService().reset();
+        tradMeth.getService().start();
         startLoadingTransition();
     }
 
@@ -2441,7 +2357,7 @@ public class SimpleController implements Initializable {
                 }
             }
             coordValue = new ConcurrentHashMap();
-            allUltraFineHeatThreads = new ArrayList();
+//            allUltraFineHeatThreads = new ArrayList();
 //            int maxThreads = 5;
 //            Thread thread;
 //            final ArrayList<Coordinate> coordsList = new ArrayList(300000);
@@ -2502,14 +2418,14 @@ public class SimpleController implements Initializable {
 //                }
 //
 //            }
-
             List<Future<String>> futures = exServ.invokeAll(callables);
             boolean allDone = false;
             while (!allDone) {
                 for (Future each : futures) {
                     if (!each.isDone()) {
                         allDone = false;
-                        Thread.sleep(200);
+                        Thread.sleep(100);
+                        break;
                     } else {
                         allDone = true;
                     }
@@ -2518,28 +2434,31 @@ public class SimpleController implements Initializable {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+
         return coordValue;
     }
 
     private void createServices() {
-        tradService = new Service() {
-            @Override
-            protected Task<LinkedHashMap<Shot, Object>> createTask() {
-                return new Task() {
-                    @Override
-                    protected LinkedHashMap<Shot, Object> call() throws Exception {
-                        return serviceTaskMethodsTrad(searchvbox.isVisible());
-                    }
-
-                };
-            }
-        };
-        tradService.setOnSucceeded(s -> plotTradAfterServiceSucceeds());
-        tradService.setOnFailed(s -> {
-            System.out.println("Failed");
-            endLoadingTransition();
-            enableButtons();
-        });
+//        tradService = new Service() {
+//            @Override
+//            protected Task<LinkedHashMap<Shot, Object>> createTask() {
+//                return new Task() {
+//                    @Override
+//                    protected LinkedHashMap<Shot, Object> call() throws Exception {
+//                        return serviceTaskMethodsTrad(searchvbox.isVisible());
+//                    }
+//
+//                };
+//            }
+//        };
+//        tradService.setOnSucceeded(s -> plotTradAfterServiceSucceeds());
+//        setServiceOnFailed(tradService);
+        tradMeth = new TraditionalMethods(this);
+//        tradService.setOnFailed(s -> {
+//            System.out.println("Failed");
+//            endLoadingTransition();
+//            enableButtons();
+//        });
         gridService = new Service() {
             @Override
             protected Task<ConcurrentHashMap<Coordinate, Double>> createTask() {
@@ -2552,11 +2471,7 @@ public class SimpleController implements Initializable {
             }
         };
         gridService.setOnSucceeded(s -> plotGridAfterServiceSucceeds());
-        gridService.setOnFailed(s -> {
-            System.out.println("Failed");
-            endLoadingTransition();
-            enableButtons();
-        });
+        setServiceOnFailed(gridService);
         heatService = new Service() {
             @Override
             protected Task<ConcurrentHashMap<Coordinate, Double>> createTask() {
@@ -2569,11 +2484,7 @@ public class SimpleController implements Initializable {
             }
         };
         heatService.setOnSucceeded(s -> plotHeatAfterServiceSucceeds());
-        heatService.setOnFailed(s -> {
-            System.out.println("Failed");
-            endLoadingTransition();
-            enableButtons();
-        });
+        setServiceOnFailed(heatService);
         zoneService = new Service() {
             @Override
             protected Task<HashMap<Integer, Double>> createTask() {
@@ -2586,254 +2497,249 @@ public class SimpleController implements Initializable {
             }
         };
         zoneService.setOnSucceeded(s -> plotZoneAfterServiceSucceeds((HashMap<Integer, Double>) zoneService.getValue()));
-        zoneService.setOnFailed(s -> {
-            System.out.println("Failed");
-            endLoadingTransition();
-            enableButtons();
-        });
+        setServiceOnFailed(zoneService);
     }
 
-    private LinkedHashMap<Shot, Object> serviceTaskMethodsTrad(boolean isSearchVboxVisible) throws IOException, Exception {
-        Platform.runLater(() -> errorlabeladvanced.setVisible(isSearchVboxVisible));
-        Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
-        try {
-            JSONArray jsonArray = chooseJSONArray();
-            Platform.runLater(() -> progresslabel.setText("Generating Traditional Shot Map"));
-            allShots = new LinkedHashMap();
-            Circle circle;
-            MissedShotIcon msi;
-            BigDecimal xBig;
-            BigDecimal yBig;
-            int max = 7500;
-            if (jsonArray.length() < 7500) {
-                max = jsonArray.length();
-            }
-            for (int i = 0; i < max; i++) {
-                JSONObject eachShot = jsonArray.getJSONObject(i);
-                Shot shot = new Shot(eachShot.getInt("x"), eachShot.getInt("y"), eachShot.getInt("distance"), eachShot.getInt("make"), eachShot.getString("shottype"), eachShot.getString("playtype"));
-                xBig = BigDecimal.valueOf(eachShot.getInt("x"));
-                yBig = BigDecimal.valueOf(eachShot.getInt("y"));
-                if (eachShot.getInt("make") == 1) {
-                    circle = new Circle(imageview.getLayoutBounds().getHeight() * SHOT_MADE_RADIUS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue());
-                    circle.setFill(Color.TRANSPARENT);
-                    circle.setTranslateX(xBig.intValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);
-                    circle.setTranslateY(yBig.intValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2 - (185.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
-                    circle.setStrokeWidth(imageview.getLayoutBounds().getHeight() * SHOT_LINE_THICKNESS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue());
-                    circle.setStroke(Color.LIMEGREEN);
-                    circle.setManaged(false);
-                    allShots.put(shot, circle);
-                    final Circle finalCircle = circle;
-                    circle.setOnMouseEntered((t) -> {
-                        tradShotInfo.setStyle("-fx-text-fill: WHITE; -fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 12.0 / 470 + "px \"" + boldFont.getName() + "\";");
-                        if (shot.getX() < -175 && shot.getY() < 80) {//1
-                            tradBubble = tradBubbleNWSE;
-                            tradBubble.setRotate(0);
-                            tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + (tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX()) / 1.75);
-                            tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + (tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY()) / 1.75);
-                            tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.55);
-                            tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.55);
-                        } else if (shot.getX() >= -175 && shot.getX() <= 175 && shot.getY() < 80) {//2
-                            tradBubble = tradBubbleNS;
-                            tradBubble.setRotate(180);
-                            tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2);
-                            tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
-                            tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2);
-                            tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.35);
-                        } else if (shot.getX() >= 175 && shot.getY() < 80) {//3
-                            tradBubble = tradBubbleSWNE;
-                            tradBubble.setRotate(180);
-                            tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
-                            tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
-                            tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
-                            tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.55);
-                        } else if (shot.getX() < -175 && shot.getY() >= 80 && shot.getY() <= 335) {//4
-                            tradBubble = tradBubbleWE;
-                            tradBubble.setRotate(0);
-                            tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
-                            tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2);
-                            tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.4);
-                            tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2);
-                        } else if (shot.getX() > 175 && shot.getY() >= 80 && shot.getY() <= 335) {//6
-                            tradBubble = tradBubbleWE;
-                            tradBubble.setRotate(180);
-                            tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
-                            tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2);
-                            tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.45);
-                            tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2);
-                        } else if (shot.getX() < -175 && shot.getY() > 335) {//7
-                            tradBubble = tradBubbleSWNE;
-                            tradBubble.setRotate(0);
-                            tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
-                            tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
-                            tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
-                            tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.5);
-                        } else if (shot.getX() >= 175 && shot.getY() > 335) {//9
-                            tradBubble = tradBubbleNWSE;
-                            tradBubble.setRotate(180);
-                            tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
-                            tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
-                            tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
-                            tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.5);
-                        } else {//5
-                            tradBubble = tradBubbleNS;
-                            tradBubble.setRotate(0);
-                            tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2);
-                            tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleX() / 1.75);
-                            tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2);
-                            tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleX() / 1.3);
-                        }
-                        if (shot.getShottype().equals("2PT Field Goal")) {
-                            tradShotInfo.setText("Made " + shot.getDistance() + "' " + shot.getPlaytype().replace("shot", "Shot"));
-                        } else {
-                            tradShotInfo.setText("Made " + shot.getDistance() + "' 3-Point " + shot.getPlaytype().replace("shot", "Shot"));
-                        }
-                        tradBubble.toFront();
-                        tradBubble.setVisible(true);
-                        tradShotInfo.toFront();
-                        tradShotInfo.setVisible(true);
-                    });
-                    circle.setOnMouseExited((t) -> {
-                        for (Shape each : allBubbles) {
-                            each.setVisible(false);
-                        }
-                        tradShotInfo.setVisible(false);
-                    });
-                } else {
-                    msi = new MissedShotIcon((xBig.intValue()) / 470,
-                            ((yBig.intValue() - 55) / 470),
-                            imageview.getLayoutBounds().getHeight(),
-                            SHOT_MISS_START_END.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue(),
-                            SHOT_LINE_THICKNESS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue(),
-                            imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2,
-                            imageview.localToParent(imageview.getBoundsInLocal()).getMinY(),
-                            shot);
-                    msi.getLine1().setManaged(false);
-                    msi.getLine2().setManaged(false);
-                    allShots.put(shot, msi);
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return allShots;
-    }
-
-    private void plotTradAfterServiceSucceeds() {
-        resetView();
-        removeAllShotsFromView();
-        imageview.setImage(new Image("/images/newbackcourt.png"));
-        allShots.keySet().stream()
-                .filter((each) -> (each.getY() <= 410))
-                .forEachOrdered((each) -> {
-                    if (each.getMake() == 0) {
-                        final MissedShotIcon msiTemp = (MissedShotIcon) allShots.get(each);
-                        msiTemp.getLine1().setManaged(false);
-                        msiTemp.getLine2().setManaged(false);
-                        msiTemp.getLine1().setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);// 50/470
-                        msiTemp.getLine2().setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);
-                        msiTemp.getLine1().setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2 - (180.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
-                        msiTemp.getLine2().setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2 - (180.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
-                        msiTemp.getRect().setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX());
-                        msiTemp.getRect().setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() - (180.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
-                        imagegrid.getChildren().add(msiTemp.getLine1());
-                        imagegrid.getChildren().add(msiTemp.getLine2());
-                        imagegrid.getChildren().add(msiTemp.getRect());
-
-                        msiTemp.getRect().setOnMouseEntered((t) -> {
-                            try {
-                                tradShotInfo.setStyle("-fx-text-fill: WHITE; -fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 12.0 / 470 + "px \"" + boldFont.getName() + "\";");
-                                if (msiTemp.getShot().getX() < -175 && msiTemp.getShot().getY() < 80) {//1
-                                    tradBubble = tradBubbleNWSE;
-                                    tradBubble.setRotate(0);
-                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
-                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
-                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.55);
-                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.55);
-                                } else if (msiTemp.getShot().getX() >= -175 && msiTemp.getShot().getX() <= 175 && msiTemp.getShot().getY() < 80) {//2
-                                    tradBubble = tradBubbleNS;
-                                    tradBubble.setRotate(180);
-                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX());
-                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
-                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX());
-                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.35);
-                                } else if (msiTemp.getShot().getX() >= 175 && msiTemp.getShot().getY() < 80) {//3
-                                    tradBubble = tradBubbleSWNE;
-                                    tradBubble.setRotate(180);
-                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
-                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
-                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
-                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.55);
-                                } else if (msiTemp.getShot().getX() < -175 && msiTemp.getShot().getY() >= 80 && msiTemp.getShot().getY() <= 335) {//4
-                                    tradBubble = tradBubbleWE;
-                                    tradBubble.setRotate(0);
-                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
-                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY());
-                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.4);
-                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY());
-                                } else if (msiTemp.getShot().getX() > 175 && msiTemp.getShot().getY() >= 80 && msiTemp.getShot().getY() <= 335) {//6
-                                    tradBubble = tradBubbleWE;
-                                    tradBubble.setRotate(180);
-                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
-                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY());
-                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.45);
-                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY());
-                                } else if (msiTemp.getShot().getX() < -175 && msiTemp.getShot().getY() > 335) {//7
-                                    tradBubble = tradBubbleSWNE;
-                                    tradBubble.setRotate(0);
-                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
-                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
-                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
-                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.5);
-                                } else if (msiTemp.getShot().getX() >= 175 && msiTemp.getShot().getY() > 335) {//9
-                                    tradBubble = tradBubbleNWSE;
-                                    tradBubble.setRotate(180);
-                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
-                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
-                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
-                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.5);
-                                } else {//5
-                                    tradBubble = tradBubbleNS;
-                                    tradBubble.setRotate(0);
-                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX());
-                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleX() / 1.75);
-                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX());
-                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleX() / 1.3);
-                                }
-                                if (msiTemp.getShot().getShottype().equals("2PT Field Goal")) {
-                                    tradShotInfo.setText("Missed " + msiTemp.getShot().getDistance() + "' " + msiTemp.getShot().getPlaytype().replace("shot", "Shot"));
-                                } else {
-                                    tradShotInfo.setText("Missed " + msiTemp.getShot().getDistance() + "' 3-Point " + msiTemp.getShot().getPlaytype().replace("shot", "Shot"));
-                                }
-                                tradBubble.toFront();
-                                tradShotInfo.toFront();
-                                tradBubble.setVisible(true);
-                                tradShotInfo.setVisible(true);
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-                        });
-                        msiTemp.getRect().setOnMouseExited((t) -> {
-                            for (Shape eachBub : allBubbles) {
-                                eachBub.setVisible(false);
-                            }
-                            tradShotInfo.setVisible(false);
-                        });
-                    } else {
-                        imagegrid.getChildren().add((Circle) allShots.get(each));
-                    }
-                });
-        if (searchvbox.isVisible()) {
-            setShotGrid(previousSimpleSearchResults);
-        } else {
-            setShotGridAdvanced(previousAdvancedSearchResults);
-        }
-        endLoadingTransition();
-
-        enableButtons();
-        end = System.nanoTime();
-        System.out.println("TRADITIONAL: " + (end - start) * 1.0 / 1000000000 + " seconds");
-    }
-
+//    private LinkedHashMap<Shot, Object> serviceTaskMethodsTrad(boolean isSearchVboxVisible) throws IOException, Exception {
+//        Platform.runLater(() -> errorlabeladvanced.setVisible(isSearchVboxVisible));
+//        Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
+//        try {
+//            JSONArray jsonArray = chooseJSONArray();
+//            Platform.runLater(() -> progresslabel.setText("Generating Traditional Shot Map"));
+//            allShots = new LinkedHashMap();
+//            Circle circle;
+//            MissedShotIcon msi;
+//            BigDecimal xBig;
+//            BigDecimal yBig;
+//            int max = 7500;
+//            if (jsonArray.length() < 7500) {
+//                max = jsonArray.length();
+//            }
+//            for (int i = 0; i < max; i++) {
+//                JSONObject eachShot = jsonArray.getJSONObject(i);
+//                Shot shot = new Shot(eachShot.getInt("x"), eachShot.getInt("y"), eachShot.getInt("distance"), eachShot.getInt("make"), eachShot.getString("shottype"), eachShot.getString("playtype"));
+//                xBig = BigDecimal.valueOf(eachShot.getInt("x"));
+//                yBig = BigDecimal.valueOf(eachShot.getInt("y"));
+//                if (eachShot.getInt("make") == 1) {
+//                    circle = new Circle(imageview.getLayoutBounds().getHeight() * SHOT_MADE_RADIUS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue());
+//                    circle.setFill(Color.TRANSPARENT);
+//                    circle.setTranslateX(xBig.intValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);
+//                    circle.setTranslateY(yBig.intValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2 - (185.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
+//                    circle.setStrokeWidth(imageview.getLayoutBounds().getHeight() * SHOT_LINE_THICKNESS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue());
+//                    circle.setStroke(Color.LIMEGREEN);
+//                    circle.setManaged(false);
+//                    allShots.put(shot, circle);
+//                    final Circle finalCircle = circle;
+//                    circle.setOnMouseEntered((t) -> {
+//                        tradShotInfo.setStyle("-fx-text-fill: WHITE; -fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 12.0 / 470 + "px \"" + boldFont.getName() + "\";");
+//                        if (shot.getX() < -175 && shot.getY() < 80) {//1
+//                            tradBubble = tradBubbleNWSE;
+//                            tradBubble.setRotate(0);
+//                            tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + (tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX()) / 1.75);
+//                            tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + (tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY()) / 1.75);
+//                            tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.55);
+//                            tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.55);
+//                        } else if (shot.getX() >= -175 && shot.getX() <= 175 && shot.getY() < 80) {//2
+//                            tradBubble = tradBubbleNS;
+//                            tradBubble.setRotate(180);
+//                            tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2);
+//                            tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+//                            tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2);
+//                            tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.35);
+//                        } else if (shot.getX() >= 175 && shot.getY() < 80) {//3
+//                            tradBubble = tradBubbleSWNE;
+//                            tradBubble.setRotate(180);
+//                            tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+//                            tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+//                            tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
+//                            tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.55);
+//                        } else if (shot.getX() < -175 && shot.getY() >= 80 && shot.getY() <= 335) {//4
+//                            tradBubble = tradBubbleWE;
+//                            tradBubble.setRotate(0);
+//                            tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+//                            tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2);
+//                            tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.4);
+//                            tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2);
+//                        } else if (shot.getX() > 175 && shot.getY() >= 80 && shot.getY() <= 335) {//6
+//                            tradBubble = tradBubbleWE;
+//                            tradBubble.setRotate(180);
+//                            tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+//                            tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2);
+//                            tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.45);
+//                            tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2);
+//                        } else if (shot.getX() < -175 && shot.getY() > 335) {//7
+//                            tradBubble = tradBubbleSWNE;
+//                            tradBubble.setRotate(0);
+//                            tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+//                            tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+//                            tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
+//                            tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.5);
+//                        } else if (shot.getX() >= 175 && shot.getY() > 335) {//9
+//                            tradBubble = tradBubbleNWSE;
+//                            tradBubble.setRotate(180);
+//                            tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+//                            tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+//                            tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
+//                            tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.5);
+//                        } else {//5
+//                            tradBubble = tradBubbleNS;
+//                            tradBubble.setRotate(0);
+//                            tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2);
+//                            tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleX() / 1.75);
+//                            tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2);
+//                            tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleX() / 1.3);
+//                        }
+//                        if (shot.getShottype().equals("2PT Field Goal")) {
+//                            tradShotInfo.setText("Made " + shot.getDistance() + "' " + shot.getPlaytype().replace("shot", "Shot"));
+//                        } else {
+//                            tradShotInfo.setText("Made " + shot.getDistance() + "' 3-Point " + shot.getPlaytype().replace("shot", "Shot"));
+//                        }
+//                        tradBubble.toFront();
+//                        tradBubble.setVisible(true);
+//                        tradShotInfo.toFront();
+//                        tradShotInfo.setVisible(true);
+//                    });
+//                    circle.setOnMouseExited((t) -> {
+//                        for (Shape each : allBubbles) {
+//                            each.setVisible(false);
+//                        }
+//                        tradShotInfo.setVisible(false);
+//                    });
+//                } else {
+//                    msi = new MissedShotIcon((xBig.intValue()) / 470,
+//                            ((yBig.intValue() - 55) / 470),
+//                            imageview.getLayoutBounds().getHeight(),
+//                            SHOT_MISS_START_END.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue(),
+//                            SHOT_LINE_THICKNESS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue(),
+//                            imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2,
+//                            imageview.localToParent(imageview.getBoundsInLocal()).getMinY(),
+//                            shot);
+//                    msi.getLine1().setManaged(false);
+//                    msi.getLine2().setManaged(false);
+//                    allShots.put(shot, msi);
+//                }
+//            }
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
+//        return allShots;
+//    }
+//
+//    private void plotTradAfterServiceSucceeds() {
+//        resetView();
+//        removeAllShotsFromView();
+//        imageview.setImage(new Image("/images/newbackcourt.png"));
+//        allShots.keySet().stream()
+//                .filter((each) -> (each.getY() <= 410))
+//                .forEachOrdered((each) -> {
+//                    if (each.getMake() == 0) {
+//                        final MissedShotIcon msiTemp = (MissedShotIcon) allShots.get(each);
+//                        msiTemp.getLine1().setManaged(false);
+//                        msiTemp.getLine2().setManaged(false);
+//                        msiTemp.getLine1().setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);// 50/470
+//                        msiTemp.getLine2().setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);
+//                        msiTemp.getLine1().setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2 - (180.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
+//                        msiTemp.getLine2().setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2 - (180.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
+//                        msiTemp.getRect().setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX());
+//                        msiTemp.getRect().setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() - (180.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
+//                        imagegrid.getChildren().add(msiTemp.getLine1());
+//                        imagegrid.getChildren().add(msiTemp.getLine2());
+//                        imagegrid.getChildren().add(msiTemp.getRect());
+//
+//                        msiTemp.getRect().setOnMouseEntered((t) -> {
+//                            try {
+//                                tradShotInfo.setStyle("-fx-text-fill: WHITE; -fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 12.0 / 470 + "px \"" + boldFont.getName() + "\";");
+//                                if (msiTemp.getShot().getX() < -175 && msiTemp.getShot().getY() < 80) {//1
+//                                    tradBubble = tradBubbleNWSE;
+//                                    tradBubble.setRotate(0);
+//                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+//                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+//                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.55);
+//                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.55);
+//                                } else if (msiTemp.getShot().getX() >= -175 && msiTemp.getShot().getX() <= 175 && msiTemp.getShot().getY() < 80) {//2
+//                                    tradBubble = tradBubbleNS;
+//                                    tradBubble.setRotate(180);
+//                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX());
+//                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+//                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX());
+//                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.35);
+//                                } else if (msiTemp.getShot().getX() >= 175 && msiTemp.getShot().getY() < 80) {//3
+//                                    tradBubble = tradBubbleSWNE;
+//                                    tradBubble.setRotate(180);
+//                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+//                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+//                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
+//                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.55);
+//                                } else if (msiTemp.getShot().getX() < -175 && msiTemp.getShot().getY() >= 80 && msiTemp.getShot().getY() <= 335) {//4
+//                                    tradBubble = tradBubbleWE;
+//                                    tradBubble.setRotate(0);
+//                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+//                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY());
+//                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.4);
+//                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY());
+//                                } else if (msiTemp.getShot().getX() > 175 && msiTemp.getShot().getY() >= 80 && msiTemp.getShot().getY() <= 335) {//6
+//                                    tradBubble = tradBubbleWE;
+//                                    tradBubble.setRotate(180);
+//                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+//                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY());
+//                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.45);
+//                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY());
+//                                } else if (msiTemp.getShot().getX() < -175 && msiTemp.getShot().getY() > 335) {//7
+//                                    tradBubble = tradBubbleSWNE;
+//                                    tradBubble.setRotate(0);
+//                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+//                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+//                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
+//                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.5);
+//                                } else if (msiTemp.getShot().getX() >= 175 && msiTemp.getShot().getY() > 335) {//9
+//                                    tradBubble = tradBubbleNWSE;
+//                                    tradBubble.setRotate(180);
+//                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+//                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+//                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
+//                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.5);
+//                                } else {//5
+//                                    tradBubble = tradBubbleNS;
+//                                    tradBubble.setRotate(0);
+//                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX());
+//                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleX() / 1.75);
+//                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX());
+//                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleX() / 1.3);
+//                                }
+//                                if (msiTemp.getShot().getShottype().equals("2PT Field Goal")) {
+//                                    tradShotInfo.setText("Missed " + msiTemp.getShot().getDistance() + "' " + msiTemp.getShot().getPlaytype().replace("shot", "Shot"));
+//                                } else {
+//                                    tradShotInfo.setText("Missed " + msiTemp.getShot().getDistance() + "' 3-Point " + msiTemp.getShot().getPlaytype().replace("shot", "Shot"));
+//                                }
+//                                tradBubble.toFront();
+//                                tradShotInfo.toFront();
+//                                tradBubble.setVisible(true);
+//                                tradShotInfo.setVisible(true);
+//                            } catch (Exception ex) {
+//                                ex.printStackTrace();
+//                            }
+//                        });
+//                        msiTemp.getRect().setOnMouseExited((t) -> {
+//                            for (Shape eachBub : allBubbles) {
+//                                eachBub.setVisible(false);
+//                            }
+//                            tradShotInfo.setVisible(false);
+//                        });
+//                    } else {
+//                        imagegrid.getChildren().add((Circle) allShots.get(each));
+//                    }
+//                });
+//        if (searchvbox.isVisible()) {
+//            setShotGrid(previousSimpleSearchResults);
+//        } else {
+//            setShotGridAdvanced(previousAdvancedSearchResults);
+//        }
+//        endLoadingTransition();
+//
+//        enableButtons();
+//        end = System.nanoTime();
+//        System.out.println("TRADITIONAL: " + (end - start) * 1.0 / 1000000000 + " seconds");
+//    }
     private ConcurrentHashMap<Coordinate, Double> serviceTaskMethodsGrid(boolean isSearchVboxVisible) throws IOException, Exception {
         Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
         Platform.runLater(() -> errorlabeladvanced.setVisible(isSearchVboxVisible));
@@ -3267,7 +3173,8 @@ public class SimpleController implements Initializable {
         return true;
     }
 
-    private JSONArray chooseJSONArray() {
+    @Override
+    public JSONArray chooseJSONArray() {
         try {
             if (searchvbox.isVisible()) {
                 if (!checkForSameSimpleSearch()) {
@@ -3321,4 +3228,386 @@ public class SimpleController implements Initializable {
         obj.put("allSelectedCourtSides", courtSidesComboUser.getHashSet());
         return obj;
     }
+
+    private void createCustomShapes() {
+        tradBubbleNS = Shape.union(bubble, triangle);
+        tradBubble = tradBubbleNS;
+        imagegrid.getChildren().add(tradBubbleNS);
+        imagegrid.getChildren().add(tradShotInfo);
+        tradShotInfo.setMaxSize(tradBubble.getLayoutBounds().getWidth(), tradBubble.getLayoutBounds().getHeight() / 2);
+        tradShotInfo.wrapTextProperty().setValue(true);
+        tradShotInfo.setStyle("-fx-text-fill: WHITE;");
+        tradShotInfo.setAlignment(Pos.CENTER);
+        tradShotInfo.setTextAlignment(TextAlignment.CENTER);
+        tradBubbleNS.setFill(Color.GRAY);
+        tradBubbleNS.setStroke(Color.WHITE);
+        tradBubbleNS.setStrokeWidth(1);
+        triangle.setManaged(false);
+        bubble.setManaged(false);
+        triangle.setTranslateX(-60);
+        triangle.setTranslateY(-20);
+        triangle.setRotate(45);
+        tradBubbleSWNE = Shape.union(bubble, triangle);
+        imagegrid.getChildren().add(tradBubbleSWNE);
+        tradBubbleSWNE.setFill(Color.GRAY);
+        tradBubbleSWNE.setStroke(Color.WHITE);
+        tradBubbleSWNE.setStrokeWidth(1);
+        triangle.setTranslateX(-80);
+        triangle.setTranslateY(-60);
+        triangle.setRotate(90);
+        tradBubbleWE = Shape.union(bubble, triangle);
+        imagegrid.getChildren().add(tradBubbleWE);
+        tradBubbleWE.setFill(Color.GRAY);
+        tradBubbleWE.setStroke(Color.WHITE);
+        tradBubbleWE.setStrokeWidth(1);
+        triangle.setTranslateX(-60);
+        triangle.setTranslateY(-100);
+        triangle.setRotate(135);
+        tradBubbleNWSE = Shape.union(bubble, triangle);
+        imagegrid.getChildren().add(tradBubbleNWSE);
+        tradBubbleNWSE.setFill(Color.GRAY);
+        tradBubbleNWSE.setStroke(Color.WHITE);
+        tradBubbleNWSE.setStrokeWidth(1);
+        tradShotInfo.setVisible(false);
+        tradBubbleNS.setVisible(false);
+        tradBubbleSWNE.setVisible(false);
+        tradBubbleWE.setVisible(false);
+        tradBubbleNWSE.setVisible(false);
+        triangle.setVisible(false);
+        bubble.setVisible(false);
+    }
+
+    private void createHeatCallables() {
+        maxThreads = Runtime.getRuntime().availableProcessors();
+        coordsList = new ArrayList(300000);
+        exServ = Executors.newFixedThreadPool(maxThreads);
+        Callable<String> heatRunCallable;
+        callables = new ArrayList();
+        for (int i = 0; i < maxThreads; i++) {
+            final int iFinal = i;
+            heatRunCallable = () -> {
+                double aSum = 0;
+                double bSum = 0;
+                int p = 2;
+                int eachCounter = 0;
+                int iFinalThread = iFinal;
+                int maxSurroundingCoords = (int) Math.pow(MAX_DISTANCE_BETWEEN_NODES_HEAT * 2, 2);
+                int surroundingCounter;
+                int x;
+                int y;
+                int minY;
+                int maxY;
+                minY = (452 / maxThreads) * iFinalThread - 52;
+                maxY = (452 / maxThreads) * (iFinalThread + 1) - 52;
+                for (Coordinate each : coordsList) {
+                    x = each.getX();
+                    y = each.getY();
+//                    if (each.getX() % offsetHeat == 0 && each.getY() % offsetHeat == 0 && each.getY() >= (452 / maxThreads) * iFinalThread - 52
+//                            && each.getY() < (452 / maxThreads) * (iFinalThread + 1) - 52) {
+                    if (x % offsetHeat == 0 && y % offsetHeat == 0 && y >= minY && y < maxY) {
+                        aSum = 0;
+                        bSum = 0;
+                        surroundingCounter = 0;
+                        for (Coordinate each2 : coordsList) {
+                            if (surroundingCounter >= maxSurroundingCoords) {
+                                break;
+                            } else if (!each.equals(each2) && getDistance(each, each2) < MAX_DISTANCE_BETWEEN_NODES_HEAT) {
+                                surroundingCounter++;
+                                aSum = aSum + ((coordAverages.get(each2).get(1).intValue() * getDistance(each, each2)) / Math.pow(getDistance(each, each2), p));
+                                bSum = bSum + (1 / Math.pow(getDistance(each, each2), p));
+                                if (coordAverages.get(each2).get(1).intValue() != 0) {
+                                    eachCounter++;
+                                }
+                            }
+
+                        }
+                        if (eachCounter > 1) {
+                            coordValue.put(each, aSum / bSum);
+                        } else {
+                            coordValue.put(each, 0.0);
+                        }
+                    }
+
+                }
+                return "Done running";
+            };
+            callables.add(heatRunCallable);
+        }
+    }
+
+    private void setServiceOnFailed(Service service) {
+        service.setOnFailed(s -> {
+            System.out.println("Failed");
+            endLoadingTransition();
+            enableButtons();
+        });
+    }
+
+    @Override
+    public void resetViewOnServiceFailed(Service service) {
+        service.setOnFailed(s -> {
+            System.out.println("Failed");
+            endLoadingTransition();
+            enableButtons();
+        });
+    }
+
+    @Override
+    public void setMadeShot(Shot shot, HashMap hashmap) {
+        Circle circle = new Circle(imageview.getLayoutBounds().getHeight() * SHOT_MADE_RADIUS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue());
+        circle.setFill(Color.TRANSPARENT);
+        circle.setTranslateX(shot.getX() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);
+        circle.setTranslateY(shot.getY() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2 - (185.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
+        circle.setStrokeWidth(imageview.getLayoutBounds().getHeight() * SHOT_LINE_THICKNESS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue());
+        circle.setStroke(Color.LIMEGREEN);
+        circle.setManaged(false);
+        hashmap.put(shot, circle);
+        final Circle finalCircle = circle;
+        circle.setOnMouseEntered((t) -> {
+            tradShotInfo.setStyle("-fx-text-fill: WHITE; -fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 12.0 / 470 + "px \"" + boldFont.getName() + "\";");
+            if (shot.getX() < -175 && shot.getY() < 80) {//1
+                tradBubble = tradBubbleNWSE;
+                tradBubble.setRotate(0);
+                tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + (tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX()) / 1.75);
+                tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + (tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY()) / 1.75);
+                tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.55);
+                tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.55);
+            } else if (shot.getX() >= -175 && shot.getX() <= 175 && shot.getY() < 80) {//2
+                tradBubble = tradBubbleNS;
+                tradBubble.setRotate(180);
+                tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2);
+                tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+                tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2);
+                tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.35);
+            } else if (shot.getX() >= 175 && shot.getY() < 80) {//3
+                tradBubble = tradBubbleSWNE;
+                tradBubble.setRotate(180);
+                tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+                tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+                tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
+                tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.55);
+            } else if (shot.getX() < -175 && shot.getY() >= 80 && shot.getY() <= 335) {//4
+                tradBubble = tradBubbleWE;
+                tradBubble.setRotate(0);
+                tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+                tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2);
+                tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.4);
+                tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2);
+            } else if (shot.getX() > 175 && shot.getY() >= 80 && shot.getY() <= 335) {//6
+                tradBubble = tradBubbleWE;
+                tradBubble.setRotate(180);
+                tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+                tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2);
+                tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.45);
+                tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2);
+            } else if (shot.getX() < -175 && shot.getY() > 335) {//7
+                tradBubble = tradBubbleSWNE;
+                tradBubble.setRotate(0);
+                tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+                tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+                tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
+                tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.5);
+            } else if (shot.getX() >= 175 && shot.getY() > 335) {//9
+                tradBubble = tradBubbleNWSE;
+                tradBubble.setRotate(180);
+                tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+                tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+                tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2 - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
+                tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.5);
+            } else {//5
+                tradBubble = tradBubbleNS;
+                tradBubble.setRotate(0);
+                tradBubble.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2);
+                tradBubble.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleX() / 1.75);
+                tradShotInfo.setTranslateX(finalCircle.getTranslateX() - imagegrid.getLayoutBounds().getWidth() / 2);
+                tradShotInfo.setTranslateY(finalCircle.getTranslateY() - imagegrid.getLayoutBounds().getHeight() / 2 - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleX() / 1.3);
+            }
+            if (shot.getShottype().equals("2PT Field Goal")) {
+                tradShotInfo.setText("Made " + shot.getDistance() + "' " + shot.getPlaytype().replace("shot", "Shot"));
+            } else {
+                tradShotInfo.setText("Made " + shot.getDistance() + "' 3-Point " + shot.getPlaytype().replace("shot", "Shot"));
+            }
+            tradBubble.toFront();
+            tradBubble.setVisible(true);
+            tradShotInfo.toFront();
+            tradShotInfo.setVisible(true);
+        });
+        circle.setOnMouseExited((t) -> {
+            for (Shape each : allBubbles) {
+                each.setVisible(false);
+            }
+            tradShotInfo.setVisible(false);
+        });
+    }
+
+    @Override
+    public void setMissedShot(Shot shot, HashMap hashmap) {
+        MissedShotIcon msi = new MissedShotIcon((shot.getX()) / 470,
+                ((shot.getY() - 55) / 470),
+                imageview.getLayoutBounds().getHeight(),
+                SHOT_MISS_START_END.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue(),
+                SHOT_LINE_THICKNESS.divide(ORIG_HEIGHT, 6, RoundingMode.HALF_UP).doubleValue(),
+                imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2,
+                imageview.localToParent(imageview.getBoundsInLocal()).getMinY(),
+                shot);
+        msi.getLine1().setManaged(false);
+        msi.getLine2().setManaged(false);
+        hashmap.put(shot, msi);
+    }
+
+    @Override
+    public void plotTradShots() {
+        allShots = tradMeth.getAllShots();
+        resetView();
+        removeAllShotsFromView();
+        imageview.setImage(new Image("/images/newbackcourt.png"));
+        allShots.keySet().stream()
+                .filter((each) -> (each.getY() <= 410))
+                .forEachOrdered((each) -> {
+                    if (each.getMake() == 0) {
+                        final MissedShotIcon msiTemp = (MissedShotIcon) allShots.get(each);
+                        msiTemp.getLine1().setManaged(false);
+                        msiTemp.getLine2().setManaged(false);
+                        msiTemp.getLine1().setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);// 50/470
+                        msiTemp.getLine2().setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX() + imageview.localToParent(imageview.getBoundsInLocal()).getWidth() / 2);
+                        msiTemp.getLine1().setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2 - (180.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
+                        msiTemp.getLine2().setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 2 - (180.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
+                        msiTemp.getRect().setTranslateX(BigDecimal.valueOf(each.getX()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinX());
+                        msiTemp.getRect().setTranslateY(BigDecimal.valueOf(each.getY()).doubleValue() * imageview.getLayoutBounds().getHeight() / 470 + imageview.localToParent(imageview.getBoundsInLocal()).getMinY() - (180.0 * imageview.localToParent(imageview.getBoundsInLocal()).getHeight() / 470));
+                        imagegrid.getChildren().add(msiTemp.getLine1());
+                        imagegrid.getChildren().add(msiTemp.getLine2());
+                        imagegrid.getChildren().add(msiTemp.getRect());
+                        msiTemp.getRect().setOnMouseEntered((t) -> {
+                            try {
+                                tradShotInfo.setStyle("-fx-text-fill: WHITE; -fx-font: " + imageview.localToParent(imageview.getBoundsInLocal()).getHeight() * 12.0 / 470 + "px \"" + boldFont.getName() + "\";");
+                                if (msiTemp.getShot().getX() < -175 && msiTemp.getShot().getY() < 80) {//1
+                                    tradBubble = tradBubbleNWSE;
+                                    tradBubble.setRotate(0);
+                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.55);
+                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.55);
+                                } else if (msiTemp.getShot().getX() >= -175 && msiTemp.getShot().getX() <= 175 && msiTemp.getShot().getY() < 80) {//2
+                                    tradBubble = tradBubbleNS;
+                                    tradBubble.setRotate(180);
+                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX());
+                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX());
+                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.35);
+                                } else if (msiTemp.getShot().getX() >= 175 && msiTemp.getShot().getY() < 80) {//3
+                                    tradBubble = tradBubbleSWNE;
+                                    tradBubble.setRotate(180);
+                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
+                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() + tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.55);
+                                } else if (msiTemp.getShot().getX() < -175 && msiTemp.getShot().getY() >= 80 && msiTemp.getShot().getY() <= 335) {//4
+                                    tradBubble = tradBubbleWE;
+                                    tradBubble.setRotate(0);
+                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY());
+                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.4);
+                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY());
+                                } else if (msiTemp.getShot().getX() > 175 && msiTemp.getShot().getY() >= 80 && msiTemp.getShot().getY() <= 335) {//6
+                                    tradBubble = tradBubbleWE;
+                                    tradBubble.setRotate(180);
+                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY());
+                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.45);
+                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY());
+                                } else if (msiTemp.getShot().getX() < -175 && msiTemp.getShot().getY() > 335) {//7
+                                    tradBubble = tradBubbleSWNE;
+                                    tradBubble.setRotate(0);
+                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() + tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
+                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.5);
+                                } else if (msiTemp.getShot().getX() >= 175 && msiTemp.getShot().getY() > 335) {//9
+                                    tradBubble = tradBubbleNWSE;
+                                    tradBubble.setRotate(180);
+                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.75);
+                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.75);
+                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX() - tradBubble.getLayoutBounds().getWidth() * tradBubble.getScaleX() / 1.6);
+                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleY() / 1.5);
+                                } else {//5
+                                    tradBubble = tradBubbleNS;
+                                    tradBubble.setRotate(0);
+                                    tradBubble.setTranslateX(msiTemp.getRect().getTranslateX());
+                                    tradBubble.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleX() / 1.75);
+                                    tradShotInfo.setTranslateX(msiTemp.getRect().getTranslateX());
+                                    tradShotInfo.setTranslateY(msiTemp.getRect().getTranslateY() - tradBubble.getLayoutBounds().getHeight() * tradBubble.getScaleX() / 1.3);
+                                }
+                                if (msiTemp.getShot().getShottype().equals("2PT Field Goal")) {
+                                    tradShotInfo.setText("Missed " + msiTemp.getShot().getDistance() + "' " + msiTemp.getShot().getPlaytype().replace("shot", "Shot"));
+                                } else {
+                                    tradShotInfo.setText("Missed " + msiTemp.getShot().getDistance() + "' 3-Point " + msiTemp.getShot().getPlaytype().replace("shot", "Shot"));
+                                }
+                                tradBubble.toFront();
+                                tradShotInfo.toFront();
+                                tradBubble.setVisible(true);
+                                tradShotInfo.setVisible(true);
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        });
+                        msiTemp.getRect().setOnMouseExited((t) -> {
+                            for (Shape eachBub : allBubbles) {
+                                eachBub.setVisible(false);
+                            }
+                            tradShotInfo.setVisible(false);
+                        });
+                    } else {
+                        imagegrid.getChildren().add((Circle) allShots.get(each));
+                    }
+                });
+        if (searchvbox.isVisible()) {
+            setShotGrid(previousSimpleSearchResults);
+        } else {
+            setShotGridAdvanced(previousAdvancedSearchResults);
+        }
+        endLoadingTransition();
+        enableButtons();
+    }
+
+    @Override
+    public void notifyOfTradShotsGathered() {
+        Platform.runLater(() -> progresslabel.setText("Generating Traditional Shot Map"));
+    }
+
+    @Override
+    public void notifyOfGatheringTradShots() {
+        Platform.runLater(() -> errorlabeladvanced.setVisible(searchvbox.isVisible()));
+        Platform.runLater(() -> progresslabel.setText("Gathering Shots"));
+    }
+
+    @Override
+    public void notifyOfGatheringGridShots() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void notifyOfGatheringHeatShots() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void notifyOfGatheringZoneShots() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void notifyOfGridShotsGathered() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void notifyOfHeatShotsGathered() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void notifyOfZoneShotsGathered() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

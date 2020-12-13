@@ -41,10 +41,6 @@ public class MissedShotIcon extends Region {
         rect.setFill(Color.TRANSPARENT);
         rect.setTranslateX(height * transX);
         rect.setTranslateY(height * transY);
-        System.out.println(rect.getLayoutBounds().getHeight());
-        System.out.println(rect.getLayoutBounds().getWidth());
-        System.out.println(rect.getX());
-        System.out.println(rect.getY());
         line1.setTranslateX(height * transX + extraX);
         line1.setTranslateY(height * transY + extraY);
         line2.setTranslateX(height * transX + extraX);

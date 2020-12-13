@@ -31,7 +31,7 @@ import javafx.scene.input.KeyEvent;
  *
  * @author samnishita
  */
-public class UserInputComboBox {
+public class UserInputComboBox extends ComboBox {
 
     private ComboBox combobox;
     private StringBuilder sb;
