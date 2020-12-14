@@ -848,7 +848,7 @@
                                 <Font name="Arial Italic" size="24.0" />
                             </font>
                         </Label>
-                        <Label fx:id="updatelabel" alignment="CENTER" prefHeight="49.0" prefWidth="289.0" text="Error Connecting to Server." textAlignment="CENTER" textFill="WHITE" wrapText="true">
+                        <Label fx:id="updatelabel" alignment="CENTER" prefHeight="88.0" prefWidth="289.0" text="Error Connecting to Server." textAlignment="CENTER" textFill="WHITE" textOverrun="CLIP" wrapText="true">
                             <font>
                                 <Font name="Arial" size="18.0" />
                             </font>
