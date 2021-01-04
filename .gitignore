@@ -2,5 +2,5 @@
 *.class
 /src/main/resources/dbconfig.properties
 target/classes/dbconfig.properties 
-/target/ShotChartInterface8-1.0-SNAPSHOT-jar-with-dependencies.jar
-/target/ShotChartInterface8-1.0-SNAPSHOT.jar
+/target
+.DS_Store

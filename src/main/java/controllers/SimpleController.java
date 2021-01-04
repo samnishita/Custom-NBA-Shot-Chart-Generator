@@ -251,8 +251,8 @@ public class SimpleController implements Initializable, MapControllerInterface {
         try {
             JSONArray jsonArrayInit = getInitData();
             String toDisplay = "";
-//            String announcement = jsonArrayInit.getJSONObject(0).getString("value");
-            String announcement = "Test announcement";
+            String announcement = jsonArrayInit.getJSONObject(0).getString("value");
+//            String announcement = "Test announcement";
             String lastshotsadded = jsonArrayInit.getJSONObject(1).getString("value");
             String latestVersion = jsonArrayInit.getJSONObject(2).getString("value");
 //            
