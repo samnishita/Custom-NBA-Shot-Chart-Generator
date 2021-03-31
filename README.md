@@ -1,7 +1,8 @@
 # Custom NBA Shot Chart Generator
 ### Shot Data is Up-To-Date Through the End of 2019-20 Playoffs
 
-Same data, four ways to view it.
+Same data, four ways to view it.<br><br>
+Heavily inspired by <a href="https://twitter.com/kirkgoldsberry?s=20">Kirk Goldsberry</a> and his work.
 <div>
 <img src="https://github.com/samnishita/Dynamic-NBA-Shot-Charts/blob/master/src/main/resources/images/SimpleTraditionalExample.png" height="350" width="350">
 <img src="https://github.com/samnishita/Dynamic-NBA-Shot-Charts/blob/master/src/main/resources/images/SimpleGridExample.png" height="350" width="350">
