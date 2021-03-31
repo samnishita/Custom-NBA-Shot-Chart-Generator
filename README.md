@@ -1,4 +1,4 @@
-# Dynamic NBA Shot Charts
+# Custom NBA Shot Chart Generator
 ### Shot Data is Up-To-Date Through the End of 2019-20 Playoffs
 
 Same data, four ways to view it.
