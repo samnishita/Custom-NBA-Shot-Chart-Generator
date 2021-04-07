@@ -23,6 +23,7 @@ import java.math.RoundingMode;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -90,17 +91,13 @@ import mainapp.Search;
 public class SimpleController implements Initializable, MapControllerInterface {
 
     private LinkedHashMap<String, String[]> nameHash;
-    private final BigDecimal ORIG_HEIGHT = new BigDecimal("470");
-    private final BigDecimal SHOT_MADE_RADIUS = new BigDecimal("5");
-    private final BigDecimal SHOT_MISS_START_END = new BigDecimal("3");
-    private final BigDecimal SHOT_LINE_THICKNESS = new BigDecimal("2");
+    private final BigDecimal ORIG_HEIGHT = new BigDecimal("470"), SHOT_MADE_RADIUS = new BigDecimal("5"),
+            SHOT_MISS_START_END = new BigDecimal("3"), SHOT_LINE_THICKNESS = new BigDecimal("2");
     private HashMap<Integer, String> activePlayers;
-    private final int COMBO_FONT_SIZE = 18;
-    private final int STAT_GRID_FONT_SIZE = 20;
+    private final int COMBO_FONT_SIZE = 18, STAT_GRID_FONT_SIZE = 20;
     private String previousYear, previousPlayer, previousSeason;
     private ResourceBundle reader = null;
-    private double maxCutoff = 0.0;
-    private double diff = maxCutoff / 10;
+    private double maxCutoff = 0.0, diff = maxCutoff / 10;
     private LinkedList<Circle> allHeatCircles;
     private ArrayList<Node> allZoneFXML = new ArrayList();
     private LinkedList<Label> allLabels, allPercentLabels;
@@ -108,13 +105,10 @@ public class SimpleController implements Initializable, MapControllerInterface {
     private DecimalFormat df = new DecimalFormat("##.#");
     private Rectangle mask;
     private LinkedHashMap<String, Integer> relevantTeamNameIDHashMap = new LinkedHashMap();
-    private double font = 0.0;
-    private double fontGrid = 0.0;
+    private double font = 0.0, fontGrid = 0.0;
     private LinkedList<Button> viewButtons = new LinkedList();
-    private Search currentSimpleSearch = Search.TRADITIONAL;
-    private Search currentAdvancedSearch = Search.TRADITIONAL;
-    private ArrayList<Label> simpleFGLabels = new ArrayList();
-    private ArrayList<Label> advancedFGLabels = new ArrayList();
+    private Search currentSimpleSearch = Search.TRADITIONAL, currentAdvancedSearch = Search.TRADITIONAL;
+    private ArrayList<Label> simpleFGLabels = new ArrayList(), advancedFGLabels = new ArrayList();
     private UserInputComboBox playerComboUser, playerComboUserAdvanced, seasonsBeginComboUser, seasonsEndComboUser,
             distanceBeginComboUser, distanceEndComboUser, shotSuccessComboUser, shotValueComboUser,
             shotTypeComboUser, teamComboUser, homeTeamComboUser, awayTeamComboUser,
@@ -123,9 +117,8 @@ public class SimpleController implements Initializable, MapControllerInterface {
     private JSONArray previousSimpleSearchResults, previousAdvancedSearchResults;
     private boolean alreadyInitializedAdv = false;
     private Font overallFont, boldFont, titleFont;
-    private ArrayList<Label> allGridLegendLabels = new ArrayList();
-    private ArrayList<Label> allSimpleFGLabels = new ArrayList();
-    private ArrayList<Label> allAdvancedFGLabels = new ArrayList();
+    private ArrayList<Label> allGridLegendLabels = new ArrayList(),
+            allSimpleFGLabels = new ArrayList(), allAdvancedFGLabels = new ArrayList();
     private Shape tradBubble, tradBubbleNS, tradBubbleSWNE, tradBubbleWE, tradBubbleNWSE;
     private Label tradShotInfo = new Label();
     private ArrayList<Shape> allBubbles = new ArrayList();
@@ -251,20 +244,48 @@ public class SimpleController implements Initializable, MapControllerInterface {
         try {
             JSONArray jsonArrayInit = getInitData();
             String toDisplay = "";
-            String announcement = jsonArrayInit.getJSONObject(0).getString("value");
-//            String announcement = "Test announcement";
-            String lastshotsadded = jsonArrayInit.getJSONObject(1).getString("value");
-            String latestVersion = jsonArrayInit.getJSONObject(2).getString("value");
+            HashMap<String, String> typesToValues = new HashMap();
+            for (int i = 0; i < jsonArrayInit.length(); i++) {
+                JSONObject eachObj = jsonArrayInit.getJSONObject(i);
+                typesToValues.put(eachObj.getString("type"), eachObj.getString("value"));
+            }
+//            String announcement = jsonArrayInit.getJSONObject(0).getString("value");
+////            String announcement = "Test announcement";
+//            String lastshotsadded = jsonArrayInit.getJSONObject(1).getString("value");
+//            String latestVersion = jsonArrayInit.getJSONObject(2).getString("value");
 //            
-            //4 lines max
+            String announcement = typesToValues.get("announcement");
+            String lastShotsAdded = typesToValues.get("lastshotsadded");
+            String currentYearInDB = typesToValues.get("current year");
+            String latestVersion = typesToValues.get("version");
             if (!latestVersion.equals(reader.getString("version"))) {
-                toDisplay += "Version " + latestVersion + " update is available!\n";
+                int[] localVersionSplitToInt = new int[3], latestVersionSplitToInt = new int[3];
+                System.out.println(reader.getString("version").split("\\.")[0]);
+                System.out.println(reader.getString("version").split("\\.")[1]);
+                System.out.println(reader.getString("version").split("\\.")[2]);
+                for (int i = 0; i < 3; i++) {
+                    localVersionSplitToInt[i] = Integer.parseInt(reader.getString("version").split("\\.")[i]);
+                    latestVersionSplitToInt[i] = Integer.parseInt(latestVersion.split("\\.")[i]);
+                }
+                if (latestVersionSplitToInt[0] > localVersionSplitToInt[0]) {
+                    toDisplay += "Version " + latestVersion + " update is available!\n";
+                } else if (latestVersionSplitToInt[0] == localVersionSplitToInt[0]) {
+                    if (latestVersionSplitToInt[1] > localVersionSplitToInt[1]) {
+                        toDisplay += "Version " + latestVersion + " update is available!\n";
+                    } else if (latestVersionSplitToInt[1] == localVersionSplitToInt[1]) {
+                        if (latestVersionSplitToInt[2] > localVersionSplitToInt[2]) {
+                            toDisplay += "Version " + latestVersion + " update is available!\n";
+                        }
+                    }
+                } else {
+                    
+                }
             }
 //            
             if (!toDisplay.equals("")) {
-                toDisplay +=  announcement+"\n";
+                toDisplay += announcement + "\n";
             }
-            dateaccuracy.setText(lastshotsadded);
+            dateaccuracy.setText(lastShotsAdded);
             if (toDisplay.equals("")) {
                 updatestitlelabel.setVisible(false);
                 updatelabel.setVisible(false);
@@ -430,8 +451,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
             double width = imageview.localToParent(imageview.getBoundsInLocal()).getWidth();
             MissedShotIcon msi;
             Circle circle;
-            Line line1;
-            Line line2;
+            Line line1, line2;
             for (Shot each : tradMeth.getAllShots().keySet()) {
                 if (each.getMake() == 1) {
                     circle = (Circle) tradMeth.getAllShots().get(each);
@@ -855,12 +875,12 @@ public class SimpleController implements Initializable, MapControllerInterface {
                     }
                 }
             }
-            if (updatelabel.isVisible()){
-                updatelabel.setStyle("-fx-font: "+16.0*height/470+"px \"" + overallFont.getName() + "\";");
-                updatestitlelabel.setStyle("-fx-font: "+20.0*height/470+"px \"" + boldFont.getName() + "\";");
-                updatelabel.setPrefWidth(300.0*height/470);
-                updatelabel.setPrefHeight(88.0*height/470);
-                updatestitlelabel.setPrefWidth(200.0*height/470);
+            if (updatelabel.isVisible()) {
+                updatelabel.setStyle("-fx-font: " + 16.0 * height / 470 + "px \"" + overallFont.getName() + "\";");
+                updatestitlelabel.setStyle("-fx-font: " + 20.0 * height / 470 + "px \"" + boldFont.getName() + "\";");
+                updatelabel.setPrefWidth(300.0 * height / 470);
+                updatelabel.setPrefHeight(88.0 * height / 470);
+                updatestitlelabel.setPrefWidth(200.0 * height / 470);
             }
             mask.setWidth(width * 0.999);
             mask.setHeight(height * 0.999);
