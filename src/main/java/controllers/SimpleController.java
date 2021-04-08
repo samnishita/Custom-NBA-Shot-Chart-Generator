@@ -126,6 +126,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
     private GridMethods gridMeth;
     private HeatMethods heatMeth;
     private ZoneMethods zoneMeth;
+    private String currentYear;
     //General Features
     @FXML
     private BorderPane borderpane;
@@ -249,20 +250,12 @@ public class SimpleController implements Initializable, MapControllerInterface {
                 JSONObject eachObj = jsonArrayInit.getJSONObject(i);
                 typesToValues.put(eachObj.getString("type"), eachObj.getString("value"));
             }
-//            String announcement = jsonArrayInit.getJSONObject(0).getString("value");
-////            String announcement = "Test announcement";
-//            String lastshotsadded = jsonArrayInit.getJSONObject(1).getString("value");
-//            String latestVersion = jsonArrayInit.getJSONObject(2).getString("value");
-//            
             String announcement = typesToValues.get("announcement");
             String lastShotsAdded = typesToValues.get("lastshotsadded");
-            String currentYearInDB = typesToValues.get("current year");
+            this.currentYear = typesToValues.get("current year");
             String latestVersion = typesToValues.get("version");
             if (!latestVersion.equals(reader.getString("version"))) {
                 int[] localVersionSplitToInt = new int[3], latestVersionSplitToInt = new int[3];
-                System.out.println(reader.getString("version").split("\\.")[0]);
-                System.out.println(reader.getString("version").split("\\.")[1]);
-                System.out.println(reader.getString("version").split("\\.")[2]);
                 for (int i = 0; i < 3; i++) {
                     localVersionSplitToInt[i] = Integer.parseInt(reader.getString("version").split("\\.")[i]);
                     latestVersionSplitToInt[i] = Integer.parseInt(latestVersion.split("\\.")[i]);
@@ -278,10 +271,9 @@ public class SimpleController implements Initializable, MapControllerInterface {
                         }
                     }
                 } else {
-                    
+
                 }
             }
-//            
             if (!toDisplay.equals("")) {
                 toDisplay += announcement + "\n";
             }
@@ -317,9 +309,9 @@ public class SimpleController implements Initializable, MapControllerInterface {
             System.out.println("Error caught in creation of nameHash");
         }
         yearcombo.setItems(FXCollections.observableArrayList(makeYears()));
-        this.yearcombo.setValue("2019-20");
-        this.playercombo.setValue("Aaron Gordon");
-        this.seasoncombo.setValue("Regular Season");
+        this.yearcombo.setValue(currentYear);
+        //this.playercombo.setValue("Aaron Gordon");
+        //this.seasoncombo.setValue("Regular Season");
         this.activePlayers = new HashMap();
         try {
             playerComboUser = new UserInputComboBox(playercombo, null, "");
@@ -423,7 +415,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
     }
 
     private ArrayList<String> makeYears() {
-        int year = 2019;
+        int year = Integer.parseInt(this.currentYear.substring(0, 4));
         ArrayList<String> years = new ArrayList(30);
         String subYearString;
         while (year >= 1996) {
@@ -496,7 +488,6 @@ public class SimpleController implements Initializable, MapControllerInterface {
         HashMap<String, String> names = new HashMap();
         ArrayList<String> fixedNames = new ArrayList();
         LinkedList<String> realNames = new LinkedList();
-
         for (int each : this.activePlayers.keySet()) {
             names.put(activePlayers.get(each).replaceAll("[^A-Za-z0-9]", "").toLowerCase(), activePlayers.get(each));
             fixedNames.add(activePlayers.get(each).replaceAll("[^A-Za-z0-9]", "").toLowerCase());
@@ -509,6 +500,9 @@ public class SimpleController implements Initializable, MapControllerInterface {
             this.previousSeason = seasoncombo.getValue().toString();
         }
         playerComboUser.getComboBox().setItems(FXCollections.observableArrayList(realNames));
+        if (playerComboUser.getComboBox().getValue() == null) {
+            playerComboUser.getComboBox().setValue(realNames.get(0));
+        }
         if (previousSeason != null && playerComboUser.getComboBox().getValue() != null && seasoncombo.getItems().contains(previousSeason)) {
             this.seasoncombo.getSelectionModel().select(previousSeason);
         } else {
@@ -569,6 +563,15 @@ public class SimpleController implements Initializable, MapControllerInterface {
             this.seasoncombo.setItems(FXCollections.observableArrayList(actives));
             if (actives.contains(previousSeason)) {
                 this.seasoncombo.getSelectionModel().select(previousSeason);
+            }
+            if (seasoncombo.getValue() == null) {
+                if (actives.contains("Regular Season")) {
+                    this.seasoncombo.setValue("Regular Season");
+                } else if (actives.contains("Preseason")) {
+                    this.seasoncombo.setValue("Preseason");
+                } else if (actives.contains("Playoffs")) {
+                    this.seasoncombo.setValue("Playoffs");
+                }
             }
         }
     }
@@ -1529,6 +1532,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
         seasonsBeginComboUser.getComboBox().setItems(FXCollections.observableArrayList(makeYears()));
         seasonsEndComboUser = new UserInputComboBox(seasonsendcombo, null, "");
         seasonsEndComboUser.getComboBox().setItems(FXCollections.observableArrayList(makeYears()));
+        Platform.runLater(() -> seasonslabel.setText("Seasons (Default: 1996-97, " + this.currentYear + ")"));
         setAdvancedPlayerComboBox();
         setAdvancedSeasonsComboBox();
         setShotDistanceCombo();
