@@ -2,3 +2,5 @@
 *.class
 /src/main/resources/dbconfig.properties
 target/classes/dbconfig.properties 
+/target
+.DS_Store

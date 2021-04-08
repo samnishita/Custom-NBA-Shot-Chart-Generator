@@ -104,6 +104,7 @@ public class Main extends Application {
             sc.populateUnchangingComboBoxes();
         } catch (Exception ex) {
             ex.printStackTrace();
+            System.exit(1);
         }
     }
 
