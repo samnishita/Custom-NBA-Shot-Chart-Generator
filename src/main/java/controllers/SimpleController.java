@@ -16,11 +16,14 @@
 package controllers;
 
 import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
+import http.SearchRequester;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import javafx.scene.paint.Color;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +32,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -127,6 +133,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
     private HeatMethods heatMeth;
     private ZoneMethods zoneMeth;
     private String currentYear;
+    private SearchRequester searchRequester;
     //General Features
     @FXML
     private BorderPane borderpane;
@@ -218,6 +225,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        searchRequester = new SearchRequester();
         try {
             reader = ResourceBundle.getBundle("dbconfig");
             overallFont = Font.loadFont(SimpleController.class.getResourceAsStream("/fonts/MontserratLight-ywBvq.ttf"), 12);
@@ -243,11 +251,12 @@ public class SimpleController implements Initializable, MapControllerInterface {
         progressvbox.setStyle("-fx-background: transparent;-fx-background-color: transparent;");
         //Set Updates Box
         try {
-            JSONArray jsonArrayInit = getInitData();
+            JSONArray jsonArrayInit = searchRequester.getInitData();
             String toDisplay = "";
             HashMap<String, String> typesToValues = new HashMap();
+            JSONObject eachObj;
             for (int i = 0; i < jsonArrayInit.length(); i++) {
-                JSONObject eachObj = jsonArrayInit.getJSONObject(i);
+                eachObj = jsonArrayInit.getJSONObject(i);
                 typesToValues.put(eachObj.getString("type"), eachObj.getString("value"));
             }
             String announcement = typesToValues.get("announcement");
@@ -296,7 +305,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
         try {
             namelabel.setText("Version " + reader.getString("version"));
             String[] nameArray;
-            JSONArray jsonArray = getInitAllPlayersData();
+            JSONArray jsonArray = searchRequester.getInitAllPlayersData();
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject eachPlayer = jsonArray.getJSONObject(i);
                 nameArray = new String[3];
@@ -479,7 +488,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
 
     private void setPlayerComboBox() throws IOException {
         this.activePlayers = new HashMap();
-        JSONArray jsonArray = getActivePlayersData();
+        JSONArray jsonArray = searchRequester.getActivePlayersData(this.yearcombo.getValue().toString());
         JSONObject eachPlayer;
         for (int i = 0; i < jsonArray.length(); i++) {
             eachPlayer = jsonArray.getJSONObject(i);
@@ -516,7 +525,7 @@ public class SimpleController implements Initializable, MapControllerInterface {
     private void setAdvancedPlayerComboBox() throws IOException {
         playerComboUserAdvanced = new UserInputComboBox(playercomboadvanced, new HashSet(), "");
         this.activePlayers = new HashMap();
-        JSONArray jsonArray = getInitAllPlayersData();
+        JSONArray jsonArray = searchRequester.getInitAllPlayersData();
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject eachPlayer = jsonArray.getJSONObject(i);
             this.activePlayers.put(eachPlayer.getInt("id"), (eachPlayer.getString("firstname") + " " + eachPlayer.getString("lastname")).trim());
@@ -546,7 +555,9 @@ public class SimpleController implements Initializable, MapControllerInterface {
             this.seasoncombo.getSelectionModel().clearSelection();
         } else {
             ArrayList<String> actives = new ArrayList();
-            JSONArray jsonArraySeasons = getSeasonsData();
+            JSONArray jsonArraySeasons = searchRequester.getSeasonsData(this.yearcombo.getValue().toString(),
+                    nameHash.get(this.playercombo.getValue().toString())[0], nameHash.get(this.playercombo.getValue().toString())[1],
+                    nameHash.get(this.playercombo.getValue().toString())[2]);
             JSONObject eachSeason;
             for (int i = 0; i < jsonArraySeasons.length(); i++) {
                 eachSeason = jsonArraySeasons.getJSONObject(i);
@@ -583,57 +594,6 @@ public class SimpleController implements Initializable, MapControllerInterface {
         seasons.add("Playoffs");
         seasonTypesComboUser = new UserInputComboBox(seasontypescomboadvanced, new HashSet(), "");
         seasonTypesComboUser.getComboBox().setItems(FXCollections.observableArrayList(seasons));
-    }
-
-    private JSONArray getInitData() throws IOException {
-        JSONObject jsonObjOut = new JSONObject();
-        jsonObjOut.put("selector", "init");
-        Main.getPrintWriterOut().println(jsonObjOut.toString());
-        return new JSONArray(Main.getServerResponse().readLine());
-    }
-
-    private JSONArray getInitAllPlayersData() throws IOException {
-        JSONObject jsonObjOut = new JSONObject();
-        jsonObjOut.put("selector", "initallplayers");
-        Main.getPrintWriterOut().println(jsonObjOut.toString());
-        return new JSONArray(Main.getServerResponse().readLine());
-    }
-
-    private JSONArray getActivePlayersData() throws IOException {
-        JSONObject jsonObjOut = new JSONObject();
-        jsonObjOut.put("selector", "activeplayers");
-        jsonObjOut.put("year", this.yearcombo.getValue().toString());
-        Main.getPrintWriterOut().println(jsonObjOut.toString());
-        return new JSONArray(Main.getServerResponse().readLine());
-    }
-
-    private JSONArray getSeasonsData() throws IOException {
-        JSONObject jsonObjOut = new JSONObject();
-        jsonObjOut.put("selector", "seasons");
-        jsonObjOut.put("year", this.yearcombo.getValue().toString());
-        jsonObjOut.put("playerid", nameHash.get(this.playercombo.getValue().toString())[0]);
-        jsonObjOut.put("playerfirstname", nameHash.get(this.playercombo.getValue().toString())[1]);
-        jsonObjOut.put("playerlastname", nameHash.get(this.playercombo.getValue().toString())[2]);
-        Main.getPrintWriterOut().println(jsonObjOut.toString());
-        return new JSONArray(Main.getServerResponse().readLine());
-    }
-
-    private JSONArray getShotTypesData() throws IOException {
-        JSONObject jsonObjOut = new JSONObject();
-        jsonObjOut.put("selector", "shottypes");
-        Main.getPrintWriterOut().println(jsonObjOut.toString());
-        return new JSONArray(Main.getServerResponse().readLine());
-    }
-
-    private JSONArray getSimpleShotData() throws IOException {
-        JSONObject jsonObjOut = new JSONObject();
-        jsonObjOut.put("selector", "simple" + currentSimpleSearch.toString().toLowerCase());
-        jsonObjOut.put("year", this.yearcombo.getValue().toString());
-        jsonObjOut.put("playername", nameHash.get(this.playercombo.getValue().toString()));
-        jsonObjOut.put("seasontype", this.seasoncombo.getValue().toString());
-        previousSimpleSearchJSON = jsonObjOut;
-        Main.getPrintWriterOut().println(jsonObjOut.toString());
-        return new JSONArray(Main.getServerResponse().readLine());
     }
 
     @Override
@@ -1290,13 +1250,6 @@ public class SimpleController implements Initializable, MapControllerInterface {
         startLoadingTransition();
     }
 
-    private JSONArray getZoneAveragesData() throws IOException {
-        JSONObject jsonObjOut = new JSONObject();
-        jsonObjOut.put("selector", "zoneaverages");
-        Main.getPrintWriterOut().println(jsonObjOut.toString());
-        return new JSONArray(Main.getServerResponse().readLine());
-    }
-
     private void changeShapeColor(Shape shape, Double playerValue, int i) {
         if (zoneMeth.getAllZones().get(i)[1] == 0) {
             shape.setFill(Color.web("#b2b2b2"));
@@ -1904,22 +1857,13 @@ public class SimpleController implements Initializable, MapControllerInterface {
 
     private ArrayList getShotTypesList() throws IOException {
         ArrayList shotTypes = new ArrayList();
-        JSONArray jsonArray = getShotTypesData();
+        JSONArray jsonArray = searchRequester.getShotTypesData();
         JSONObject eachShotType;
         for (int i = 0; i < jsonArray.length(); i++) {
             eachShotType = jsonArray.getJSONObject(i);
             shotTypes.add(eachShotType.getString("playtype"));
         }
         return shotTypes;
-    }
-
-    private JSONArray createAdvancedJSONOutput(Search searchTypeSelector) throws IOException, Exception {
-        JSONObject obj = createJsonObjectOutput();
-        previousAdvancedSearchJSON = obj;
-        JSONObject newObj = createJsonObjectOutput();
-        newObj.put("selector", "advanced" + searchTypeSelector.toString().toLowerCase());
-        Main.getPrintWriterOut().println(newObj.toString());
-        return new JSONArray(Main.getServerResponse().readLine());
     }
 
     private void setShotGridAdvanced(JSONArray jsonArray) {
@@ -2244,12 +2188,21 @@ public class SimpleController implements Initializable, MapControllerInterface {
         try {
             if (searchvbox.isVisible()) {
                 if (!checkForSameSimpleSearch()) {
-                    previousSimpleSearchResults = getSimpleShotData();
+                    previousSimpleSearchResults = searchRequester.getSimpleShotData(this.yearcombo.getValue().toString(),
+                            nameHash.get(this.playercombo.getValue().toString())[0], nameHash.get(this.playercombo.getValue().toString())[1],
+                            nameHash.get(this.playercombo.getValue().toString())[2], this.seasoncombo.getValue().toString());
+                    JSONObject jsonObjOut = new JSONObject();
+                    jsonObjOut.put("selector", "simple" + currentSimpleSearch.toString().toLowerCase());
+                    jsonObjOut.put("year", this.yearcombo.getValue().toString());
+                    jsonObjOut.put("playername", nameHash.get(this.playercombo.getValue().toString()));
+                    jsonObjOut.put("seasontype", this.seasoncombo.getValue().toString());
+                    previousSimpleSearchJSON = jsonObjOut;
                 }
                 return previousSimpleSearchResults;
             } else {
                 if (!checkForSameAdvancedSearch()) {
-                    previousAdvancedSearchResults = createAdvancedJSONOutput(currentAdvancedSearch);
+                    previousAdvancedSearchResults = searchRequester.createAdvancedJSONOutput(gatherAdvancedSearchInputs());
+                    previousAdvancedSearchJSON = createJsonObjectOutput();
                 }
                 return previousAdvancedSearchResults;
             }
@@ -2260,7 +2213,35 @@ public class SimpleController implements Initializable, MapControllerInterface {
         return null;
     }
 
-    private JSONObject createJsonObjectOutput() {
+    private Map<String, ArrayList<String>> gatherAdvancedSearchInputs() {
+        Map<String, ArrayList<String>> inputMap = new HashMap();
+        addParameterKeyValueToMap(inputMap, "beginSeason", seasonsBeginComboUser.getSelection());
+        addParameterKeyValueToMap(inputMap, "endSeason", seasonsEndComboUser.getSelection());
+        playerComboUserAdvanced.getHashSet().forEach(each -> addParameterKeyValueToMap(inputMap, "allSelectedPlayers", nameHash.get(each)[0]));
+        seasonTypesComboUser.getHashSet().forEach(each -> addParameterKeyValueToMap(inputMap, "allSelectedSeasonTypes", each));
+        addParameterKeyValueToMap(inputMap, "beginDistance", distanceBeginComboUser.getSelection());
+        addParameterKeyValueToMap(inputMap, "endDistance", distanceEndComboUser.getSelection());
+        addParameterKeyValueToMap(inputMap, "shotSuccess", shotSuccessComboUser.getSelection());
+        addParameterKeyValueToMap(inputMap, "shotValue", shotValueComboUser.getSelection());
+        shotTypeComboUser.getHashSet().forEach(each -> addParameterKeyValueToMap(inputMap, "allSelectedShotTypes", each));
+        teamComboUser.getHashSet().forEach(each -> addParameterKeyValueToMap(inputMap, "allSelectedTeams", relevantTeamNameIDHashMap.get(each).toString()));
+        homeTeamComboUser.getHashSet().forEach(each -> addParameterKeyValueToMap(inputMap, "allSelectedHomeTeams", relevantTeamNameIDHashMap.get(each).toString()));
+        awayTeamComboUser.getHashSet().forEach(each -> addParameterKeyValueToMap(inputMap, "allSelectedAwayTeams", relevantTeamNameIDHashMap.get(each).toString()));
+        courtAreasComboUser.getHashSet().forEach(each -> addParameterKeyValueToMap(inputMap, "allSelectedCourtAreas", each));
+        courtSidesComboUser.getHashSet().forEach(each -> addParameterKeyValueToMap(inputMap, "allSelectedCourtSides", each));
+        return inputMap;
+    }
+
+    private void addParameterKeyValueToMap(Map<String, ArrayList<String>> inputMap, String key, String value) {
+        if (!value.isEmpty()) {
+            if (!inputMap.containsKey(key)) {
+                inputMap.put(key, new ArrayList());
+            }
+            inputMap.get(key).add(value);
+        }
+    }
+
+    public JSONObject createJsonObjectOutput() {
         JSONObject obj = new JSONObject();
         obj.put("beginSeason", seasonsBeginComboUser.getSelection());
         obj.put("endSeason", seasonsEndComboUser.getSelection());
@@ -2849,6 +2830,14 @@ public class SimpleController implements Initializable, MapControllerInterface {
     @Override
     public double getHeight() {
         return this.imageview.localToParent(imageview.getBoundsInLocal()).getHeight();
+    }
+
+    public void setPreviousSimpleSearchJSON(JSONObject previousSimpleSearchJSON) {
+        this.previousSimpleSearchJSON = previousSimpleSearchJSON;
+    }
+
+    public void setPreviousAdvancedSearchJSON(JSONObject previousAdvancedSearchJSON) {
+        this.previousAdvancedSearchJSON = previousAdvancedSearchJSON;
     }
 
 }

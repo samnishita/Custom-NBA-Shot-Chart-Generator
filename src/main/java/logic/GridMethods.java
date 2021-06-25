@@ -16,6 +16,7 @@
 package logic;
 
 import controllers.MapControllerInterface;
+import http.SearchRequester;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -55,10 +56,12 @@ public class GridMethods implements MethodsInterface {
     private LinkedList<Rectangle> allTiles = new LinkedList();
     private int offset = 10;
     private int maxDistanceBetweenNodes = 20;
+    private SearchRequester searchRequester;
 
     public GridMethods(MapControllerInterface mci, double squareSizeOrig) {
         this.mci = mci;
         this.squareSizeOrig = squareSizeOrig;
+        searchRequester = new SearchRequester();
         gridService = new Service() {
             @Override
             protected Task<ConcurrentHashMap<Coordinate, Double>> createTask() {
@@ -201,19 +204,14 @@ public class GridMethods implements MethodsInterface {
 
     private HashMap<String, BigDecimal> useGridAverages() throws IOException {
         HashMap<String, BigDecimal> hashmap = new HashMap();
-        JSONArray jsonArray = getGridAveragesData();
+        JSONArray jsonArray = searchRequester.getGridAveragesData();
         for (int i = 0; i < jsonArray.length(); i++) {
             hashmap.put(jsonArray.getJSONObject(i).getString("uniqueid"), jsonArray.getJSONObject(i).getBigDecimal("average"));
         }
         return hashmap;
     }
 
-    private JSONArray getGridAveragesData() throws IOException {
-        JSONObject jsonObjOut = new JSONObject();
-        jsonObjOut.put("selector", "gridaverages");
-        Main.getPrintWriterOut().println(jsonObjOut.toString());
-        return new JSONArray(Main.getServerResponse().readLine());
-    }
+    
 
     private void idwGrid() {
         coordValue = new ConcurrentHashMap();

@@ -60,7 +60,7 @@ public class Main extends Application {
     private int portNumber;
     private ResourceBundle reader = null;
     private static Socket socket = null;
-    private static PrintWriter out = null;
+//    private static PrintWriter out = null;
     private static BufferedReader in = null;
     private static Scene scene;
 
@@ -72,7 +72,7 @@ public class Main extends Application {
             portNumber = Integer.parseInt(reader.getString("server.port"));
             try {
                 socket = new Socket(hostName, portNumber);
-                out = new PrintWriter(socket.getOutputStream(), true);
+//                out = new PrintWriter(socket.getOutputStream(), true);
             } catch (UnknownHostException e) {
                 System.err.println("Don't know about host " + hostName);
             } catch (IOException e) {
@@ -84,7 +84,7 @@ public class Main extends Application {
             scene = new Scene(root);
             scene.getStylesheets().add("/css/controllercss.css");
             stage.setScene(scene);
-            stage.setTitle("Dynamic NBA Shot Charts");
+            stage.setTitle("Custom NBA Shot Charts");
             stage.setMinHeight(750.0 / 1.1);
             stage.setMinWidth(900.0 / 1.1);
 
@@ -112,10 +112,10 @@ public class Main extends Application {
         launch(args);
     }
 
-    public static PrintWriter getPrintWriterOut() throws IOException {
-        out = new PrintWriter(socket.getOutputStream(), true);
-        return out;
-    }
+//    public static PrintWriter getPrintWriterOut() throws IOException {
+//        out = new PrintWriter(socket.getOutputStream(), true);
+//        return out;
+//    }
 
     public static BufferedReader getServerResponse() throws IOException {
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));

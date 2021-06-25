@@ -16,6 +16,7 @@
 package logic;
 
 import controllers.MapControllerInterface;
+import http.SearchRequester;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,14 +36,14 @@ public class ZoneMethods implements MethodsInterface {
 
     private Service zoneService;
     private MapControllerInterface mci;
-    private HashMap<Integer, Double> allShots;
+    private HashMap<Integer, Double> allShots, allZoneAverages;
     private HashMap<Integer, Double[]> allZones;
-    private HashMap<Integer, Double> allZoneAverages;
-    private long startTime;
-    private long endTime;
+    private long startTime, endTime;
+    private SearchRequester searchRequester;
 
     public ZoneMethods(MapControllerInterface mci) {
         this.mci = mci;
+        searchRequester = new SearchRequester();
         zoneService = new Service() {
             @Override
             protected Task<HashMap<Integer, Double>> createTask() {
@@ -247,7 +248,7 @@ public class ZoneMethods implements MethodsInterface {
 
     private HashMap<Integer, Double> useZoneAverages() throws IOException {
         HashMap<Integer, Double> hashmap = new HashMap();
-        JSONArray jsonArray = getZoneAveragesData();
+        JSONArray jsonArray = searchRequester.getZoneAveragesData();
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject eachShot = jsonArray.getJSONObject(i);
             hashmap.put(i + 1, eachShot.getBigDecimal("average").doubleValue());
@@ -256,12 +257,7 @@ public class ZoneMethods implements MethodsInterface {
 
     }
 
-    private JSONArray getZoneAveragesData() throws IOException {
-        JSONObject jsonObjOut = new JSONObject();
-        jsonObjOut.put("selector", "zoneaverages");
-        Main.getPrintWriterOut().println(jsonObjOut.toString());
-        return new JSONArray(Main.getServerResponse().readLine());
-    }
+    
 
     private void addShotToHashMap(int selector, int make) {
         allZones.get(selector)[1] = allZones.get(selector)[1] + 1;
