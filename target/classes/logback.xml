@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+
+<!-- 
+ShotChartBackendTomcat
+-->
+
+
+<configuration>
+    <timestamp key="datetime" datePattern="yyyy-MM-dd'_'HH-mm-ss.SSS"/>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %d{HH:mm:ss.SSS} [%t] %-5level %logger{} - %msg%n
+            </Pattern>
+        </layout>
+    </appender>
+<!--
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender"> 
+        <file>
+            /Users/samnishita/NetBeansProjects/SecurityServer/src/main/resources/logs/SecurityServerLog-${datetime}.log
+        </file>
+        <encoder>
+            <Pattern>
+                %d{HH:mm:ss.SSS} [%thread] %-5level %logger{} - %msg%n
+            </Pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>
+                /Users/samnishita/NetBeansProjects/SecurityServer/src/main/resources/logs/SecurityServerLog-${datetime}-%i.log
+            </fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>100</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>5MB</maxFileSize>
+        </triggeringPolicy>
+    </appender>
+    -->
+    <logger name="org.littleshoot" level="OFF" />
+    <logger name="net.lightbody" level="OFF" />
+    <logger name="io.netty" level="ERROR" />
+
+    <root level="debug">
+        <appender-ref ref="CONSOLE"/>
+       <!-- <appender-ref ref="FILE" />-->
+    </root>
+
+</configuration>

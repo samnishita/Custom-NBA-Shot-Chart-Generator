@@ -55,7 +55,7 @@
                 </VBox>
                 <HBox fx:id="tophbox" alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0">
                     <children>
-                        <Label fx:id="titlelabel" graphicTextGap="0.0" prefHeight="73.0" text="Dynamic NBA Shot Charts" textFill="WHITE">
+                        <Label fx:id="titlelabel" graphicTextGap="0.0" prefHeight="73.0" text="Custom NBA Shot Charts" textFill="WHITE">
                             <font>
                                 <Font name="Kohinoor Bangla" size="50.0" />
                             </font>
