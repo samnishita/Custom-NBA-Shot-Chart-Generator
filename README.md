@@ -1,5 +1,5 @@
 # Custom NBA Shot Chart Generator
-### Shot Data is Up-To-Date Through June 20, 2021
+### Shot Data is Up-To-Date Through the End of the 2020-21 Playoffs
 
 Same data, four ways to view it.<br><br>
 Heavily inspired by <a href="https://twitter.com/kirkgoldsberry?s=20">Kirk Goldsberry</a> and his work.
