@@ -48,8 +48,9 @@ public class SearchRequester {
         StringBuilder content = new StringBuilder();
         try {
             ResourceBundle reader = ResourceBundle.getBundle("dbconfig");
-            String host = reader.getString("server.host")+":"+reader.getString("server.port");
-            URL url = new URL("http://" + host + path.replace(" ", "%20"));
+            //String host = reader.getString("server.host")+":"+reader.getString("server.port");
+            String host = reader.getString("server.host");
+            URL url = new URL("https://" + host + path.replace(" ", "%20"));
             LOGGER.info("Requesting " + url.toString());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
